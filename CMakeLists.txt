@@ -10,7 +10,7 @@ add_definitions(${GTK2_CFLAGS_OTHER})
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(linpop main.c)
+add_executable(linpop main.c cmake-build-debug/main.c)
 
 find_package(Threads REQUIRED)
 target_link_libraries(linpop Threads::Threads)
