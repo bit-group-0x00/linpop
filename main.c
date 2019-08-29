@@ -1,6 +1,6 @@
 #include <stdio.h>
 
 int main() {
-    printf("Hello, lmttest!\n");
+    printf("Hello, test of lmt !\n");
     return 0;
 }
