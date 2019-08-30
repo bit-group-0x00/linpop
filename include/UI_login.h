@@ -3,4 +3,8 @@
 //
 
 #include <gtk/gtk.h>
+#include "UI_macro.h"
+
 void loginWindow();
+void registWindow();
+void homepageWindow();
