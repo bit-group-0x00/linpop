@@ -6,6 +6,28 @@
 static GtkWidget *usernameText;
 static GtkWidget *passwordText;
 static GtkWidget *passwordText2;
+static GtkWidget *dialog = NULL;
+GtkWidget *create_view(gchar* filename){
+    GtkWidget * window;
+    GtkWidget* image;
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window),filename);
+    gtk_container_set_border_width(GTK_CONTAINER(window),10);
+    image = gtk_image_new_from_file(filename);
+    gtk_container_add(GTK_CONTAINER(window),image);
+    gtk_widget_show_all(window);
+    return window;
+}
+void on_ok(GtkButton* button, gpointer data){
+    const char* filename;
+    GtkWidget* window;
+    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(data));
+    window = create_view(filename);
+    gtk_widget_show(window);
+}
+void on_cancel(GtkButton *button, gpointer data){
+    gtk_widget_destroy(dialog);
+}
 void on_button_clicked (GtkWidget *button, gpointer data){
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
@@ -25,6 +47,14 @@ void on_button_clicked (GtkWidget *button, gpointer data){
             g_print("username is:%s\n",username);
             g_print("password is:%s\n",password);
             homepageWindow();
+            break;
+        case ADD_IMAGE:
+            dialog = gtk_file_selection_new("choose a photo");
+            g_signal_connect(G_OBJECT(dialog),"destroy",G_CALLBACK(gtk_widget_destroy),dialog);
+            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(dialog)->ok_button),"clicked",G_CALLBACK(on_ok),dialog);
+            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(dialog)->ok_button),"clicked",G_CALLBACK(on_cancel),NULL);
+            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(dialog)->cancel_button),"clicked",G_CALLBACK(on_cancel),NULL);
+            gtk_widget_show(dialog);
             break;
     }
 }
@@ -60,7 +90,7 @@ void registWindow(int argc, char *argv[]){
     g_signal_connect(G_OBJECT(window),"delete_event",G_CALLBACK(delete_event),REGIST);
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_get_screen(window);
-    gtk_window_set_title(GTK_WINDOW(window),"Regist for linpop");
+    gtk_window_set_title(GTK_WINDOW(window),"Register for linpop");
     gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(window),400,300);
     gtk_container_set_border_width(GTK_CONTAINER(window),20);
@@ -69,6 +99,8 @@ void registWindow(int argc, char *argv[]){
     box = gtk_vbox_new(FALSE,0);
     gtk_container_add(GTK_CONTAINER(window),box);
 
+    image = gtk_image_new_from_file("../icon.png");
+    gtk_box_pack_start(GTK_BOX(box),image,FALSE,FALSE,5);
     //input box
     infoBox = gtk_vbox_new(FALSE,0);
     gtk_box_pack_start(GTK_BOX(box),infoBox,FALSE,FALSE,5);
@@ -110,8 +142,7 @@ void registWindow(int argc, char *argv[]){
     gtk_box_pack_start(GTK_BOX(passwordBox2),passwordText2,FALSE,FALSE,5);
 
 
-    image = gtk_image_new_from_file("../icon.png");
-    gtk_box_pack_start(GTK_BOX(imageBox),image,FALSE,FALSE,5);
+
     addImageButton = gtk_button_new_with_label("choose photo from library");
     gtk_box_pack_start(GTK_BOX(imageBox),addImageButton,FALSE,FALSE,5);
     g_signal_connect(G_OBJECT(addImageButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)ADD_IMAGE);
@@ -132,10 +163,6 @@ void registWindow(int argc, char *argv[]){
     g_signal_connect(G_OBJECT(confirmButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST_LOG);
     g_signal_connect_swapped(G_OBJECT(confirmButton),"clicked",G_CALLBACK(gtk_widget_destroy),window);
     gtk_container_add(GTK_CONTAINER(optionBox),confirmButton);
-
-//    cancelButton = gtk_button_new_with_label("Cancel");
-//    g_signal_connect(G_OBJECT(cancelButton),"clicked",G_CALLBACK(gtk_widge),NULL);
-//    gtk_container_add(GTK_CONTAINER(optionBox),cancelButton);
 
     gtk_widget_show_all(window);
     gtk_main();
@@ -188,7 +215,7 @@ void loginWindow(int argc, char *argv[]){
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
 
     passwordLable = gtk_label_new("Password:");
-    gtk_label_set_width_chars(passwordLable,20);
+    gtk_label_set_width_chars(passwordLable,10);
     gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
     passwordText = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText),FALSE);
