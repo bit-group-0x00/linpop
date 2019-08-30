@@ -3,3 +3,4 @@
 //
 
 #include <gtk/gtk.h>
+void loginWindow();
