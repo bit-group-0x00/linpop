@@ -10,8 +10,8 @@ add_definitions(${GTK2_CFLAGS_OTHER})
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(linpop_client src/NET_client.c src/NET_socket.c include/NET_client.h include/NET_macro.h include/NET_socket.h src/UTIL_JSON.c src/UTIL_cJSON.h)
-add_executable(linpop_server src/NET_server.c src/NET_socket.c include/NET_server.h include/NET_macro.h include/NET_socket.h src/UTIL_cJSON.c src/UTIL_cJSON.h)
+add_executable(linpop_client src/NET_client.c src/NET_socket.c include/NET_client.h include/NET_macro.h include/NET_socket.h src/UTIL_cJSON.c include/UTIL_cJSON.h)
+add_executable(linpop_server src/NET_server.c src/NET_socket.c include/NET_server.h include/NET_macro.h include/NET_socket.h src/UTIL_cJSON.c include/UTIL_cJSON.h)
 
 find_package(Threads REQUIRED)
 target_link_libraries(linpop_client Threads::Threads -lm)
