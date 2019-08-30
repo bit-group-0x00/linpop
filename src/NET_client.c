@@ -1,4 +1,4 @@
-#include "client.h"
+#include "../include/NET_client.h"
 void regist(int server, const char* account, const char* passwd)
 {
     /* create cjson of regist request */

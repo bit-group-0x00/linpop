@@ -1,9 +1,9 @@
 /*
   client side program
 */
-#include "macro.h"
-#include "socket.h"
-#include "util/cJSON.h"
+#include "NET_macro.h"
+#include "NET_socket.h"
+#include "../src/util/cJSON.h"
 void regist(int server, const char* account, const char* passwd);
 void login(int server, const char* account, const char* passwd);
 void regist_success_handle(char* account);

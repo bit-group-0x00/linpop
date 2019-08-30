@@ -13,8 +13,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "macro.h"
-#include "util/cJSON.h"
+#include "NET_macro.h"
+#include "../src/util/cJSON.h"
 
 #define BUFF_SIZE 2048
 #define SERVER_IP "127.0.0.1"

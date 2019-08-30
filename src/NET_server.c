@@ -1,4 +1,4 @@
-#include "server.h"
+#include "../include/NET_server.h"
 void regist(int client, const char* account, const char* passwd)
 {
     printf("registing for %s\n", account);

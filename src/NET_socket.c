@@ -1,4 +1,4 @@
-#include "socket.h"
+#include "../include/NET_socket.h"
 char buffer[BUFF_SIZE];
 int con_to(const char* ip, int port)
 {
