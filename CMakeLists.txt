@@ -10,7 +10,7 @@ add_definitions(${GTK2_CFLAGS_OTHER})
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(linpop_client src/NET_client.c src/NET_socket.c include/NET_client.h include/NET_macro.h include/NET_socket.h src/util/cJSON.c src/util/cJSON.h src/view/hello.c)
+add_executable(linpop_client src/NET_client.c src/NET_socket.c include/NET_client.h include/NET_macro.h include/NET_socket.h src/util/cJSON.c src/util/cJSON.h src/view/UI_login.c src/view/UI_homepage.c src/view/UI_personalInfo.cpp src/view/UI_friendList.cpp src/view/UI_createGroup.cpp src/view/UI_addFriend.cpp src/view/UI_chatView.cpp src/view/UI_registPage.cpp src/view/UI_history.cpp)
 add_executable(linpop_server src/NET_server.c src/NET_socket.c include/NET_server.h include/NET_macro.h include/NET_socket.h src/util/cJSON.c src/util/cJSON.h)
 
 find_package(Threads REQUIRED)
