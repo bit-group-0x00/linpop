@@ -8,17 +8,30 @@ charset: utf-8
 
 * 属性
  
-| 属性名        | 类型         | 备注       | 含义                           |
-| ------------- | ------------ | ---------- | ------------------------------ |
-| userId        | INT          | 主键, 自增 | 用户ID                         |
-| userFriNum    | INT          | NOT NULL   | 好友数量                       |
-| userNickName  | VARCHAR(16)  | NOT NULL   | 用户昵称                       |
-| userPassword  | VARCHAR(16)  | NOT NULL   | 用户密码                       |
-| userSignature | VARCHAR(100) |            | 用户个性签名                   |
-| userStatus    | TINYINT      | NOT NULL   | 用户在线状态. 0:不在线, 1:在线 |
-| userAvatar    | VARCHAR(100) |            | 用户头像文件路径               |
-| userIP        | INT          |            | 用户ip地址                     |
+| 属性名        | 类型         | 备注                                                        | 含义                           |
+| ------------- | ------------ | ----------------------------------------------------------- | ------------------------------ |
+| userId        | INT UNSIGNED | 主键, 自增=10000, NOT NULL                                  | 用户ID                         |
+| userFriNum    | INT          | NOT NULL DEFAULT=0                                          | 好友数量                       |
+| userNickName  | VARCHAR(16)  | NOT NULL                                                    | 用户昵称                       |
+| userPassword  | VARCHAR(16)  | NOT NULL                                                    | 用户密码                       |
+| userSignature | VARCHAR(100) | NOT NULL 可以是''                                           | 用户个性签名                   |
+| userStatus    | TINYINT      | NOT NULL DEFAULT=0                                          | 用户在线状态. 0:不在线, 1:在线 |
+| userAvatar    | VARCHAR(100) | NOT NULL DEFAULT='img/defaultAvatar.png' 由调用接口的人指定 | 用户头像文件路径               |
+| userIP        | INT          | NOT NULL                                                    | 用户ip地址                     |
 
+```sql
+CREATE TABLE IF NOT EXISTS linpop.user (
+	userId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	userFriNum INT NOT NULL DEFAULT 0,
+    userNickName VARCHAR(16) NOT NULL,
+    userPassword VARCHAR(16) NOT NULL,
+    userSignature VARCHAR(36) NOT NULL,
+    userStatus TINYINT DEFAULT 0,
+    userAvatar VARCHAR(100) NOT NULL,
+    userIp INT NOT NULL,
+    PRIMARY KEY(userId)
+)DEFAULT CHARSET=utf8 AUTO_INCREMENT=10000;
+```
 ### friends表
 
 所有的好友将以一对一对的形式存在数据库中, 且以friUserId1 < friUserId2来确保每对好友只会出现一次.
