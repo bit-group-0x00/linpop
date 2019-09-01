@@ -1,9 +1,12 @@
 //
 // Created by Anne Wu on 2019-08-30.
 //
+#ifndef LINPOP_UI_LOGIN_H
+#define LINPOP_UI_LOGIN_H
 
 #include <gtk/gtk.h>
 #include "UI_macro.h"
+
 
 void loginWindow();
 /**
@@ -26,3 +29,5 @@ void show_error(GtkWidget *widget, gpointer window, gchar* message);
 
  */
 void show_info(GtkWidget *widget, gpointer window, gchar* message);
+
+#endif

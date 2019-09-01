@@ -1,6 +1,11 @@
 /*
-  my socket
+  File Name: NET_socket.h
+  Model Name: NET
+  Create Date: 2019/8/29
+  Author: PengYao
+  Abstract Description: my socket
 */
+
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -8,22 +13,82 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "NET_macro.h"
-#include "../include/UTIL_cJSON.h"
+#include "UTIL_cJSON.h"
 
-#define BUFF_SIZE 2048
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 6789
 #define CLIENT_PORT 9876
-extern char buffer[];
-/* establish a connection to ip */
-int con_to(const char* ip, int port);
-/* send message to socket */
-void send_cjson(int socket, cJSON* msg);
-/* recieve message from socket */
-cJSON* recv_cjson(int socket);
+#define BUFF_SIZE 2048
+
+struct args
+{
+  int value;
+  void (*handle)(int, cJSON*);
+};
+
+/* 
+  establish a connection to ip:port 
+  :param ip: ip
+  :param port: port
+  :return: socket
+*/
+int conn_to(const char* ip, int port);
+
+/* 
+  socket monitor 
+  :param arg: struct args
+*/
+void* monitor_socket(void* arg);
+
+/* 
+  port monitor 
+  :param arg: struct args
+*/
+void* monitor_port(void* arg);
+
+/* 
+  send cjson to socket 
+  :param socket: socket
+  :param cjson: cjson to be sent
+  :return: 0(successful) or 1(failed)
+*/
+state send_cjson(int socket, cJSON* cjson);
+
+/* 
+  recieve cjson from socket
+  :param socket: socket
+  :param buffer: buffer
+  :param buff_remain: remain data in buffer
+  :return: cjson
+*/
+cJSON* recv_cjson(int socket, char buff[], int* buff_remain);
+
+/*
+  send file to socket
+  :param socket: socket
+  :param file: file
+  :return: 0(successful) or 1(failed)
+*/
+state send_file(int socket, FILE* file);
+
+/*
+  recieve file from socket
+  :param socket: socket
+  :param buff: buffer
+  :return: saved file
+*/
+FILE* recv_file(int socket, char buff[]);
+
+/*
+  get my ip address
+  :return: (unsigned int)ip
+*/
+// ip get_my_ip();
