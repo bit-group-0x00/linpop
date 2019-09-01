@@ -1,17 +1,20 @@
-#define REGIST_REQUEST 0X001
-#define REGIST_SUCCESS 0X002
-#define REGIST_FAILURE 0X003
+/*
+  File Name: NET_macro.h
+  Model Name: NET
+  Create Date: 2019/8/29
+  Author: PengYao
+  Abstract Description: macro
+*/
 
-#define LOGIN_REQUEST 0X011
-#define LOGIN_SUCCESS 0X012
-#define LOGIN_FAILURE 0X013
-#define LOGGED_IN 0X014
+#define SUCCESS 0
+#define FAILURE 1
+#define ERROR -1
 
-#define LOGOUT_REQUEST 0X021
-#define LOGOUT_SUCCESS 0X022
-#define LOGOUT_FAILURE 0X023
-#define LOGGED_OUT 0X024
+#define REGIST 0X010
+#define LOGIN 0X020
+#define LOGOUT 0X030
+#define SEND_MESSAGE 0X040
+#define SEND_FILE 0X50
 
-#define SEND_MESSAGE 0X031
-#define SEND_SUCCESS 0X032
-#define SEND_FAILURE 0x033
+typedef int state;
+//typedef unsigned long ip;

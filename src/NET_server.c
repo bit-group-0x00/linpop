@@ -8,140 +8,86 @@
 
 #include "../include/NET_server.h"
 
-void regist(int client, const char* account, const char* passwd)
+void handle_regist_request(int client, cJSON* cjson)
 {
-    printf("registing for %s\n", account);
-    printf("regist failure.\n");
+    char* nick_name = cJSON_GetObjectItem(cjson, "nick_name")->valuestring;
+    char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
+    printf("registing for %s\n", nick_name);
+    printf("regist failed.\n");
     /* create cjson of regist failure */
-    cJSON* cjson = cJSON_CreateObject();
-    cJSON_AddItemToObject(cjson, "type", cJSON_CreateNumber(REGIST_FAILURE));
-    cJSON_AddItemToObject(cjson, "account", cJSON_CreateString(account));
-    cJSON_AddItemToObject(cjson, "passwd", cJSON_CreateString(passwd));
+    cJSON* cj = cJSON_CreateObject();
+    cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
+    //cJSON_AddItemToObject(cjson, "account", cJSON_CreateString(account));
+    //cJSON_AddItemToObject(cjson, "passwd", cJSON_CreateString(passwd));
     /* send cjson */
-    send_cjson(client, cjson);
-    cJSON_Delete(cjson);
+    send_cjson(client, cj);
+    cJSON_Delete(cj);
 }
 
-void login(int client, const char* account, const char* passwd)
+void handle_login_request(int client, cJSON* cjson)
 {
-    printf("logging in for %s\n", account);
-    printf("login failue.\n");
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
+    printf("logging in for %d\n", id);
+    printf("login failed.\n");
     /* create cjson of login failure */
-    cJSON* cjson = cJSON_CreateObject();
-    cJSON_AddItemToObject(cjson, "type", cJSON_CreateNumber(LOGIN_FAILURE));
-    cJSON_AddItemToObject(cjson, "account", cJSON_CreateString(account));
-    cJSON_AddItemToObject(cjson, "passwd", cJSON_CreateString(passwd));
+    cJSON* cj = cJSON_CreateObject();
+    cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
+    //cJSON_AddItemToObject(cjson, "account", cJSON_CreateString(account));
+    //cJSON_AddItemToObject(cjson, "passwd", cJSON_CreateString(passwd));
     /* send cjson */
-    send_cjson(client, cjson);
-    cJSON_Delete(cjson);
+    send_cjson(client, cj);
+    cJSON_Delete(cj);
 }
 
-void recv_msg_handle(int client, const char* from, const char* to, const char* msg)
+void handle_msg(int client, cJSON* cjson)
 {
-    printf("recieved message [%s] from %s.\n", msg, from);
-    printf("message will be resent to %s.\n", to);
+    int from_id = cJSON_GetObjectItem(cjson, "from_id")->valueint;
+    int to_id = cJSON_GetObjectItem(cjson, "target_id")->valueint;
+    char* msg = cJSON_GetObjectItem(cjson, "message")->valuestring;
+    printf("recieved message [%s] from %s.\n", msg, from_id);
+    printf("message will be resent to %s.\n", to_id);
     /* resend write below */
 }
 
-int listen_msg()
+void handle_cjson(int socket, cJSON* cjson)
 {
-    int server, client, addr_len = sizeof(struct sockaddr_in);
-    struct sockaddr_in server_addr, client_addr;
-    if((server = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    cJSON* type = cJSON_GetObjectItem(cjson, "type");
+    switch(type->valueint)
     {
-        perror("socket");
-        return 1;
-    }
-    bzero(&server_addr, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SERVER_PORT);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if(bind(server, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
-    {
-        perror("connect");
-        return 1;
-    }
-    if(listen(server, 5) < 0)
-    {
-        perror("listen");
-        return 1;
-    }
-    printf("start listen message at port %d\n", SERVER_PORT);
-    while(1)
-    {
-        client = accept(server, (struct sockaddr*)&client_addr, (socklen_t*)&addr_len);
-        if(client < 0)
+        case REGIST:
         {
-            perror("accept");
-            continue;
-        }
-        printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
-        pthread_t thread;
-        if(pthread_create(&thread, NULL, handle_msg, (void*)&client) != 0)
-        {
-            perror("thread create failed");
-            continue;
-        }
-    }
-    close(server);
-}
-
-void* handle_msg(void* socket)
-{
-    int sckt = *((int*)socket);
-    while(1)
-    {
-        cJSON* msg = recv_cjson(sckt);
-        if(msg == NULL)
-        {
-            perror("recieve null");
+            handle_regist_request(socket, cjson);
             break;
         }
-        cJSON* type = cJSON_GetObjectItem(msg, "type");
-        switch(type->valueint)
+        case LOGIN:
         {
-            case REGIST_REQUEST:
-            {
-                char* account = cJSON_GetObjectItem(msg, "account")->valuestring;
-                char* passwd = cJSON_GetObjectItem(msg, "passwd")->valuestring;
-                regist(sckt, account, passwd);
-                break;
-            }
-            case LOGIN_REQUEST:
-            {
-                char* account = cJSON_GetObjectItem(msg, "account")->valuestring;
-                char* passwd = cJSON_GetObjectItem(msg, "passwd")->valuestring;
-                login(sckt, account, passwd);
-                break;
-            }
-            case SEND_MESSAGE:
-            {
-                printf("here");
-                char* from = cJSON_GetObjectItem(msg, "from")->valuestring;
-                char* to = cJSON_GetObjectItem(msg, "to")->valuestring;
-                char* m = cJSON_GetObjectItem(msg, "message")->valuestring;
-                recv_msg_handle(sckt, from, to, m);
-                break;
-            }
-            default:
-            {
-                printf("recieved unknown type message:\n");
-                char* s = cJSON_Print(msg);
-                printf("%s\n", s);
-                free(s);
-            }
+            handle_login_request(socket, cjson);
+            break;
         }
-        cJSON_Delete(msg);
+        case SEND_MESSAGE:
+        {
+            handle_msg(socket, cjson);
+            break;
+        }
+        default:
+        {
+            printf("recieved unknown type message:\n");
+            char* s = cJSON_Print(cjson);
+            printf("%s\n", s);
+            free(s);
+        }
     }
-    pthread_exit("disconnected");
 }
 
 int main(int argc, char* argv[])
 {
     int retry = 5;
+    struct args arg;
+    arg.value = SERVER_PORT, arg.handle = handle_cjson;
     while(retry--)
     {
-        listen_msg();
+        monitor_port((void*)&arg);
         printf("error occurred, retry...\n");
     }
     printf("network error, try again later\n");

@@ -10,21 +10,17 @@
 #include "NET_socket.h"
 #include "UTIL_cJSON.h"
 
-/* server regist function */
-void regist(int client, const char* account, const char* passwd);
+/* call after recieving regist request */
+void handle_regist_request(int client, cJSON* cjson);
 
-/* server login function */
-void login(int client, const char* account, const char* passwd);
+/* call after recieving login request */
+void handle_login_request(int client, cJSON* cjson);
 
-/* call after recieved message from client. resend it and write to datebase */
-void recv_msg_handle(int client, const char* from, const char* to, const char* msg);
+/* call after recieving message from client. resend it and write to datebase */
+void handle_msg(int client, cJSON* cjson);
 
-/* server listen message function, listen message from client */
-int listen_msg();
-
-/* server handle message function, if you want to add new action type, 
-define it's macro and modifly it */
-void* handle_msg(void* socket);
+/* server side cjson handle function */
+void handle_cjson(int socket, cJSON* cjson);
 
 /* server entrance */
 int main(int argc, char* argv[]);
