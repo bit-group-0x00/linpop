@@ -94,7 +94,7 @@ void on_button_clicked (GtkWidget *button, gpointer data){
     }
 }
 
-gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
+static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     g_print("delete event occured\n");
     gtk_main_quit();
     return FALSE;
@@ -200,6 +200,8 @@ void registWindow(){
     g_signal_connect(G_OBJECT(confirmButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST_CONFIRM);
     g_signal_connect_swapped(G_OBJECT(confirmButton),"clicked",G_CALLBACK(gtk_widget_destroy),window);
 
+    g_signal_connect(G_OBJECT(login_window),"delete_event",G_CALLBACK(delete_event), NULL);
+
     gtk_container_add(GTK_CONTAINER(optionBox),confirmButton);
 
     gtk_widget_show_all(window);
@@ -220,7 +222,6 @@ void loginWindow(int argc, char *argv[]){
     GtkWidget *image;
 
     gtk_init(&argc,&argv);
-    g_signal_connect(G_OBJECT(login_window),"delete_event",G_CALLBACK(delete_event), NULL);
     login_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_get_screen(login_window);
     gtk_window_set_title(GTK_WINDOW(login_window),"login in linpop");
@@ -278,6 +279,9 @@ void loginWindow(int argc, char *argv[]){
     g_signal_connect(G_OBJECT(logButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)LOG_IN);
     g_signal_connect_swapped(G_OBJECT(logButton),"clicked",G_CALLBACK(gtk_widget_destroy),login_window);
     gtk_container_add(GTK_CONTAINER(optionBox),logButton);
+
+    g_signal_connect(G_OBJECT(login_window),"delete_event",G_CALLBACK(delete_event), NULL);
+
 
     gtk_widget_show_all(login_window);
     gtk_main();

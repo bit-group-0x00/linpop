@@ -1,4 +1,7 @@
 #include "../include/NET_client.h"
+#include "../include/UI_login.h"
+#include "../include/UTIL_cJSON.h"
+
 void regist(int server, const char* account, const char* passwd)
 {
     /* create cjson of regist request */
@@ -97,7 +100,7 @@ int main(int argc, char* argv[])
 {
     // load login window
     loginWindow();
-//    registWindow();
+    registWindow();
     /* connect to server */
     int retry = 5, server = -1;
     while(retry-- > 0)
