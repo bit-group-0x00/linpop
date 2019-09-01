@@ -38,12 +38,22 @@ CREATE TABLE IF NOT EXISTS linpop.user (
 
 * 属性
 
-| 属性名     | 类型 | 备注                              | 含义               |
-| ---------- | ---- | --------------------------------- | ------------------ |
-| friId      | INT  | 主键, 自增                        | 好友对Id           |
-| friUserId1 | INT  | 外键                              | 好友对中一个人的ID |
-| friUserId2 | INT  | 外键, 保证friUserId1 < friUserId2 | 好友对中另一人的ID |
+| 属性名     | 类型          | 备注                              | 含义               |
+| ---------- | ------------- | --------------------------------- | ------------------ |
+| friId      | INT UNSIGNED  | 主键, 自增                        | 好友对Id           |
+| friUserId1 | INT UNSIGNED  | 外键                              | 好友对中一个人的ID |
+| friUserId2 | INT  UNSIGNED | 外键, 保证friUserId1 < friUserId2 | 好友对中另一人的ID |
 
+```sql
+CREATE TABLE IF NOT EXISTS linpop.friends (
+	friId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	friUserId1 INT UNSIGNED NOT NULL,
+    friUserId2 INT UNSIGNED NOT NULL,
+    PRIMARY KEY(friId),
+    FOREIGN KEY(friUserId1) REFERENCES linpop.user(userId),
+    FOREIGN KEY(friUserId2) REFERENCES linpop.user(userId)
+)DEFAULT CHARSET=utf8;
+```
 ### message表
 
 | 属性名      | 类型     | 备注       | 含义           |
