@@ -17,3 +17,12 @@ void registWindow();
  *
  */
 void homepageWindow();
+
+gint show_question(GtkWidget *widget, gpointer window, gchar* message);
+
+void show_error(GtkWidget *widget, gpointer window, gchar* message);
+/**
+ *  选择对话框，返回用户选项
+
+ */
+void show_info(GtkWidget *widget, gpointer window, gchar* message);

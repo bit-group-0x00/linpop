@@ -4,64 +4,39 @@
 #include "../include/UI_login.h"
 
 static GtkWidget *login_window;//登陆窗口
+static GtkWidget *register_window;//注册窗口
 static GtkWidget *usernameText;//用户名
 static GtkWidget *passwordText;//密码
 static GtkWidget *passwordText2;//确认密码
-static GtkWidget *dialog = NULL;//对话框
-gboolean ishide = FALSE;//是否隐藏窗口
+static GtkWidget *fileSelector = NULL;
 
-//void on_destroy(GtkWidget *widget,GdkEvent *event,gpointer* data){
-//    sprintf(usernameText,"guest");
-////    if(do_connect==TRUE){
-////
-////    }
-//    gtk_widget_destroy(widget);
-//}
-void on_show(GtkButton* button,gpointer data){
-    //如果未隐藏就恢复显示，由图标恢复为窗口
-    if(ishide==FALSE){
-        gtk_window_deiconify(GTK_WINDOW(login_window));
-    }
-    //如果隐藏就显示
-    else{
-        gtk_widget_show(login_window);
-        ishide=FALSE;
-    }
-}
-void on_hide(GtkButton* button,gpointer data) {
-    //图标最小化
-    gtk_window_iconify(GTK_WINDOW(login_window));
-}
-void on_login_delete(GtkWidget* window,gpointer data){
-    //隐藏
-    gtk_widget_hide(window);
-    ishide=TRUE;
-
-};
-GtkWidget *create_view(gchar* filename){
+GtkWidget *create_fileSelection_window(gchar* filename){
     GtkWidget * window;
     GtkWidget* image;
+    g_print("Fileselector\n");
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window),filename);
+    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
     gtk_container_set_border_width(GTK_CONTAINER(window),10);
     image = gtk_image_new_from_file(filename);
     gtk_container_add(GTK_CONTAINER(window),image);
     gtk_widget_show_all(window);
     return window;
 }
-void on_ok(GtkButton* button, gpointer data){
+
+void on_fileSelection_ok(GtkButton* button, gpointer data){
     const char* filename;
     GtkWidget* window;
     filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(data));
-    window = create_view(filename);
+    window = create_fileSelection_window(filename);
     gtk_widget_show(window);
 }
-void on_cancel(GtkButton *button, gpointer data){
-    gtk_widget_destroy(dialog);
-}
+
 void on_button_clicked (GtkWidget *button, gpointer data){
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
+    const gchar *password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
+    gint result;
     switch((int)data){
         case LOG_IN:
             //登陆
@@ -75,21 +50,41 @@ void on_button_clicked (GtkWidget *button, gpointer data){
             break;
         case REGIST_CANCEL:
             //取消注册
-            loginWindow();
+            gtk_widget_show(login_window);
             break;
         case REGIST_CONFIRM:
             //确认注册
-            dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_QUESTION,GTK_BUTTONS_OK_CANCEL,"Are you sure to regist?");
-            gtk_widget_show(dialog);
+            result = show_question(NULL,NULL,"Are you sure to register?");
+            g_print("%d\n",result);
+            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
+            if(result==GTK_RESPONSE_YES){
+                //用户确定创建账户
+                if(strcmp(password,password2)==0){
+                    //两次输入的账号一样
+                    g_print("创建成功：\nUSERNAME:%s\nPASSWORD:%s\n",username,password);
+                    show_info(NULL, NULL ,"Congratulation!");
+                }
+                else{
+                    show_error(NULL,NULL,"passwords conflict");
+                    g_print("passwords conflict");
+                }
+                g_print("confirm\n");
+            }
+            else{
+                g_print("cancel\n");
+            }
+
             break;
         case ADD_IMAGE:
             //添加头像
-            dialog = gtk_file_selection_new("choose a photo");
-            g_signal_connect(G_OBJECT(dialog),"destroy",G_CALLBACK(gtk_widget_destroy),dialog);
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(dialog)->ok_button),"clicked",G_CALLBACK(on_ok),dialog);
-            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(dialog)->ok_button),"clicked",G_CALLBACK(on_cancel),NULL);
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(dialog)->cancel_button),"clicked",G_CALLBACK(on_cancel),NULL);
-            gtk_widget_show(dialog);
+            fileSelector = gtk_file_selection_new("choose a photo");
+            g_print("Fileselector\n");
+            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_ok),fileSelector);
+            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(gtk_widget_destroy),fileSelector);
+            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->cancel_button),"clicked",G_CALLBACK(gtk_widget_destroy),NULL);
+            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->cancel_button),"clicked",G_CALLBACK(gtk_widget_destroy),fileSelector);
+            g_signal_connect(G_OBJECT(fileSelector),"destroy",G_CALLBACK(gtk_widget_destroy),NULL);
+            gtk_widget_show(fileSelector);
             break;
     }
 }
@@ -101,7 +96,6 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
 }
 
 void registWindow(){
-    GtkWidget *window;
     GtkWidget *box;
 
     GtkWidget *optionBox;
@@ -119,18 +113,16 @@ void registWindow(){
     GtkWidget *sep;
     GtkWidget *addImageButton;
     GtkWidget *image;
-
-    g_signal_connect(G_OBJECT(window),"delete_event",G_CALLBACK(delete_event),NULL);
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_get_screen(window);
-    gtk_window_set_title(GTK_WINDOW(window),"Register for linpop");
-    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
-    gtk_window_set_default_size(GTK_WINDOW(window),400,300);
-    gtk_container_set_border_width(GTK_CONTAINER(window),20);
+    register_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_get_screen(register_window);
+    gtk_window_set_title(GTK_WINDOW(register_window),"Register for linpop");
+    gtk_window_set_position(GTK_WINDOW(register_window),GTK_WIN_POS_CENTER);
+    gtk_window_set_default_size(GTK_WINDOW(register_window),400,300);
+    gtk_container_set_border_width(GTK_CONTAINER(register_window),20);
 
     //Big box
     box = gtk_vbox_new(FALSE,0);
-    gtk_container_add(GTK_CONTAINER(window),box);
+    gtk_container_add(GTK_CONTAINER(register_window),box);
 
     image = gtk_image_new_from_file("../res/icon.png");
     gtk_box_pack_start(GTK_BOX(box),image,FALSE,FALSE,5);
@@ -191,20 +183,19 @@ void registWindow(){
     /*
      * 点击按钮后REGIST窗口应当关闭，这里有bug
      * */
-
     g_signal_connect(G_OBJECT(cancelButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST_CANCEL);
-    g_signal_connect_swapped(G_OBJECT(cancelButton),"clicked",G_CALLBACK(gtk_widget_destroy),window);
+    g_signal_connect_swapped(G_OBJECT(cancelButton),"clicked",G_CALLBACK(gtk_widget_destroy),register_window);
     gtk_container_add(GTK_CONTAINER(optionBox),cancelButton);
 
     confirmButton = gtk_button_new_with_label("Confirm");
     g_signal_connect(G_OBJECT(confirmButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST_CONFIRM);
-    g_signal_connect_swapped(G_OBJECT(confirmButton),"clicked",G_CALLBACK(gtk_widget_destroy),window);
+    g_signal_connect_swapped(G_OBJECT(confirmButton),"clicked",G_CALLBACK(gtk_widget_destroy),register_window);
 
     g_signal_connect(G_OBJECT(login_window),"delete_event",G_CALLBACK(delete_event), NULL);
 
     gtk_container_add(GTK_CONTAINER(optionBox),confirmButton);
 
-    gtk_widget_show_all(window);
+    gtk_widget_show_all(register_window);
 }
 void loginWindow(int argc, char *argv[]){
     GtkWidget *box;
@@ -272,7 +263,7 @@ void loginWindow(int argc, char *argv[]){
 
     registButton = gtk_button_new_with_label("Don't have an account?");
     g_signal_connect(G_OBJECT(registButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST);
-    g_signal_connect_swapped(G_OBJECT(registButton),"clicked",G_CALLBACK(on_login_delete),login_window);
+    g_signal_connect_swapped(G_OBJECT(registButton),"clicked",G_CALLBACK(gtk_widget_hide),login_window);
     gtk_container_add(GTK_CONTAINER(optionBox),registButton);
 
     logButton = gtk_button_new_with_label("Log in");
