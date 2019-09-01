@@ -102,6 +102,12 @@ int main(int argc, char* argv[])
     regist("pengyao", "123456");
     login(11111111, "123456");
     //send_msg(server, "pengyao", "helloworld!");
-    close(server);
+
+
+
+    int socket = conn_to(SERVER_IP, SERVER_PORT);
+    /* test send file */
+    send_file(socket, "/home/onlyrobot/t/test.txt", NULL);
+    close(server), close(socket);
     return 0;
 }

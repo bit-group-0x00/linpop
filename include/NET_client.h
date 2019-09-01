@@ -98,3 +98,15 @@ state send_msg_to_friend(const int friend_id, const char* msg, void(*callback)(s
   发送失败，ERROR（-1）表示发送过程中出现了错误。
 */
 state send_msg_to_group(const int group_id, const char* msg, void(*callback)(state));
+
+/*
+  向朋友发送文件，功能类似于向朋友发送消息，这里把文件的路径
+  作为参数
+*/
+state send_file_to_friend(const int friend_id, const char* file_path, void(*callback)(state));
+
+/*
+  向群聊发送文件，功能类似于向朋友发送消息，这里把文件的路径
+  作为参数
+*/
+state send_file_to_group(const int group_id, const char* file_path, void(*callback)(state));
