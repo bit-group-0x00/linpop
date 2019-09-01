@@ -154,7 +154,7 @@ int insertUser(User* user, MYSQL *connection) {
 Status updateUserString(int userId, char *string, MYSQL* connection, int type) {
     if (connection == NULL) {
         printf("connection is NULL");
-        return -1;
+        return false;
     }
     mysql_query(connection,"SET NAMES utf8");
 
@@ -192,7 +192,7 @@ Status updateUserString(int userId, char *string, MYSQL* connection, int type) {
 Status updateUserStatus(int userId, int status, MYSQL* connection) {
     if (connection == NULL) {
         printf("connection is NULL");
-        return -1;
+        return false;
     }
     mysql_query(connection,"SET NAMES utf8");
 
@@ -214,7 +214,7 @@ Status updateUserStatus(int userId, int status, MYSQL* connection) {
 Status updateUserIp(int userId, int ip, MYSQL* connection) {
     if (connection == NULL) {
         printf("connection is NULL");
-        return -1;
+        return false;
     }
     mysql_query(connection,"SET NAMES utf8");
 
@@ -264,4 +264,37 @@ Status checkUserPassword(int userId, char* password, MYSQL* connection) {
         }
     }
     return -1;
+}
+
+Status updateUserFriendNum(int userId, MYSQL *connection, int type) {
+    if (connection == NULL) {
+        printf("connection is NULL");
+        return false;
+    }
+    mysql_query(connection,"SET NAMES utf8");
+
+    char querySql[SQL_LENGTH_MAX];
+    memset(querySql, '\0', sizeof(querySql));
+    switch (type) {
+        case INCREASE:
+            sprintf(querySql, "UPDATE linpop.user\n"
+                              "SET userFriNum=userFriNum+1\n"
+                              "WHERE userId=%d;", userId);
+            break;
+        case DECREASE:
+            sprintf(querySql, "UPDATE linpop.user\n"
+                              "SET userFriNum=userFriNum-1\n"
+                              "WHERE userId=%d;", userId);
+            break;
+        default:
+            break;
+    }
+
+    if (mysql_real_query(connection, querySql, strlen(querySql))) {
+        printf("query update userFriNum failed\n");
+        return false;
+    } else {
+        printf("query update userFriNum success\n");
+        return true;
+    }
 }

@@ -9,9 +9,13 @@
 #include <stdbool.h>
 
 typedef int Status;
+
 #define AVATAR 1
 #define NICKNAME 2
 #define SIGNATURE 3
+#define INCREASE 1
+#define DECREASE -1
+
 typedef struct
 {
     int userId;
@@ -106,5 +110,13 @@ Status updateUserIp(int userId, int userIp, MYSQL* connection);
  */
 Status checkUserPassword(int userId, char *password, MYSQL* connection);
 
+/**
+ * add or minus 1 to the userFriNum of the specified user
+ * @param userId
+ * @param connection MYSQL* connection
+ * @param type INCREASE: 1; DECREASE: -1
+ * @return true: update success; false: update fail
+ */
+Status updateUserFriendNum(int userId, MYSQL *connection, int type);
 
 #endif //LINPOP_DATABASE_USER_H
