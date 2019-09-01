@@ -96,8 +96,8 @@ void handle_msg(cJSON* msg)
 int main(int argc, char* argv[])
 {
     // load login window
-//    loginWindow();
-    registWindow();
+    loginWindow();
+//    registWindow();
     /* connect to server */
     int retry = 5, server = -1;
     while(retry-- > 0)

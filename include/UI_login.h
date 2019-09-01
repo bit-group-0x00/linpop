@@ -6,5 +6,14 @@
 #include "UI_macro.h"
 
 void loginWindow();
+/**
+ * 登陆界面
+ *
+ */
 void registWindow();
+/**
+ * 注册界面
+ *
+ *
+ */
 void homepageWindow();
