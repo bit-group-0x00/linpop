@@ -6,7 +6,9 @@ find_package(PkgConfig REQUIRED)
 set(CMAKE_C_STANDARD 99)
 
 # this is a executable module for testing database
-add_executable(test src/testMain.c include/DATABASE_user.h include/DATABASE_friends.h include/DATABASE_message.h
+add_executable(test src/testMain.c
+        include/DATABASE_user.h include/DATABASE_friends.h include/DATABASE_message.h
         include/DATABASE_group.h include/DATABASE_groupUser.h include/DATABASE_groupMessage.h include/DATABASE_mysql.h
-        src/DATABASE_user.c)
+        src/DATABASE_user.c src/DATABASE_friends.c src/DATABASE_message.c src/DATABASE_group.c src/DATABASE_groupUser.c
+        src/DATABASE_groupMessage.c src/DATABASE_mysql.c)
 target_link_libraries(test -lmysqlclient)
