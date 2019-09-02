@@ -22,6 +22,10 @@ typedef struct profile
   int id;
   char* nick_name;
   char* avatar;
+  int IPaddress;
+  state online;
+  char* signature;
+
 } profile;
 /* 消息结构体，用双向链表表示消息队列 */
 typedef struct message
@@ -43,7 +47,7 @@ typedef struct group
 {
   profile group_profile;
   struct message msg;
-};
+} group;
 
 /*
   有关我的详细信息，所有界面要显示的信息
@@ -55,7 +59,7 @@ typedef struct info
   int friend_num;
   friend* friends;
   int group_num;
-  struct group* groups;
+  group* groups;
 } info;
 
 /* 

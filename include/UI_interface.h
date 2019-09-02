@@ -26,24 +26,21 @@ void homepage_window(const int userID);
  *
  */
 
-void upload_file(GtkWidget *widget,
-                 GdkEvent  *event,
-                 gpointer   callback_data);
+void upload_file(int userID, int otherID, int type, int progress);
 /**
  * 界面更新
- * @param widget 监听的对象
- * @param event event对象
- * @param callback_data 需要传递的数据
+ * @param userID 上传文件用户ID
+ * @param userID 接受文件用户ID
+ * @param type 群聊/用户
+ * @param progress 聊天进度
  */
 
-void update_message(GtkWidget *widget,
-                    GdkEvent  *event,
-                    gpointer   callback_data);
+void update_message(int userID, int otherID, int type);
 /**
  * 界面更新
- * @param widget 监听的对象
- * @param event event对象
- * @param callback_data 需要传递的数据
+ * @param userID 上传文件用户ID
+ * @param userID 接受文件用户ID
+ * @param type 群聊/用户
  *
  */
 

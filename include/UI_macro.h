@@ -8,4 +8,7 @@
 
 #define ADD_IMAGE 0X421
 
-#define ISHIDE 0X431
+#define FRIEND 0X431
+#define GROUP 0X432
+
+#define ONLINE 0X443

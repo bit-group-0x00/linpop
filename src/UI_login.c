@@ -325,6 +325,8 @@ void login_window(int argc, char *argv[]){
     gtk_box_pack_start(GTK_BOX(infoBox),passwordBox,FALSE,FALSE,0);
 
     usernameLable = gtk_label_new("Login ID:");
+//    gtk_label_set_markup(GTK_LABEL(usernameLable),g_strdup_printf("%s%s%s","<span foreground='red' underline='double' underline_color='blue' font_desc='32'>","LoginID","</span>"));
+
     gtk_label_set_width_chars(usernameLable,15);
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
     usernameText = gtk_entry_new();
