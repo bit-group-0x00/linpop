@@ -1,7 +1,7 @@
 //
 // Created by Anne Wu on 2019-08-30.
 //
-#include "../include/UI_login.h"
+#include "../include/UI_interface.h"
 #include "../include/NET_client.h"
 #define ICON_SIZE 80
 
@@ -173,7 +173,7 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     return FALSE;
 }
 
-void regist_window(){
+void regist_window(int argc, char *argv[]){
     GtkWidget *box;
 
     GtkWidget *optionBox;
@@ -262,9 +262,7 @@ void regist_window(){
     gtk_box_pack_start(GTK_BOX(box),optionBox,FALSE,FALSE,5);
 
     cancelButton = gtk_button_new_with_label("Cancel");
-    /*
-     * 点击按钮后REGIST窗口应当关闭，这里有bug
-     * */
+
     g_signal_connect(G_OBJECT(cancelButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST_CANCEL);
     g_signal_connect_swapped(G_OBJECT(cancelButton),"clicked",G_CALLBACK(gtk_widget_destroy),registWindow);
     gtk_container_add(GTK_CONTAINER(optionBox),cancelButton);

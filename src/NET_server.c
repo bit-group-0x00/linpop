@@ -12,14 +12,22 @@ void handle_regist_request(int client, cJSON* cjson)
 {
     char* nick_name = cJSON_GetObjectItem(cjson, "nick_name")->valuestring;
     char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
-    printf("registing for %s\n", nick_name);
-    printf("regist failed.\n");
-    /* create cjson of regist failure */
+    char* avatar = cJSON_GetObjectItem(cjson, "avatar")->valuestring;
+    int id;
+    User user;
+    user.userNickName = nick_name;
+    user.userPassword = passwd;
+    user.userAvatar = avatar;
+    /* 创建response的cjson */
     cJSON* cj = cJSON_CreateObject();
-    cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
-    //cJSON_AddItemToObject(cjson, "account", cJSON_CreateString(account));
-    //cJSON_AddItemToObject(cjson, "passwd", cJSON_CreateString(passwd));
-    /* send cjson */
+    if((id = insertUser(user)) != -1)
+    {
+        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(SUCCESS));
+        cJSON_AddItemToObject(cj, "id", cJSON_CreateNumber(id));
+    } else
+    {
+        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
+    }
     send_cjson(client, cj);
     cJSON_Delete(cj);
 }
@@ -28,19 +36,20 @@ void handle_login_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
-    printf("logging in for %d\n", id);
-    printf("login failed.\n");
-    /* create cjson of login failure */
+    /* 创建response的cjson */
     cJSON* cj = cJSON_CreateObject();
-    cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
-    //cJSON_AddItemToObject(cjson, "account", cJSON_CreateString(account));
-    //cJSON_AddItemToObject(cjson, "passwd", cJSON_CreateString(passwd));
-    /* send cjson */
+    if(isUserExist(id) && checkUserPassword(id, passwd))
+    {
+        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(SUCCESS));
+    } else
+    {
+        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
+    }
     send_cjson(client, cj);
     cJSON_Delete(cj);
 }
 
-void handle_msg(int client, cJSON* cjson)
+void handle_msg_send(int client, cJSON* cjson)
 {
     int from_id = cJSON_GetObjectItem(cjson, "from_id")->valueint;
     int to_id = cJSON_GetObjectItem(cjson, "target_id")->valueint;
@@ -50,34 +59,31 @@ void handle_msg(int client, cJSON* cjson)
     /* resend write below */
 }
 
-void handle_cjson(int socket, cJSON* cjson)
+void handle_file_send(int clinet, cJSON* cjson)
+{
+
+}
+
+void handle_cjson(int client, cJSON* cjson)
 {
     cJSON* type = cJSON_GetObjectItem(cjson, "type");
+    void (*handle)(int, cJSON*);
     switch(type->valueint)
     {
-        case REGIST:
-        {
-            handle_regist_request(socket, cjson);
-            break;
-        }
-        case LOGIN:
-        {
-            handle_login_request(socket, cjson);
-            break;
-        }
-        case SEND_MESSAGE:
-        {
-            handle_msg(socket, cjson);
-            break;
-        }
+        case REGIST: handle = handle_regist_request; break;
+        case LOGIN: handle = handle_regist_request; break;
+        case SEND_MESSAGE: handle = handle_msg_send; break;
+        case SEND_FILE: handle = handle_file_send; break;
         default:
         {
             printf("recieved unknown type message:\n");
             char* s = cJSON_Print(cjson);
             printf("%s\n", s);
             free(s);
+            return;
         }
     }
+    handle(client, cjson);
 }
 
 int main(int argc, char* argv[])
