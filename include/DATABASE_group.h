@@ -16,10 +16,17 @@ typedef struct {
 } Group;
 
 /**
+ *
+ * @return if memory allocate success, return pointer;
+ * @return if error occur, return NULL;
+ */
+Group* mallocGroup();
+
+/**
  * free Group which is no need to be used.
  * @param group
  */
-void freeGroup(Group group);
+void freeGroup(Group* group);
 
 /**
  * 新建一个聊天群组的时候需要调用此函数,
@@ -70,4 +77,13 @@ Status updateGroupIcon(int groupId, char *groupIcon, MYSQL* connection);
  * @return 1: 成功, -1: 失败
  */
 Status deleteGroup(int groupId, MYSQL* connection);
+
+/**
+ *
+ * @param groupId
+ * @param connection
+ * @return group pointer: if query success
+ * @return NULL: if query fail
+ */
+Group *getGroupInfoByGroupId(int groupId, MYSQL *connection);
 #endif //LINPOP_DATABASE_GROUP_H

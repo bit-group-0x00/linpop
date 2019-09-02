@@ -3,20 +3,38 @@
 //
 #include "../include/DATABASE_group.h"
 
-void freeGroup(Group group) {
-    if (group.groupIcon != NULL) {
-        free(group.groupIcon);
-        group.groupIcon = NULL;
-    }
-    if (group.groupIntro != NULL) {
-        free(group.groupIntro);
-        group.groupIntro = NULL;
-    }
-    if (group.groupName != NULL) {
-        free(group.groupName);
-        group.groupName = NULL;
-    }
+Group* mallocGroup() {
+    Group *group;
+
+    group = (Group *) malloc(sizeof(Group));
+    group->groupName = (char *) malloc(sizeof(char) * 30);
+    memset(group->groupName, 0, 30);
+    group->groupIntro = (char *) malloc(sizeof(char) * 300);
+    memset(group->groupIntro, 0, 300);
+    group->groupIcon = (char *) malloc(sizeof(char) * 300);
+    memset(group->groupIcon, 0, 300);
+    return group;
 }
+
+void freeGroup(Group *group) {
+    if (group == NULL) {
+        return;
+    }
+    if (group->groupIcon != NULL) {
+        free(group->groupIcon);
+        group->groupIcon = NULL;
+    }
+    if (group->groupIntro != NULL) {
+        free(group->groupIntro);
+        group->groupIntro = NULL;
+    }
+    if (group->groupName != NULL) {
+        free(group->groupName);
+        group->groupName = NULL;
+    }
+    free(group);
+}
+
 int insertGroup(Group* group, MYSQL* connection)
 {
     if (connection == NULL) {
@@ -137,4 +155,40 @@ Status deleteGroup(int groupId, MYSQL* connection)
         return -1;
     }
     return 1;
+}
+
+Group* getGroupInfoByGroupId(int groupId, MYSQL *connection) {
+    if (connection == NULL) {
+        perror("GET GROUP BY ID: CONNECTION NULL ERROR\n");
+        return NULL;
+    }
+    mysql_query(connection,"SET NAMES utf8");
+    char querySql[SQL_LENGTH_MAX];
+    memset(querySql, 0, sizeof(querySql));
+    sprintf(querySql, "SELECT *\n"
+                      "FROM linpop._group\n"
+                      "WHERE groupId=%d;", groupId);
+    MYSQL_RES* res;
+    MYSQL_ROW row;
+
+    if (mysql_real_query(connection, querySql, strlen(querySql))) {
+        perror("GET GROUP BY ID: QUERY ERROR\n");
+    } else {
+        res = mysql_store_result(connection);
+        if (res) {
+            row = mysql_fetch_row(res);
+            if (row) {
+                Group *group = mallocGroup();
+                group->groupId = groupId;
+                strcpy(group->groupName, row[1]);
+                strcpy(group->groupIntro, row[2]);
+                strcpy(group->groupIcon, row[3]);
+                return group;
+            }
+        } else {
+            perror("GET GROUP BY ID: RES NULL ERROR\n");
+            return NULL;
+        }
+    }
+    return NULL;
 }
