@@ -22,7 +22,7 @@ state regist(const char* nick_name, const char* passwd)
     cjson = recv_cjson(server, server_buff, &server_buff_remain);
     state s =  cJSON_GetObjectItem(cjson, "type")->valueint;
     cJSON_Delete(cjson);
-    return s;  
+    return s;
 }
 
 state login(const int id, const char* passwd)
@@ -57,8 +57,8 @@ state send_msg_to_friend(const int friend_id, const char* msg, void(*callback)(s
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
 }
 
-/* 
-  client side cjson handle function 
+/*
+  client side cjson handle function
   客户端的cjson处理函数，不需要被外部调用，不用在.h文件中声名。
   实现的功能是解析cjson，并且根具cjson的类型执行相应的命令。
   在调用监听端口（monitor_port）和监听socket（monitor_socket）
@@ -71,7 +71,7 @@ void handle_cjson(int socket, cJSON* cjson)
     cJSON* type = cJSON_GetObjectItem(cjson, "type");
     switch(type->valueint)
     {
-        
+
         default:
         {
             printf("recieved unknown type message:\n");
@@ -84,17 +84,20 @@ void handle_cjson(int socket, cJSON* cjson)
 
 int main(int argc, char* argv[])
 {
+    login_window();
     /* connect to server */
-//    if((server = conn_to(SERVER_IP, SERVER_PORT)) == -1)
-//    {
-//        printf("cannot connect to server, try again later.\n");
-//        return -1;
-//    }
+    if((server = conn_to(SERVER_IP, SERVER_PORT)) == -1)
+    {
+        printf("cannot connect to server, try again later.\n");
+        show_error(NULL,NULL,"cannot connect to server, try again later.\n");
+        return -1;
+    }
     /* test regist, login and send message */
-    loginWindow();
-    regist("pengyao", "123456");
-    login(11111111, "123456");
-    //send_msg(server, "pengyao", "helloworld!");
-    close(server);
+//    login_window();
+//    regist("pengyao", "123456");
+//    login(11111111, "123456");
+//    send_msg(server, "pengyao", "helloworld!");
+//    close(server);
+//    test_window();
     return 0;
 }

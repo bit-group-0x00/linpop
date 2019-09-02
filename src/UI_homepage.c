@@ -3,6 +3,6 @@
 //
 
 #include "../include/UI_login.h"
-void homepageWindow(){
+void homepage_window(){
 
 }
