@@ -8,26 +8,29 @@
 #include "UI_macro.h"
 
 
-void loginWindow();
+void login_window();
 /**
  * 登陆界面
  *
  */
-void registWindow();
+void regist_window();
 /**
  * 注册界面
  *
  *
  */
-void homepageWindow();
-
+void homepage_window(const int userID);
+/**
+ * 主界面
+ *
+ *
+ */
+void show_error(GtkWidget *widget, gpointer window, gchar* message);
+void show_info(GtkWidget *widget, gpointer window, gchar* message);
 gint show_question(GtkWidget *widget, gpointer window, gchar* message);
 
-void show_error(GtkWidget *widget, gpointer window, gchar* message);
-/**
- *  选择对话框，返回用户选项
 
- */
-void show_info(GtkWidget *widget, gpointer window, gchar* message);
+void test_window();
+void chatView();
 
 #endif
