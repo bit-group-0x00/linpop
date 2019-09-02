@@ -3,6 +3,7 @@
 //
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
+
 #define ICON_SIZE 80
 
 static GtkWidget *loginWindow;//登陆窗口
@@ -44,7 +45,6 @@ gint show_question(GtkWidget *widget, gpointer window, gchar* message)
     gtk_window_set_title(GTK_WINDOW(dialog), "Question");
     gtk_window_set_position(GTK_WINDOW(dialog),GTK_WIN_POS_CENTER);
     result = gtk_dialog_run(GTK_DIALOG(dialog));
-    g_print("%d\n",result);
     gtk_widget_destroy(dialog);
     return result;
 }
@@ -53,6 +53,7 @@ void show_info(GtkWidget *widget, gpointer window, gchar* message)
 {
     //提示信息对话框
     GtkWidget *dialog;
+    g_print("show_info:%s\n",message);
     dialog = gtk_message_dialog_new(NULL,
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_INFO,
@@ -77,16 +78,16 @@ void on_fileSelection_cancel(GtkButton* button, gpointer data){
 }
 
 void on_button_clicked (GtkWidget *button, gpointer data){
-//    const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
     const gchar *password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
+    gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     switch((int)data){
         case LOG_IN:
             //登陆
-            g_print("username is:%s\n",username);
-            g_print("password is:%s\n",password);
+//            g_print("username is:%s\n",username);
+//            g_print("password is:%s\n",password);
             userID = strtol(username,NULL,10);
             switch(login(userID,password)){
                 case SUCCESS:
@@ -114,14 +115,12 @@ void on_button_clicked (GtkWidget *button, gpointer data){
         case REGIST_CONFIRM:
             //确认注册
             result = show_question(NULL,NULL,"Is every information is right?");
-            g_print("%d\n",result);
-            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
+//            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
             if(result==GTK_RESPONSE_YES){
                 //用户确定创建账户
                 if(strcmp(password,password2)==0){
                     //两次输入的账号一样
                     userID = regist(username,password);
-                    g_print("userID：\nUSERID:%s\n",userID);
                     switch(userID){
                         case FAILURE:
                             g_print("Registered process failed：\nUSERNAME:%s\nPASSWORD:%s\n",username,password);
@@ -135,8 +134,12 @@ void on_button_clicked (GtkWidget *button, gpointer data){
                             break;
                         default:
                             g_print("创建成功：\nUSERNAME:%s\nPASSWORD:%s\n",username,password);
-                            show_info(NULL, NULL ,strcat("Congratulation!\nYour userID is: ",userID));
-                            login_window();
+                            g_print("USERID: %d\nUSERINFO：\n%s\n",userID,infoTitle);
+                            infoTitle = g_strdup_printf("%s%d",infoTitle,userID);
+                            show_info(NULL, NULL ,infoTitle);
+                            gtk_widget_destroy(registWindow);
+                            login(userID,password);
+                            homepage_window(userID);
                             break;
                     }
                 }
@@ -150,6 +153,7 @@ void on_button_clicked (GtkWidget *button, gpointer data){
             }
             else{
                 g_print("cancel\n");
+                regist_window();
             }
 
             break;
@@ -222,7 +226,7 @@ void regist_window(int argc, char *argv[]){
     imageBox = gtk_vbox_new(FALSE,0);
     gtk_box_pack_start(GTK_BOX(infoBox),imageBox,FALSE,FALSE,0);
 
-    usernameLable = gtk_label_new("Login ID:");
+    usernameLable = gtk_label_new("Your nickname:");
     gtk_label_set_width_chars(usernameLable,15);
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
     usernameText = gtk_entry_new();
@@ -230,7 +234,7 @@ void regist_window(int argc, char *argv[]){
     gtk_entry_set_text(GTK_ENTRY(usernameText),"poplin");
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
 
-    passwordLable = gtk_label_new("Password:");
+    passwordLable = gtk_label_new("Your password:");
     gtk_label_set_width_chars(passwordLable,15);
     gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
 

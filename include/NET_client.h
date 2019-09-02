@@ -27,8 +27,8 @@ typedef struct profile
 typedef struct message
 {
   char* msg;
-  message* last;
-  message* next;
+  struct message* last;
+  struct message* next;
 } message;
 /* 好友结构体，包含好友的简要信息和聊天消息 */
 typedef struct friend
@@ -42,8 +42,8 @@ typedef struct friend
 typedef struct group
 {
   profile group_profile;
-  message msg;
-}
+  struct message msg;
+};
 
 /*
   有关我的详细信息，所有界面要显示的信息
@@ -55,7 +55,7 @@ typedef struct info
   int friend_num;
   friend* friends;
   int group_num;
-  group* groups;
+  struct group* groups;
 } info;
 
 /* 
@@ -124,6 +124,7 @@ state send_msg_to_friend(const int friend_id, const char* msg, void(*callback)(s
   发送结果，SUCCESS（0）表示发送成功，FAILURE（1）表示
   发送失败，ERROR（-1）表示发送过程中出现了错误。
 */
+
 state send_msg_to_group(const int group_id, const char* msg, void(*callback)(state));
 
 /*

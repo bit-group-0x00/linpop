@@ -4,6 +4,7 @@
 
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
+//#include "../include/NET_client.h"
 
 void homepage_window(int userID){
     GtkWidget *homepageWindow;
@@ -20,13 +21,15 @@ void homepage_window(int userID){
     GtkWidget *passwordLable;
     GtkWidget *sep;
     GtkWidget *image;
-
-
+    g_print("Succesful login\n");
     //主窗口初始化
-    info *userInfo;
-    homepageWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_get_screen(homepageWindow);
-//    gtk_window_set_title(GTK_WINDOW(homepageWindow),"login in linpop");
+//    info *userInfo ;
+//    userInfo->my_profile.id = userID;
+//    request_my_info(userInfo);
+//
+//    homepageWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//    gtk_widget_get_screen(homepageWindow);
+//    gtk_window_set_title(GTK_WINDOW(homepageWindow),userInfo->my_profile.nick_name);
 //    gtk_window_set_position(GTK_WINDOW(loginWindow),GTK_WIN_POS_CENTER);
 //    gtk_window_set_default_size(GTK_WINDOW(loginWindow),400,300);
 //    gtk_container_set_border_width(GTK_CONTAINER(loginWindow),20);
@@ -91,7 +94,7 @@ void homepage_window(int userID){
 //    gtk_widget_show_all(loginWindow);
 //
 //    gtk_main();
-
+//
 
 
 }
