@@ -16,6 +16,12 @@ typedef struct {
 } Group;
 
 /**
+ * free Group which is no need to be used.
+ * @param group
+ */
+void freeGroup(Group group);
+
+/**
  * 新建一个聊天群组的时候需要调用此函数,
  * 同时需要调用DATABASE_groupUser中的insertGroupUser()
  *

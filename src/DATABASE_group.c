@@ -3,6 +3,20 @@
 //
 #include "../include/DATABASE_group.h"
 
+void freeGroup(Group group) {
+    if (group.groupIcon != NULL) {
+        free(group.groupIcon);
+        group.groupIcon = NULL;
+    }
+    if (group.groupIntro != NULL) {
+        free(group.groupIntro);
+        group.groupIntro = NULL;
+    }
+    if (group.groupName != NULL) {
+        free(group.groupName);
+        group.groupName = NULL;
+    }
+}
 int insertGroup(Group* group, MYSQL* connection)
 {
     if (connection == NULL) {
