@@ -58,21 +58,46 @@ CREATE TABLE IF NOT EXISTS linpop.friends (
 
 | 属性名      | 类型     | 备注       | 含义           |
 | ----------- | -------- | ---------- | -------------- |
-| msgId       | INT      | 主键，自增 | 一对一消息的ID |
+| msgId       | INT      | 主键，自增, NOT NULL | 一对一消息的ID |
 | msgContent  | TEXT     | NOT NULL   | 消息的内容     |
 | msgDateTime | DATETIME | NOT NULL   | 消息的发送时间 |
 | msgStatus   | TINYINT  | NOT NULL   | 消息是否被接收 |
 | msgFromId   | INT      | NOT NULL   | 消息发送者的ID |
 | msgToId     | INT      | NOT NULL   | 消息接收者的ID |
 
+```sql
+CREATE TABLE IF NOT EXISTS User.message
+(
+	msgId INT UNSIGNED AUTO_INCREMENT NOT NULL,
+    msgContent TEXT NOT NULL,
+    msgDateTime DATETIME NOT NULL,
+    msgStatus TINYINT NOT NULL DEFAULT 0,
+    msgFromId INT UNSIGNED NOT NULL,
+    msgToId INT UNSIGNED NOT NULL,
+    PRIMARY KEY(msgId)
+)DEFAULT CHARSET=utf8;
+```
+
 ### group表
 
 | 属性名     | 类型         | 备注       | 含义         |
 | ---------- | ------------ | ---------- | ------------ |
-| groupId    | INT          | 主键, 自增 | 聊天群的ID   |
+| groupId    | INT          | 主键, 自增,NOT NULL | 聊天群的ID   |
 | groupName  | VARCHAR(16)  | NOT NULL   | 聊天群的名称 |
 | groupIntro | VARCHAR(100) |            | 群介绍       |
 | groupIcon  | VARCHAR(100) |            | 群头像       |
+
+```sql
+CREATE TABLE IF NOT EXISTS User._group
+(
+	groupId INT UNSIGNED auto_increment NOT NULL,
+    groupName VARCHAR(16) NOT NULL,
+    groupIntro VARCHAR(100),
+    groupIcon VARCHAR(100),
+    PRIMARY KEY(groupId)
+
+)DEFAULT CHARSET=utf8;
+```
 
 ### group_user表
 
@@ -83,14 +108,40 @@ CREATE TABLE IF NOT EXISTS linpop.friends (
 | guGroupId | INT  | 外键 | 群ID     |
 | guUserId  | INT  | 外键 | 群成员ID |
 
+```sql
+CREATE TABLE IF NOT EXISTS User.group_user
+(
+	guGroupId INT UNSIGNED,
+	guUserId INT UNSIGNED,
+    FOREIGN KEY(guGroupId) REFERENCES User._group(groupId),
+    FOREIGN KEY(guUserId) REFERENCES User.user(userId),
+    PRIMARY KEY(guGroupId, guUserId)
+)DEFAULT CHARSET=utf8;
+```
+
 ### group_message表
 
 群消息表
 
 | 属性名     | 类型     | 备注       | 含义           |
 | ---------- | -------- | ---------- | -------------- |
-| gmId       | INT      | 主键, 自增 | 群消息ID       |
+| gmId       | INT      | 主键, 自增,NOT NULL| 群消息ID       |
 | gmGroupId  | INT      | 外键       | 群消息所属群   |
 | gmContent  | TEXT     | NOT NULL   | 群消息内容     |
 | gmFromId   | INT      | 外键       | 群消息发送者ID |
 | gmDateTime | DATETIME | NOT NULL   | 群消息发送时间 |
+
+```sql
+CREATE TABLE IF NOT EXISTS User.group_message
+(
+	gmId INT UNSIGNED not null auto_increment,
+    gmGroupId INT UNSIGNED UNSIGNED not null,
+    gmContent varchar(255) not null,
+    gmFromId INT UNSIGNED not null,
+    gmDateTime datetime not null,
+    PRIMARY KEY(gmId),
+	FOREIGN KEY(gmGroupId) REFERENCES User._group(groupId),
+    FOREIGN KEY(gmFromId) REFERENCES User.user(userId)
+
+)DEFAULT CHARSET=utf8;
+```
