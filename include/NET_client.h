@@ -19,16 +19,43 @@ extern int my_id;
 */
 typedef struct profile
 {
-
+  int id;
+  char* nick_name;
+  char* avatar;
 } profile;
+/* 消息结构体，用双向链表表示消息队列 */
+typedef struct message
+{
+  char* msg;
+  message* last;
+  message* next;
+} message;
+/* 好友结构体，包含好友的简要信息和聊天消息 */
+typedef struct friend
+{
+  profile friend_profile;
+  message msg;
+
+} friend;
+
+/* 群聊结构体，包括群聊的基本信息和聊天消息 */
+typedef struct group
+{
+  profile group_profile;
+  message msg;
+}
 
 /*
-  存放自己详细信息的结构体，包含一些只有自己能
-  查看的隐私信息。
+  有关我的详细信息，所有界面要显示的信息
+  都应该放在这个结构体里面
 */
 typedef struct info
 {
-
+  profile my_profile;
+  int friend_num;
+  friend* friends;
+  int group_num;
+  group* groups;
 } info;
 
 /* 
