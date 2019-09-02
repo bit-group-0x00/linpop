@@ -14,7 +14,7 @@
 void get_path(char buff[], char* name);
 
 /* get file size */
-void get_file_size(char* file_path);
+int get_file_size(char* file_path);
 
 /* get file name */
 char* get_file_name(char* file_path);
@@ -42,7 +42,7 @@ int get_file_size(char* file_path)
 {
     struct stat stat_buf;
     stat(file_path, &stat_buf);
-    return stat_buf.st_size,
+    return stat_buf.st_size;
 }
 
 char* get_file_name(char* file_path)
@@ -56,7 +56,7 @@ char* get_file_name(char* file_path)
     return ++file_name;
 }
 
-int conn_to(const char* ip, int port)
+int conn_to(int ip, int port)
 {
     int sckt;
     struct sockaddr_in addr;
@@ -67,7 +67,7 @@ int conn_to(const char* ip, int port)
     }
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(ip);
+    addr.sin_addr.s_addr = ip;
     if(connect(sckt, (struct sockaddr*)&addr, sizeof(addr)) < 0)
     {
         perror("connect");
@@ -81,10 +81,10 @@ void* monitor_socket(void* arg)
     pthread_detach(pthread_self());
     int socket = ((struct args*)arg)->value, buff_remain = 0;
     void (*handle)(int, cJSON*) = ((struct args*)arg)->handle;
-    char buffer[BUFF_SIZE];
+    char buff[BUFF_SIZE];
     while(1)
     {
-        cJSON* cjson = recv_cjson(socket, buffer, &buff_remain);
+        cJSON* cjson = recv_cjson(socket, buff, &buff_remain);
         if(cjson == NULL) break;
         handle(socket, cjson);
         cJSON_Delete(cjson);
@@ -148,15 +148,20 @@ state send_cjson(int socket, cJSON* cjson)
         return -1;
     }
     send(socket, s, len, 0);
-    printf("send: %s\n", s);
+    //printf("send: %s\n", s);
     free(s);
     return 0;
 }
 
-cJSON* recv_cjson(int socket, char buff[], int* buff_remain)
+cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
 {
     /* the pos of spliter '\0' */
     int pos = 0, remain = buff_remain == NULL ? 0 : *buff_remain;
+    if(buff == NULL)
+    {
+        char temp[BUFF_SIZE];
+        buff = temp;
+    }
     while(pos < remain && buff[pos] != '\0') ++pos;
     if(pos == remain)
     {
@@ -174,7 +179,7 @@ cJSON* recv_cjson(int socket, char buff[], int* buff_remain)
         remain += recv_len;
         while(buff[pos] != '\0') ++pos;
     }
-    printf("recieved: %s\n", buff);
+    //printf("recieved: %s\n", buff);
     cJSON* cjson =  cJSON_Parse(buff);
     remain -= pos + 1;
     for(int i = 0; i < remain; ++i)
@@ -185,7 +190,7 @@ cJSON* recv_cjson(int socket, char buff[], int* buff_remain)
     return cjson;
 }
 
-state send_file(int socket, char* file_path, int size, void(*callback)(state))
+state send_file(int socket, const char* file_path, int size, void(*callback)(state))
 {
     char buff[BUFF_SIZE];
     get_path(buff, file_path);
@@ -253,3 +258,14 @@ state recv_file(int socket, int size, const char* file_path)
 //     return -1;
 // }
 
+int get_ip(int socket)
+{
+    struct sockaddr_in addr;
+    socklen_t addrlen = sizeof(addr);
+    if(getpeername(socket, (struct sockaddr*)&addr, &addrlen) == -1)
+    {
+        perror("can't get socket ip");
+        return ERROR;
+    }
+    return addr.sin_addr.s_addr;
+}

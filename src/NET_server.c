@@ -8,6 +8,8 @@
 
 #include "../include/NET_server.h"
 
+MYSQL* conn = NULL;
+
 /*
   回复操作成功
 */
@@ -41,6 +43,21 @@ void handle_msg_send(int client, cJSON* cjson);
 */
 void handle_file_send(int client, cJSON* cjson);
 
+/*
+  同上，在接受到请求好友列表的时候自动调用该函数。
+*/
+void handle_friend_list_request(int client, cJSON* cjson);
+
+/*
+  同上，在接受到请求消息列表时自动调用该函数
+*/
+void handle_msg_list_request(int client, cJSON* cjson);
+
+/*
+  同上，在接受到添加好友请求时自动调用该函数
+*/
+void handle_add_friend_request(int client, cJSON* cjson);
+
 
 void response_state(int client, state type)
 {
@@ -53,11 +70,14 @@ void response_state(int client, state type)
 void handle_regist_request(int client, cJSON* cjson)
 {
     int id;
+    User user;
     user.userNickName = cJSON_GetObjectItem(cjson, "nick_name")->valuestring;
     user.userPassword = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
     user.userAvatar = cJSON_GetObjectItem(cjson, "avatar")->valuestring;
+    user.userSignature = "";
+    user.userIp = -1;
     state type = FAILURE;
-    if((id = insertUser(user)) != -1) type = SUCCESS;
+    if((id = insertUser(&user, conn)) != -1) type = SUCCESS;
     /* 创建response的cjson */
     cJSON* response = cJSON_CreateObject();
     cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(type));
@@ -71,8 +91,8 @@ void handle_login_request(int client, cJSON* cjson)
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
     state type = FAILURE;
-    if(isUserExist(id) && checkUserPassword(id, passwd) && updateUserStatus(id, \
-    1, conn) && updateUserIp(id, ip, conn)) type = SUCCESS;
+    if(isUserExist(id, conn) == 1 && checkUserPassword(id, passwd, conn) == 1 && \
+    updateUserStatus(id, 1, conn) == 1 && updateUserIp(id, get_ip(client), conn) == 1) type = SUCCESS;
     response_state(client, type);
 }
 
@@ -80,10 +100,67 @@ void handle_logout_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     state type = FAILURE;
-    if(updateUserStatus(ip, 0, conn)) type = SUCCESS;
+    if(isUserExist(id, conn) == 1 && updateUserStatus(id, 0, conn) == 1) type = SUCCESS;
     response_state(client, type);
 }
 
+void handle_friend_list_request(int client, cJSON* cjson)
+{
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    FriendList friend_list = getFriList(id, conn);
+    cJSON* friend_list_cjson = cJSON_CreateObject();
+    cJSON_AddItemToObject(friend_list_cjson, "type", cJSON_CreateNumber(SUCCESS));
+    cJSON_AddItemToObject(friend_list_cjson, "friend_num", cJSON_CreateNumber(friend_list.friendsNum));
+    cJSON_AddItemToObject(friend_list_cjson, "friends", cJSON_CreateIntArray(friend_list.friId, friend_list.friendsNum));
+    cJSON* nick_names = cJSON_CreateArray(), *avatars = cJSON_CreateArray();
+    for(int i = 0; i < friend_list.friendsNum; ++i)
+    {
+        User* friend = getUserInfoById(friend_list.friId[i], conn);
+        cJSON_AddItemToArray(nick_names, cJSON_CreateString(friend->userNickName));
+        cJSON_AddItemToArray(avatars, cJSON_CreateString(friend->userAvatar));
+        freeUser(friend);
+    }
+    freeFriList(friend_list);
+    cJSON_AddItemToObject(friend_list_cjson, "nick_names", nick_names);
+    cJSON_AddItemToObject(friend_list_cjson, "avatars", avatars);
+    send_cjson(client, friend_list_cjson);
+    //printf("%s", cJSON_Print(friend_list_cjson));
+    cJSON_Delete(friend_list_cjson);
+}
+
+void handle_msg_list_request(int client, cJSON* cjson)
+{
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    int friend_id = cJSON_GetObjectItem(cjson, "friend_id")->valueint;
+    MessageList msg_list = getMsgList(id, friend_id, conn);
+    cJSON* msg_list_cjson = cJSON_CreateObject();
+    cJSON_AddItemToObject(msg_list_cjson, "type", cJSON_CreateNumber(SUCCESS));
+    cJSON_AddItemToObject(msg_list_cjson, "message_num", cJSON_CreateNumber(msg_list.msgNum));
+    cJSON* senders = cJSON_CreateArray(), *contents = cJSON_CreateArray();
+    cJSON* dates = cJSON_CreateArray(), *states = cJSON_CreateArray();
+    for(int i = 0; i < msg_list.msgNum; ++i)
+    {
+        cJSON_AddItemToArray(senders, cJSON_CreateNumber(msg_list.msgs[i].msgFromId));
+        cJSON_AddItemToArray(contents, cJSON_CreateString(msg_list.msgs[i].msgContent));
+        cJSON_AddItemToArray(dates, cJSON_CreateString(msg_list.msgs[i].msgDateTime));
+        cJSON_AddItemToArray(states, cJSON_CreateNumber(msg_list.msgs[i].msgStatus));
+    }
+    cJSON_AddItemToObject(msg_list_cjson, "senders", senders);
+    cJSON_AddItemToObject(msg_list_cjson, "contents", contents);
+    cJSON_AddItemToObject(msg_list_cjson, "dates", dates);
+    cJSON_AddItemToObject(msg_list_cjson, "states", states);
+    freeMsgList(msg_list);
+    send_cjson(client, msg_list_cjson);
+    cJSON_Delete(msg_list_cjson);
+}
+
+void handle_add_friend_request(int client, cJSON* cjson)
+{
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    int friend_id = cJSON_GetObjectItem(cjson, "friend_id")->valueint;
+    if(isFriends(id, friend_id, conn) || insertFriends(id, friend_id, conn) == 1)
+        response_state(client, SUCCESS);
+}
 void handle_msg_send(int client, cJSON* cjson)
 {
     Message msg;
@@ -91,25 +168,25 @@ void handle_msg_send(int client, cJSON* cjson)
     msg.msgToId = cJSON_GetObjectItem(cjson, "target")->valueint;
     msg.msgContent = cJSON_GetObjectItem(cjson, "message")->valuestring;
     msg.msgStatus = 0;
-    User user = getUserInfoById(target);
+    User* user = getUserInfoById(msg.msgToId, conn);
     /* 如果对方在线 */
-    if(user.userStatus == 1)
+    if(user->userStatus == 1)
     {
-        int client_2 = conn_to(user.userIP, CLIENT_PORT);
+        int client_2 = conn_to(user->userIp, CLIENT_PORT);
         send_cjson(client_2, cjson);
         cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
-        if(cJSON != NULL)
+        if(cj_2 != NULL)
         {
             msg.msgStatus = 1;
             cJSON_Delete(cj_2);
         }
     }
-    insertMsg(msg, conn);
-    mallocUser(user);
-    response_state(client, type);
+    insertMsg(&msg, conn);
+    freeUser(user);
+    response_state(client, SUCCESS);
 }
 
-void handle_file_send(int clinet, cJSON* cjson)
+void handle_file_send(int client, cJSON* cjson)
 {
     Message msg;
     msg.msgFromId = cJSON_GetObjectItem(cjson, "origin")->valueint;;
@@ -120,25 +197,25 @@ void handle_file_send(int clinet, cJSON* cjson)
     char* name = msg.msgContent;
     state type = recv_file(client, size, name);
     /* send to server */
-    if(target == 0) response_state(type);
+    if(msg.msgToId == 0) response_state(client, type);
     else if(type == SUCCESS)
     {
-        User user = getUserInfoById(target);
-        if(user.userStatus == 1)
+        User* user = getUserInfoById(msg.msgToId, conn);
+        if(user->userStatus == 1)
         {
-            int client_2 = conn_to(user.userIP, CLIENT_PORT);
+            int client_2 = conn_to(user->userIp, CLIENT_PORT);
             send_cjson(client_2, cjson);
             cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
             if(cj_2 != NULL)
             {
-                send_file(client_2, name, NULL);
+                send_file(client_2, name, size, NULL);
                 cJSON_Delete(cj_2);
             }
             msg.msgStatus = 1;
         }
-        mallocUser(user);
+        freeUser(user);
     }
-    insertMsg(msg, conn);
+    insertMsg(&msg, conn);
 }
 
 void handle_cjson(int client, cJSON* cjson)
@@ -148,9 +225,13 @@ void handle_cjson(int client, cJSON* cjson)
     switch(type->valueint)
     {
         case REGIST: handle = handle_regist_request; break;
-        case LOGIN: handle = handle_regist_request; break;
+        case LOGIN: handle = handle_login_request; break;
+        case LOGOUT: handle = handle_logout_request; break;
         case SEND_MESSAGE: handle = handle_msg_send; break;
         case SEND_FILE: handle = handle_file_send; break;
+        case REQUEST_FRIEND_LIST: handle = handle_friend_list_request; break;
+        case REQUEST_MESSAGE_LIST: handle = handle_msg_list_request; break;
+        case ADD_FRIEND_REQUEST: handle = handle_add_friend_request; break;
         default:
         {
             printf("recieved unknown type message:\n");
@@ -165,6 +246,7 @@ void handle_cjson(int client, cJSON* cjson)
 
 int main(int argc, char* argv[])
 {
+    conn = mysqlConnection();
     int retry = 5;
     struct args arg;
     arg.value = SERVER_PORT, arg.handle = handle_cjson;

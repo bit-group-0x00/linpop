@@ -11,7 +11,7 @@
 #include "UTIL_cJSON.h"
 #include "DATABASE_mysql.h"
 #include "DATABASE_user.h"
-#include "DATABASE_groupUsers.h"
+#include "DATABASE_groupUser.h"
 #include "DATABASE_message.h"
 #include "DATABASE_groupMessage.h"
 #include "DATABASE_group.h"
