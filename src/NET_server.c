@@ -8,60 +8,137 @@
 
 #include "../include/NET_server.h"
 
+/*
+  回复操作成功
+*/
+void response_state(int client, state type);
+
+/* 
+  服务端的handle函数，在接受到注册请求后会自动调用该函数
+  函数的参数三请求方的socket和接受到的cjson
+*/
+void handle_regist_request(int client, cJSON* cjson);
+
+/*
+  同上，在接受到登陆请求后会自动调用该函数
+*/
+void handle_login_request(int client, cJSON* cjson);
+
+/*
+  同上，在接受到登出请求后会自动调用该函数
+*/
+void handle_logout_request(int client, cJSON* cjson);
+
+/* 
+  同上，在接受到发送消息请求后自动调用该函数，其中发送消息
+  可以分为两种：用户向其他用户发送消息、用户向群组发送消息
+*/
+void handle_msg_send(int client, cJSON* cjson);
+
+/* 
+  同上，在接受到发送文件请求后自动调用该函数，其中发送文件也可以分为两种
+  一种是客户端向服务端发送文件，另一种是客户端向其他客户端发送文件
+*/
+void handle_file_send(int client, cJSON* cjson);
+
+
+void response_state(int client, state type)
+{
+    cJSON* response = cJSON_CreateObject();
+    cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(type));
+    send_cjson(client, response);
+    cJSON_Delete(response);
+}
+
 void handle_regist_request(int client, cJSON* cjson)
 {
-    char* nick_name = cJSON_GetObjectItem(cjson, "nick_name")->valuestring;
-    char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
-    char* avatar = cJSON_GetObjectItem(cjson, "avatar")->valuestring;
     int id;
-    User user;
-    user.userNickName = nick_name;
-    user.userPassword = passwd;
-    user.userAvatar = avatar;
+    user.userNickName = cJSON_GetObjectItem(cjson, "nick_name")->valuestring;
+    user.userPassword = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
+    user.userAvatar = cJSON_GetObjectItem(cjson, "avatar")->valuestring;
+    state type = FAILURE;
+    if((id = insertUser(user)) != -1) type = SUCCESS;
     /* 创建response的cjson */
-    cJSON* cj = cJSON_CreateObject();
-    if((id = insertUser(user)) != -1)
-    {
-        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(SUCCESS));
-        cJSON_AddItemToObject(cj, "id", cJSON_CreateNumber(id));
-    } else
-    {
-        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
-    }
-    send_cjson(client, cj);
-    cJSON_Delete(cj);
+    cJSON* response = cJSON_CreateObject();
+    cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(type));
+    cJSON_AddItemToObject(response, "id", cJSON_CreateNumber(id));
+    send_cjson(client, response);
+    cJSON_Delete(response);
 }
 
 void handle_login_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
-    /* 创建response的cjson */
-    cJSON* cj = cJSON_CreateObject();
-    if(isUserExist(id) && checkUserPassword(id, passwd))
-    {
-        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(SUCCESS));
-    } else
-    {
-        cJSON_AddItemToObject(cj, "type", cJSON_CreateNumber(FAILURE));
-    }
-    send_cjson(client, cj);
-    cJSON_Delete(cj);
+    state type = FAILURE;
+    if(isUserExist(id) && checkUserPassword(id, passwd) && updateUserStatus(id, \
+    1, conn) && updateUserIp(id, ip, conn)) type = SUCCESS;
+    response_state(client, type);
+}
+
+void handle_logout_request(int client, cJSON* cjson)
+{
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    state type = FAILURE;
+    if(updateUserStatus(ip, 0, conn)) type = SUCCESS;
+    response_state(client, type);
 }
 
 void handle_msg_send(int client, cJSON* cjson)
 {
-    int from_id = cJSON_GetObjectItem(cjson, "from_id")->valueint;
-    int to_id = cJSON_GetObjectItem(cjson, "target_id")->valueint;
-    char* msg = cJSON_GetObjectItem(cjson, "message")->valuestring;
-    printf("recieved message [%s] from %s.\n", msg, from_id);
-    printf("message will be resent to %s.\n", to_id);
-    /* resend write below */
+    Message msg;
+    msg.msgFromId = cJSON_GetObjectItem(cjson, "origin")->valueint;
+    msg.msgToId = cJSON_GetObjectItem(cjson, "target")->valueint;
+    msg.msgContent = cJSON_GetObjectItem(cjson, "message")->valuestring;
+    msg.msgStatus = 0;
+    User user = getUserInfoById(target);
+    /* 如果对方在线 */
+    if(user.userStatus == 1)
+    {
+        int client_2 = conn_to(user.userIP, CLIENT_PORT);
+        send_cjson(client_2, cjson);
+        cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
+        if(cJSON != NULL)
+        {
+            msg.msgStatus = 1;
+            cJSON_Delete(cj_2);
+        }
+    }
+    insertMsg(msg, conn);
+    mallocUser(user);
+    response_state(client, type);
 }
 
 void handle_file_send(int clinet, cJSON* cjson)
 {
-
+    Message msg;
+    msg.msgFromId = cJSON_GetObjectItem(cjson, "origin")->valueint;;
+    msg.msgToId = cJSON_GetObjectItem(cjson, "target")->valueint;
+    msg.msgContent = cJSON_GetObjectItem(cjson, "name")->valuestring;
+    msg.msgStatus = 0;
+    int size = cJSON_GetObjectItem(cjson, "size")->valueint;
+    char* name = msg.msgContent;
+    state type = recv_file(client, size, name);
+    /* send to server */
+    if(target == 0) response_state(type);
+    else if(type == SUCCESS)
+    {
+        User user = getUserInfoById(target);
+        if(user.userStatus == 1)
+        {
+            int client_2 = conn_to(user.userIP, CLIENT_PORT);
+            send_cjson(client_2, cjson);
+            cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
+            if(cj_2 != NULL)
+            {
+                send_file(client_2, name, NULL);
+                cJSON_Delete(cj_2);
+            }
+            msg.msgStatus = 1;
+        }
+        mallocUser(user);
+    }
+    insertMsg(msg, conn);
 }
 
 void handle_cjson(int client, cJSON* cjson)
