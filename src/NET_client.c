@@ -1,5 +1,6 @@
 #include "../include/NET_client.h"
-#include "../include/UI_login.h"
+#include "../include/UI_interface.h"
+
 int my_id = -1;
 
 /* 保存服务器的socket */
@@ -84,6 +85,7 @@ void handle_cjson(int socket, cJSON* cjson)
 
 int main(int argc, char* argv[])
 {
+
     login_window();
     /* connect to server */
     if((server = conn_to(SERVER_IP, SERVER_PORT)) == -1)
