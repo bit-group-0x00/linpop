@@ -11,4 +11,8 @@
 #define HOST "127.0.0.1"
 #define USERNAME "root"
 #define PASSWORD "neusoft"
+#define SELECT_LAST_ID "SELECT LAST_INSERT_ID();"
+typedef int Status;
+
+
 #endif //LINPOP_DATABASE_MYSQL_H
