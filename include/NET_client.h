@@ -26,6 +26,7 @@ typedef struct profile
 /* 消息结构体，用双向链表表示消息队列 */
 typedef struct message
 {
+  int sender;
   char* msg;
   message* last;
   message* next;
@@ -35,7 +36,6 @@ typedef struct friend
 {
   profile friend_profile;
   message msg;
-
 } friend;
 
 /* 群聊结构体，包括群聊的基本信息和聊天消息 */
