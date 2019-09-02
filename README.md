@@ -1,8 +1,13 @@
 # 数据库接口表
 
 charset: utf-8
+
 表名: 小写字母下划线隔开
+
 属性名: 驼峰命名, 首字母小写, 属性名第一个单词是表名缩写
+
+数据库提示: 成功时不显示提示, 失败时以perror进行提示, 格式为[操作]:[错误种类], 全部字母大写, 例如: `perror("INSERT MESSAGE: QUERY ERROR");`
+当出现错误时, 一律返回-1.
 
 ### user表
 
@@ -21,8 +26,8 @@ charset: utf-8
 
 ```sql
 CREATE TABLE IF NOT EXISTS linpop.user (
-	userId INT UNSIGNED NOT NULL AUTO_INCREMENT,
-	userFriNum INT NOT NULL DEFAULT 0,
+    userId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    userFriNum INT NOT NULL DEFAULT 0,
     userNickName VARCHAR(16) NOT NULL,
     userPassword VARCHAR(16) NOT NULL,
     userSignature VARCHAR(36) NOT NULL,
@@ -46,8 +51,8 @@ CREATE TABLE IF NOT EXISTS linpop.user (
 
 ```sql
 CREATE TABLE IF NOT EXISTS linpop.friends (
-	friId INT UNSIGNED NOT NULL AUTO_INCREMENT,
-	friUserId1 INT UNSIGNED NOT NULL,
+    friId INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    friUserId1 INT UNSIGNED NOT NULL,
     friUserId2 INT UNSIGNED NOT NULL,
     PRIMARY KEY(friId),
     FOREIGN KEY(friUserId1) REFERENCES linpop.user(userId),
@@ -66,9 +71,9 @@ CREATE TABLE IF NOT EXISTS linpop.friends (
 | msgToId     | INT      | NOT NULL   | 消息接收者的ID |
 
 ```sql
-CREATE TABLE IF NOT EXISTS User.message
+CREATE TABLE IF NOT EXISTS linpop.message
 (
-	msgId INT UNSIGNED AUTO_INCREMENT NOT NULL,
+    msgId INT UNSIGNED AUTO_INCREMENT NOT NULL,
     msgContent TEXT NOT NULL,
     msgDateTime DATETIME NOT NULL,
     msgStatus TINYINT NOT NULL DEFAULT 0,
@@ -88,14 +93,13 @@ CREATE TABLE IF NOT EXISTS User.message
 | groupIcon  | VARCHAR(100) |            | 群头像       |
 
 ```sql
-CREATE TABLE IF NOT EXISTS User._group
+CREATE TABLE IF NOT EXISTS linpop._group
 (
-	groupId INT UNSIGNED auto_increment NOT NULL,
+    groupId INT UNSIGNED auto_increment NOT NULL,
     groupName VARCHAR(16) NOT NULL,
     groupIntro VARCHAR(100),
     groupIcon VARCHAR(100),
     PRIMARY KEY(groupId)
-
 )DEFAULT CHARSET=utf8;
 ```
 
@@ -103,18 +107,19 @@ CREATE TABLE IF NOT EXISTS User._group
 
 群和群成员ID的联系
 
-| 属性名    | 类型 | 备注 | 含义     |
-| --------- | ---- | ---- | -------- |
-| guGroupId | INT  | 外键 | 群ID     |
-| guUserId  | INT  | 外键 | 群成员ID |
+| 属性名    | 类型 | 备注 | 含义                          |
+| --------- | ---- | ---- | ----------------------------- |
+| guGroupId | INT  | 外键 | 群ID, 与guUserId合为主键      |
+| guUserId  | INT  | 外键 | 群成员ID, 与guGroupId合为主键 |
+
 
 ```sql
-CREATE TABLE IF NOT EXISTS User.group_user
+CREATE TABLE IF NOT EXISTS linpop.group_user
 (
-	guGroupId INT UNSIGNED,
-	guUserId INT UNSIGNED,
-    FOREIGN KEY(guGroupId) REFERENCES User._group(groupId),
-    FOREIGN KEY(guUserId) REFERENCES User.user(userId),
+    guGroupId INT UNSIGNED,
+    guUserId INT UNSIGNED,
+    FOREIGN KEY(guGroupId) REFERENCES linpop._group(groupId),
+    FOREIGN KEY(guUserId) REFERENCES linpop.user(userId),
     PRIMARY KEY(guGroupId, guUserId)
 )DEFAULT CHARSET=utf8;
 ```
@@ -132,16 +137,15 @@ CREATE TABLE IF NOT EXISTS User.group_user
 | gmDateTime | DATETIME | NOT NULL   | 群消息发送时间 |
 
 ```sql
-CREATE TABLE IF NOT EXISTS User.group_message
+CREATE TABLE IF NOT EXISTS linpop.group_message
 (
-	gmId INT UNSIGNED not null auto_increment,
+    gmId INT UNSIGNED not null auto_increment,
     gmGroupId INT UNSIGNED UNSIGNED not null,
     gmContent varchar(255) not null,
     gmFromId INT UNSIGNED not null,
     gmDateTime datetime not null,
     PRIMARY KEY(gmId),
-	FOREIGN KEY(gmGroupId) REFERENCES User._group(groupId),
-    FOREIGN KEY(gmFromId) REFERENCES User.user(userId)
-
+    FOREIGN KEY(gmGroupId) REFERENCES linpop._group(groupId),
+    FOREIGN KEY(gmFromId) REFERENCES linpop.user(userId)
 )DEFAULT CHARSET=utf8;
 ```
