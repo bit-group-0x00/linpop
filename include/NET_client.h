@@ -19,19 +19,46 @@ extern int my_id;
 */
 typedef struct profile
 {
-
+  int id;
+  char* nick_name;
+  char* avatar;
 } profile;
+/* 消息结构体，用双向链表表示消息队列 */
+typedef struct message
+{
+  char* msg;
+  message* last;
+  message* next;
+} message;
+/* 好友结构体，包含好友的简要信息和聊天消息 */
+typedef struct friend
+{
+  profile friend_profile;
+  message msg;
+
+} friend;
+
+/* 群聊结构体，包括群聊的基本信息和聊天消息 */
+typedef struct group
+{
+  profile group_profile;
+  message msg;
+}
 
 /*
-  存放自己详细信息的结构体，包含一些只有自己能
-  查看的隐私信息。
+  有关我的详细信息，所有界面要显示的信息
+  都应该放在这个结构体里面
 */
 typedef struct info
 {
-
+  profile my_profile;
+  int friend_num;
+  friend* friends;
+  int group_num;
+  group* groups;
 } info;
 
-/*
+/* 
   client regist fuction
   传入用户注册的昵称和密码，如果注册成功返回注册成功后的账号id
   如果注册失败返回FAILURE（1），如果注册过错产生错误返回ERROR（-1）
@@ -39,7 +66,7 @@ typedef struct info
 */
 state regist(const char* nick_name, const char* passwd);
 
-/*
+/* 
   client login function
   传入用户的账号和密码，如果登陆成功返回SUCCESS（0），如果失败
   返回FAILURE（1），如果登陆过程中发生了错误返回ERROR（-1）
@@ -87,8 +114,8 @@ state request_user_profile(const int user_id, void(*callback)(state, profile));
 */
 state send_msg_to_friend(const int friend_id, const char* msg, void(*callback)(state));
 
-/*
-  send message to a group
+/* 
+  send message to a group 
   向群聊发送消息，传入群聊ID，要发送的消息和回调函数。
   这里的回调函数作用和上面的函数一致，具体的行为不同。
   这个函数先检查是否满足向群聊发送消息的条件，如果不
@@ -98,3 +125,15 @@ state send_msg_to_friend(const int friend_id, const char* msg, void(*callback)(s
   发送失败，ERROR（-1）表示发送过程中出现了错误。
 */
 state send_msg_to_group(const int group_id, const char* msg, void(*callback)(state));
+
+/*
+  向朋友发送文件，功能类似于向朋友发送消息，这里把文件的路径
+  作为参数
+*/
+state send_file_to_friend(const int friend_id, const char* file_path, void(*callback)(state));
+
+/*
+  向群聊发送文件，功能类似于向朋友发送消息，这里把文件的路径
+  作为参数
+*/
+state send_file_to_group(const int group_id, const char* file_path, void(*callback)(state));
