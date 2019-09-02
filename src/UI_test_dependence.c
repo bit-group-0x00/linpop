@@ -5,16 +5,6 @@
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
 
-state request_my_info(info* my_info){
-    my_info->my_profile.nick_name = "penguin";
-    my_info->my_profile.avatar = "../res/icon";
-
-
-};
-
-state request_user_profile(const int user_id, void(*callback)(state, profile)){
-
-};
 
 state regist(const char* nick_name, const char* passwd)
 {
@@ -30,6 +20,7 @@ state login(const int id, const char* passwd)
 int main(int argc, char* argv[])
 {
     login_window();
+//    homepage_window(12345);
     return 0;
 }
 

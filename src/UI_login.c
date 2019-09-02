@@ -91,6 +91,7 @@ void on_button_clicked (GtkWidget *button, gpointer data){
             userID = strtol(username,NULL,10);
             switch(login(userID,password)){
                 case SUCCESS:
+                    gtk_widget_destroy(loginWindow);
                     homepage_window(userID);
                     break;
                 case FAILURE:
@@ -177,7 +178,7 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     return FALSE;
 }
 
-void regist_window(int argc, char *argv[]){
+void regist_window(){
     GtkWidget *box;
 
     GtkWidget *optionBox;
@@ -189,9 +190,9 @@ void regist_window(int argc, char *argv[]){
     GtkWidget *passwordBox;
     GtkWidget *passwordBox2;
     GtkWidget *imageBox;
-    GtkWidget *usernameLable;
-    GtkWidget *passwordLable;
-    GtkWidget *passwordLable2;
+    GtkWidget *usernamelabel;
+    GtkWidget *passwordlabel;
+    GtkWidget *passwordlabel2;
     GtkWidget *sep;
     GtkWidget *addImageButton;
 
@@ -226,26 +227,26 @@ void regist_window(int argc, char *argv[]){
     imageBox = gtk_vbox_new(FALSE,0);
     gtk_box_pack_start(GTK_BOX(infoBox),imageBox,FALSE,FALSE,0);
 
-    usernameLable = gtk_label_new("Your nickname:");
-    gtk_label_set_width_chars(usernameLable,15);
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
+    usernamelabel = gtk_label_new("Your nickname:");
+    gtk_label_set_width_chars(usernamelabel,15);
+    gtk_box_pack_start(GTK_BOX(usernameBox),usernamelabel,FALSE,FALSE,5);
     usernameText = gtk_entry_new();
     gtk_entry_set_max_length(usernameText,20);
     gtk_entry_set_text(GTK_ENTRY(usernameText),"poplin");
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
 
-    passwordLable = gtk_label_new("Your password:");
-    gtk_label_set_width_chars(passwordLable,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
+    passwordlabel = gtk_label_new("Your password:");
+    gtk_label_set_width_chars(passwordlabel,15);
+    gtk_box_pack_start(GTK_BOX(passwordBox),passwordlabel,FALSE,FALSE,5);
 
     passwordText = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText),FALSE);
     gtk_entry_set_max_length(passwordText,20);
     gtk_box_pack_start(GTK_BOX(passwordBox),passwordText,FALSE,FALSE,5);
 
-    passwordLable2 = gtk_label_new("Confirm Password:");
-    gtk_label_set_width_chars(passwordLable2,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox2),passwordLable2,FALSE,FALSE,5);
+    passwordlabel2 = gtk_label_new("Confirm Password:");
+    gtk_label_set_width_chars(passwordlabel2,15);
+    gtk_box_pack_start(GTK_BOX(passwordBox2),passwordlabel2,FALSE,FALSE,5);
 
     passwordText2 = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText2),FALSE);
@@ -291,8 +292,8 @@ void login_window(int argc, char *argv[]){
     GtkWidget *infoBox;
     GtkWidget *usernameBox;
     GtkWidget *passwordBox;
-    GtkWidget *usernameLable;
-    GtkWidget *passwordLable;
+    GtkWidget *usernamelabel;
+    GtkWidget *passwordlabel;
     GtkWidget *sep;
     GtkWidget *image;
 
@@ -324,19 +325,20 @@ void login_window(int argc, char *argv[]){
     passwordBox = gtk_hbox_new(FALSE,0);
     gtk_box_pack_start(GTK_BOX(infoBox),passwordBox,FALSE,FALSE,0);
 
-    usernameLable = gtk_label_new("Login ID:");
-//    gtk_label_set_markup(GTK_LABEL(usernameLable),g_strdup_printf("%s%s%s","<span foreground='red' underline='double' underline_color='blue' font_desc='32'>","LoginID","</span>"));
+    usernamelabel = gtk_label_new("Login ID:");
+    gtk_label_set_markup(GTK_LABEL(usernamelabel),g_strdup_printf("%s%s%s","<span underline='double' underline_color='blue' font_desc='16'>","LoginID","</span>"));
 
-    gtk_label_set_width_chars(usernameLable,15);
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
+    gtk_label_set_width_chars(usernamelabel,15);
+    gtk_box_pack_start(GTK_BOX(usernameBox),usernamelabel,FALSE,FALSE,5);
     usernameText = gtk_entry_new();
     gtk_entry_set_max_length(usernameText,20);
     gtk_entry_set_text(GTK_ENTRY(usernameText),"12345");
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
 
-    passwordLable = gtk_label_new("Password:");
-    gtk_label_set_width_chars(passwordLable,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
+    passwordlabel = gtk_label_new("Password:");
+    label_font(passwordlabel,"Password",FONT_SIZE_SMALL,"black","double","blue");
+    gtk_label_set_width_chars(passwordlabel,15);
+    gtk_box_pack_start(GTK_BOX(passwordBox),passwordlabel,FALSE,FALSE,5);
 
     passwordText = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText),FALSE);
@@ -345,7 +347,7 @@ void login_window(int argc, char *argv[]){
     gtk_box_pack_start(GTK_BOX(passwordBox),passwordText,FALSE,FALSE,5);
 
     sep = gtk_hseparator_new();
-    gtk_box_pack_start(GTK_BOX(infoBox),sep,FALSE,FALSE,5);
+    gtk_box_pack_start(GTK_BOX(infoBox),sep,FALSE,FALSE,100);
 
     //button box
     optionBox = gtk_hbutton_box_new();

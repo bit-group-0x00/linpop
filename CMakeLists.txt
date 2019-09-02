@@ -31,7 +31,6 @@ add_executable(linpop_UItest
         src/UI_chatView.c
         src/UI_history.c
         )
-
 find_package(Threads REQUIRED)
 
 target_link_libraries(linpop_client Threads::Threads -lm)

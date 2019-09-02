@@ -68,4 +68,18 @@ gint show_question(GtkWidget *widget, gpointer window, gchar* message);
  * @return 用户选择是返回 GTK_RESPONSE_YES，否 GTK_RESPONSE_NO
  */
 
+void label_font(GtkWidget *lable,
+        gchar* context, int fontSize, gchar *foreColor, gchar *underline, gchar *underlineColor);
+/**
+ * label控制器
+ * @param context label上的文字内容
+ * @param fontsize FONT_SIZE_SMALL 16 FONT_SIZE_MIDDLE 24 FONT_SIZE_BIG 16 也可以直接传数字大小
+ * @param foreColor 字体颜色
+ * @param backColor 背景颜色
+ * @param underline 下划线类型，没有则写""
+ * @param underlineColor  下划线颜色
+ * label_font(passwordLabel,"Password",FONT_SIZE_MIDDLE,"black","double","blue");
+ *  none/single/double/low/error
+ */
+
 #endif

@@ -22,7 +22,7 @@ typedef struct profile
   int id;
   char* nick_name;
   char* avatar;
-  int IPaddress;
+  char* IPaddress;
   state online;
   char* signature;
 
