@@ -57,7 +57,7 @@ int insertGroup(Group* group, MYSQL* connection)
     }
     else
     {
-        if(mysql_real_query(connection, SELECT_LAST_ID, strlen(SELECT_LAST_ID)))
+        if(mysql_real_query(connection, SQL_SELECT_LAST_ID, strlen(SQL_SELECT_LAST_ID)))
         {
             perror("SELECT LAST ID AFTER INSERT GROUP: QUERY ERROR\n");
             return -1;

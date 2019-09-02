@@ -5,10 +5,6 @@
 #ifndef LINPOP_DATABASE_MESSAGE_H
 #define LINPOP_DATABASE_MESSAGE_H
 
-#include <stdbool.h>
-#include <mysql/mysql.h>
-#include <stdio.h>
-#include <string.h>
 #include "DATABASE_mysql.h"
 
 typedef struct {

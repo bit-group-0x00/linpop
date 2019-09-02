@@ -11,7 +11,7 @@ MYSQL*  mysqlConnection()
 {
     MYSQL *connection = (MYSQL*)malloc(sizeof(MYSQL));
     mysql_init(connection);
-    if(!mysql_real_connect(connection, HOST, USERNAME, PASSWORD, "linpop", 3306, NULL, 0))
+    if(!mysql_real_connect(connection, HOST, USERNAME, PASSWORD, DATABASE, PORT, NULL, 0))
     {
         perror("CONNECTION FAIL\n");
     }
@@ -25,5 +25,5 @@ MYSQL*  mysqlConnection()
 void mysqlCloseConnection(MYSQL *connection)
 {
     mysql_close(connection);
-    printf("Bye");
+    printf("Bye\n");
 }

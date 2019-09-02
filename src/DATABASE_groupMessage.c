@@ -51,7 +51,7 @@ int insertGmMsg(GroupMessage *msg, MYSQL* connection)
     }
     else
     {
-        if(mysql_real_query(connection, SELECT_LAST_ID, strlen(SELECT_LAST_ID)))
+        if(mysql_real_query(connection, SQL_SELECT_LAST_ID, strlen(SQL_SELECT_LAST_ID)))
         {
             perror("SELECT LAST ID AFTER INSERT GROUP MESSAGE: QUERY ERROR\n");
             return -1;

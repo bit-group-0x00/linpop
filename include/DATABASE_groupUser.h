@@ -5,7 +5,6 @@
 #ifndef LINPOP_DATABASE_GROUPUSER_H
 #define LINPOP_DATABASE_GROUPUSER_H
 
-#include <mysql/mysql.h>
 #include "DATABASE_mysql.h"
 
 typedef struct {

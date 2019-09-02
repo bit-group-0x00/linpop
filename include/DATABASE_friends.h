@@ -6,10 +6,7 @@
 #define LINPOP_DATABASE_FRIENDS_H
 
 #include "DATABASE_user.h"
-#include <stdbool.h>
-#include <mysql/mysql.h>
-
-typedef int Status;
+#include "DATABASE_mysql.h"
 
 typedef struct {
     int friId;
@@ -28,7 +25,7 @@ typedef struct {
  * 使用者此函数时, 可将userId1和userId2看成等价的, 无需考虑顺序问题.
  * @param userId1 第一个人的id
  * @param userId2 第二个人的id
- * @return true: 是好友; false: 不是好友; -1: query fail
+ * @return 1: 是好友; 0: 不是好友; -1: query fail
  */
 Status isFriends(int userId1, int userId2, MYSQL* connection);
 
@@ -40,7 +37,7 @@ Status isFriends(int userId1, int userId2, MYSQL* connection);
  * 同时还需要对user表中的userFriNum进行更新.
  * @param userId1 第一个人的ID
  * @param userId2 第二个人的ID
- * @return true: 成功插入数据库, false: 失败
+ * @return 1: 成功插入数据库, -1: 失败
  */
 Status insertFriends(int userId1, int userId2, MYSQL* connection);
 
@@ -50,6 +47,7 @@ Status insertFriends(int userId1, int userId2, MYSQL* connection);
  * 用SUM计算好友总数
  * @param userId 用户的ID
  * @return FriendList 用户的好友列表, 包括用户ID, 好友ID数组头指针以及好友数
+ * @return if user has no friend or query error occur, return friendList(friId == NULL, friendsNum == 0)
  */
 FriendList getFriList(int userId, MYSQL* connection);
 
@@ -59,7 +57,7 @@ FriendList getFriList(int userId, MYSQL* connection);
  * 同样也需要对user表中的userFriNum进行更新
  * @param userId1 第一个人的ID
  * @param userId2 第二个人的ID
- * @return true: 删除成功, false: 删除失败
+ * @return 1: 删除成功, -1: 删除失败
  */
 Status deleteFriends(int userId1, int userId2, MYSQL *connection);
 
