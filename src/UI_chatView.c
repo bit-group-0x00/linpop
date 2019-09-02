@@ -4,46 +4,9 @@
 #include "../include/UI_chatView.h"
 
 char buf[50];
-void deal_num(GtkButton *button, gpointer data)
-{
-    const char *text = gtk_button_get_label(button);
 
-    //退个操作
-    if (0 == strcmp(text, "c")) {
-        buf[strlen(buf) - 1] = 0;
-    }
-    else
-    {
-        int a = 0, b = 0;
-        char c;
-        strcat(buf,text);
 
-        if (0 == strcmp("=", text)) {
-            printf("text==##%s##\n",text);
-            sscanf(buf,"%d%c%d", &a, &c, &b);
-
-            printf("---------001-----%c--\n",c);
-            if ('+' == c) {
-                sprintf(buf,"%d", a+b);
-            }
-            else if ('-' == c) {
-                sprintf(buf, "%d", a-b);
-            }
-            else if ('*' == c) {
-                sprintf(buf, "%d", a*b);
-            }
-            else if ('/' == c) {
-                sprintf(buf, "%d", a/b);
-            }
-
-        }
-    }
-
-    gtk_entry_set_text(GTK_ENTRY(data), buf);
-
-    return;
-}
-void windowLayout(GtkWindow* window){
+void window_Layout(GtkWindow* window){
     //窗口的高度和宽度
     gint width,height;
     //信息框的宽度
@@ -96,7 +59,7 @@ void windowLayout(GtkWindow* window){
 }
 
 /*绘制出基本的窗口并做出分区划片*/
-void chatView(int argc, char *argv[]){
+void chat_View(int argc, char *argv[]){
 
 
     GtkWidget *window;
@@ -120,7 +83,7 @@ void chatView(int argc, char *argv[]){
     gtk_window_set_resizable(GTK_WINDOW(window),FALSE);
 
     //对窗口进行布局
-    windowLayout(GTK_WINDOW(window));
+//    window_Layout(GTK_WINDOW(window));
 
     g_signal_connect(window,"destroy",G_CALLBACK(gtk_main_quit),NULL);
 
