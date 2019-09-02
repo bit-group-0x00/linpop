@@ -27,8 +27,8 @@ typedef struct profile
 typedef struct message
 {
   char* msg;
-  message* last;
-  message* next;
+  struct message* last;
+  struct message* next;
 } message;
 /* 好友结构体，包含好友的简要信息和聊天消息 */
 typedef struct friend
@@ -43,7 +43,7 @@ typedef struct group
 {
   profile group_profile;
   message msg;
-}
+} group;
 
 /*
   有关我的详细信息，所有界面要显示的信息
