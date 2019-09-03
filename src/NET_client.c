@@ -107,6 +107,7 @@ int main(int argc, char* argv[])
 //    login_window();
 //    chat_View();
     add_friend_window();
+    group_chat_window();
 
     int socket = conn_to(SERVER_IP, SERVER_PORT);
     /* test send file */

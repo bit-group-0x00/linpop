@@ -1,5 +1,5 @@
 //
-// Created by Anne Wu on 2019-08-30.
+// Created by yuanyuanyuan on 2019-09-01.
 //
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
@@ -105,6 +105,7 @@ void add_friend_window(int argc, char *argv[])
     GtkWidget *SearchButton;
 
 
+
     GtkWidget *OptionBox;
 
     GtkWidget *CancelButton;
@@ -150,12 +151,7 @@ void add_friend_window(int argc, char *argv[])
     //SearchResultLabel
     SearchResultLabel = gtk_label_new("Click Search Button ");
     gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultLabel,FALSE,FALSE,0);
-    //SearchResultImg
 
-    //SearchResultID
-
-   // gtk_widget_hide(SearchResultID);
-    //SearchResultNickName
 
 
     //
@@ -167,12 +163,13 @@ void add_friend_window(int argc, char *argv[])
     AddButton = gtk_button_new_with_label("AddButton");
     gtk_box_pack_start(GTK_BOX(OptionBox),AddButton,FALSE,FALSE,0);
     gtk_widget_set_sensitive(AddButton,FALSE);
-    g_signal_connect(G_OBJECT(AddButton),"clicked",G_CALLBACK(show_info),"success");
+   // g_signal_connect(G_OBJECT(AddButton),"clicked",)
     //g_signal_connect(G_OBJECT(AddButton),"clicked",G_CALLBACK())
     //CancelButton
     CancelButton = gtk_button_new_with_label("CancelButton");
     gtk_box_pack_start(GTK_BOX(OptionBox),CancelButton,FALSE,FALSE,0);
     g_signal_connect(G_OBJECT(CancelButton),"clicked",G_CALLBACK(delete_event),NULL);
+
 
 
 

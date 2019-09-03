@@ -23,6 +23,7 @@ void regist_window();
  *
  */
 void add_friend_window();
+void group_chat_window();
 void homepage_window(const int userID);
 /**
  * 主界面
