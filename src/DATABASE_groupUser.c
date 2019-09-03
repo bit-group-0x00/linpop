@@ -27,7 +27,7 @@ Status insertGroupUser(int groupId, int groupUserId, MYSQL* connection)
     char insertMessageSql[200];
     memset(insertMessageSql, '\0', sizeof(insertMessageSql));
     mysql_query(connection, "SET NAMES utf8");
-    sprintf(insertMessageSql, "INSERT INTO User.group_user(guGroupId, guUserId)\n"
+    sprintf(insertMessageSql, "INSERT INTO linpop.group_user(guGroupId, guUserId)\n"
                               "VALUES(%d, %d);", groupId, groupUserId);
 
     if(mysql_real_query(connection, insertMessageSql, strlen(insertMessageSql)))
