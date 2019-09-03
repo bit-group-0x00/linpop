@@ -90,10 +90,22 @@ void handle_login_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     char* passwd = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
-    state type = FAILURE;
     if(isUserExist(id, conn) == 1 && checkUserPassword(id, passwd, conn) == 1 && \
-    updateUserStatus(id, 1, conn) == 1 && updateUserIp(id, get_ip(client), conn) == 1) type = SUCCESS;
-    response_state(client, type);
+    updateUserStatus(id, 1, conn) == 1 && updateUserIp(id, get_ip(client), conn) == 1)
+    {
+        cJSON* response = cJSON_CreateObject();
+        User* user = getUserInfoById(id, conn);
+        cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(SUCCESS));
+        //cJSON_AddItemToObject(response, "id", cJSON_CreateNumber(id));
+        cJSON_AddItemToObject(response, "nick_name", cJSON_CreateString(user->userNickName));
+        cJSON_AddItemToObject(response, "avatar", cJSON_CreateString(user->userAvatar));
+        cJSON_AddItemToObject(response, "signature", cJSON_CreateString(user->userSignature));
+        cJSON_AddItemToObject(response, "state", cJSON_CreateNumber(ONLINE));
+        cJSON_AddItemToObject(response, "ip", cJSON_CreateString(get_aip(client)));
+        send_cjson(client, response);
+        freeUser(user);
+        cJSON_Delete(response);
+    } else response_state(client, FAILURE);
 }
 
 void handle_logout_request(int client, cJSON* cjson)
@@ -111,18 +123,20 @@ void handle_friend_list_request(int client, cJSON* cjson)
     cJSON* friend_list_cjson = cJSON_CreateObject();
     cJSON_AddItemToObject(friend_list_cjson, "type", cJSON_CreateNumber(SUCCESS));
     cJSON_AddItemToObject(friend_list_cjson, "friend_num", cJSON_CreateNumber(friend_list.friendsNum));
-    cJSON_AddItemToObject(friend_list_cjson, "friends", cJSON_CreateIntArray(friend_list.friId, friend_list.friendsNum));
+    cJSON_AddItemToObject(friend_list_cjson, "ids", cJSON_CreateIntArray(friend_list.friId, friend_list.friendsNum));
     cJSON* nick_names = cJSON_CreateArray(), *avatars = cJSON_CreateArray();
+    cJSON* states = cJSON_CreateArray(), *ips = cJSON_CreateArray(), *signatures = cJSON_CreateArray();
     for(int i = 0; i < friend_list.friendsNum; ++i)
     {
         User* friend = getUserInfoById(friend_list.friId[i], conn);
         cJSON_AddItemToArray(nick_names, cJSON_CreateString(friend->userNickName));
         cJSON_AddItemToArray(avatars, cJSON_CreateString(friend->userAvatar));
+        cJSON_AddItemToArray(states, cJSON_CreateString(friend->userStatus));
+        cJSON_AddItemToArray(ips, cJSON_CreateString(friend->userIp));
+        cJSON_AddItemToArray(signatures, cJSON_CreateString(friend->userSignature));
         freeUser(friend);
     }
     freeFriList(friend_list);
-    cJSON_AddItemToObject(friend_list_cjson, "nick_names", nick_names);
-    cJSON_AddItemToObject(friend_list_cjson, "avatars", avatars);
     send_cjson(client, friend_list_cjson);
     //printf("%s", cJSON_Print(friend_list_cjson));
     cJSON_Delete(friend_list_cjson);
@@ -158,8 +172,9 @@ void handle_add_friend_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     int friend_id = cJSON_GetObjectItem(cjson, "friend_id")->valueint;
-    if(isFriends(id, friend_id, conn) || insertFriends(id, friend_id, conn) == 1)
+    if(isFriends(id, friend_id, conn) == 1 || insertFriends(id, friend_id, conn) == 1)
         response_state(client, SUCCESS);
+    else response_state(client, FAILURE);
 }
 void handle_msg_send(int client, cJSON* cjson)
 {

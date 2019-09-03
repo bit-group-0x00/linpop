@@ -101,3 +101,6 @@ state recv_file(int socket, int size, const char* name);
 
 /* get ip by socket */
 int get_ip(int socket);
+
+/* get aip by socket */
+char* get_aip(int socket);

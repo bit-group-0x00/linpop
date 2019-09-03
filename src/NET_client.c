@@ -37,36 +37,15 @@ void handle_cjson(int socket, cJSON* cjson);
 */
 state request_my_info();
 
-// /* parse profile fuction */
-// profile parse_profile(cJSON* cjson);
+/* copy a char* from s */
+char* copy(char* s);
 
-// /* get all my friends function */
-// friend* get_friends();
-
-// /* get message function */
-// message get_message(cJSON* cjson);
-
-// friend* get_friends()
-// {
-//     friend fri;
-//     fri.friend_profile = parse_profile(cJSON_GetObjectItem(cjson, "friend_profile"));
-//     fri.msg = parse_message(cJSON_GetObjectItem(cjson, "message"));
-//     return fri;
-// }
-
-// profile parse_profile(cJSON* cjson)
-// {
-//     profile p;
-//     p.id = cJSON_GetObjectItem(cjson, "id");
-//     char* nick_name = cJSON_GetObjectItem(cjson, "nick_name");
-//     p.nick_name = malloc(sizeof(char) * (strlen(nick_name) + 1));
-//     strcpy(p.nick_name, nick_name);
-//     char* avatar = cJSON_GetObjectItem(cjson, "avatar");
-//     p.avatar = malloc(sizeof(char) * (strlen(avatar) + 1));
-//     strcpy(p.avatar, avatar);
-//     return p;
-// }
-
+char* copy(char* s)
+{
+    char* res = malloc(sizeof(char) * (strlen(s) + 1));
+    strcpy(res, s);
+    return res;
+}
 
 state regist(const char* nick_name, const char* passwd)
 {
@@ -82,10 +61,10 @@ state regist(const char* nick_name, const char* passwd)
     cjson = recv_cjson(server, server_buff, &server_buff_remain);
     state s =  cJSON_GetObjectItem(cjson, "type")->valueint;
     cJSON_Delete(cjson);
-    return s;  
+    return s;
 }
 
-state login(const int id, const char* passwd)
+state login(int id, const char* passwd)
 {
     /* create cjson of regist request */
     cJSON* cjson = cJSON_CreateObject();
@@ -99,9 +78,11 @@ state login(const int id, const char* passwd)
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
     if(s == SUCCESS)
     {
-        my_info.my_profile.id = id;
-        my_info.my_profile.nick_name = cJSON_GetObjectItem(cjson, "nick_name");
-        my_info.my_profile.avatar = cJSON_GetObjectItem(cjson, "avatar");
+        my_info.my_profile.nick_name = copy(cJSON_GetObjectItem(cjson, "nick_name")->valuestring);
+        my_info.my_profile.avatar = copy(cJSON_GetObjectItem(cjson, "avatar")->valuestring);
+        my_info.my_profile.online = cJSON_GetObjectItem(cjson, "state")->valueint;
+        my_info.my_profile.ip = copy(cJSON_GetObjectItem(cjson, "ip")->valuestring);
+        my_info.my_profile.signature = copy(cJSON_GetObjectItem(cjson, "signature")->valuestring);
         s = request_my_info();
     }
     cJSON_Delete(cjson);
@@ -111,13 +92,12 @@ state login(const int id, const char* passwd)
 state request_my_info()
 {
     /* create cjson of my info request */
-    cJSON* cjson = cJSON_CreateObject();
-    cJSON_AddItemToObject(cjson, "type", cJSON_CreateNumber(REQUEST_FRIEND_LIST));
-    cJSON_AddItemToObject(cjson, "id", cJSON_CreateNumber(my_info.my_profile.id));
+    cJSON* request_friend_list = cJSON_CreateObject();
+    cJSON_AddItemToObject(request_friend_list, "type", cJSON_CreateNumber(REQUEST_FRIEND_LIST));
+    cJSON_AddItemToObject(request_friend_list, "id", cJSON_CreateNumber(my_info.my_profile.id));
     /* todo: here needs more varify information */
-    /* send cjson */
-    send_cjson(server, cjson);
-    cJSON_Delete(cjson);
+    send_cjson(server, request_friend_list);
+    cJSON_Delete(request_friend_list);
     cJSON* friend_list_cjson = recv_cjson(server, server_buff, &server_buff_remain);
     //printf("%s\n", cJSON_Print(friend_list_cjson));
     state s = cJSON_GetObjectItem(friend_list_cjson, "type")->valueint;
@@ -125,18 +105,20 @@ state request_my_info()
     {
         my_info.friend_num = cJSON_GetObjectItem(friend_list_cjson, "friend_num")->valueint;
         my_info.friends = malloc(my_info.friend_num * sizeof(friend));
-        cJSON* friends = cJSON_GetObjectItem(friend_list_cjson, "friends");
+        cJSON* ids = cJSON_GetObjectItem(friend_list_cjson, "ids");
         cJSON* nick_names = cJSON_GetObjectItem(friend_list_cjson, "nick_names");
         cJSON* avatars = cJSON_GetObjectItem(friend_list_cjson, "avatars");
+        cJSON* ips = cJSON_GetObjectItem(friend_list_cjson, "ips");
+        cJSON* states = cJSON_GetObjectItem(friend_list_cjson, "states");
+        cJSON* signatures = cJSON_GetObjectItem(friend_list_cjson, "signatures");
         for(int i = 0; i < my_info.friend_num; ++i)
         {
-            my_info.friends[i].friend_profile.id = cJSON_GetArrayItem(friends, i)->valueint;
-            char* nick_name = cJSON_GetArrayItem(nick_names, i)->valuestring;
-            my_info.friends[i].friend_profile.nick_name = malloc(sizeof(char) * (strlen(nick_name) + 1));
-            strcpy(my_info.friends[i].friend_profile.nick_name, nick_name);
-            char* avatar = cJSON_GetArrayItem(avatars, i)->valuestring;
-            my_info.friends[i].friend_profile.avatar = malloc(sizeof(char) * (strlen(avatar) + 1));
-            strcpy(my_info.friends[i].friend_profile.avatar, avatar);
+            my_info.friends[i].friend_profile.id = cJSON_GetArrayItem(ids, i)->valueint;
+            my_info.friends[i].friend_profile.nick_name = copy(cJSON_GetArrayItem(nick_names, i)->valuestring);
+            my_info.friends[i].friend_profile.avatar = copy(cJSON_GetArrayItem(avatars, i)->valuestring);
+            my_info.friends[i].friend_profile.ip = copy(cJSON_GetArrayItem(ips, i)->valuestring);
+            my_info.friends[i].friend_profile.online = cJSON_GetArrayItem(states, i)->valueint;
+            my_info.friends[i].friend_profile.signature = copy(cJSON_GetArrayItem(signatures, i)->valueint);
             my_info.friends[i].first_msg = my_info.friends[i].last_msg = NULL;
             cJSON* request_msg_list = cJSON_CreateObject();
             cJSON_AddItemToObject(request_msg_list, "type", cJSON_CreateNumber(REQUEST_MESSAGE_LIST));
@@ -145,8 +127,8 @@ state request_my_info()
             send_cjson(server, request_msg_list);
             cJSON_Delete(request_msg_list);
             cJSON* msg_list_cjson = recv_cjson(server, server_buff, &server_buff_remain);
-            printf("%s", cJSON_Print(msg_list_cjson));
-            int msg_num = cJSON_GetObjectItem(msg_list_cjson, "message_num");
+            //printf("%s", cJSON_Print(msg_list_cjson));
+            int msg_num = cJSON_GetObjectItem(msg_list_cjson, "message_num")->valueint;
             cJSON* contents = cJSON_GetObjectItem(msg_list_cjson, "contents");
             cJSON* senders = cJSON_GetObjectItem(msg_list_cjson, "senders");
             cJSON* dates = cJSON_GetObjectItem(msg_list_cjson, "dates");
@@ -154,14 +136,11 @@ state request_my_info()
             for(int j = 0; j < msg_num; ++j)
             {
                 message* msg = malloc(sizeof(message));
-                msg->sender = cJSON_GetArrayItem(senders, i)->valueint;
-                msg->checked = cJSON_GetArrayItem(states, i)->valueint;
-                char* content = cJSON_GetArrayItem(contents, i)->valuestring;
-                msg->content = malloc(sizeof(char) * (strlen(content) + 1));
-                strcpy(msg->content, content);
-                char* date = cJSON_GetArrayItem(dates, i)->valuestring;
-                msg->date = malloc(sizeof(char) * (strlen(date) + 1));
-                strcpy(msg->date, date);
+                msg->last = msg->next = NULL;
+                msg->sender = cJSON_GetArrayItem(senders, j)->valueint;
+                msg->checked = cJSON_GetArrayItem(states, j)->valueint;
+                msg->content = copy(cJSON_GetArrayItem(contents, j)->valuestring);
+                msg->date = copy(cJSON_GetArrayItem(dates, j)->valuestring);
                 if(my_info.friends[i].last_msg == NULL)
                 {
                     my_info.friends[i].last_msg = msg;
@@ -171,14 +150,77 @@ state request_my_info()
                 {
                     /* add new message to the end of list */
                     my_info.friends[i].last_msg->next = msg;
-                    msg->last = my_info.friends[i].last_msg;
+                    msg->last = my_info.friends[j].last_msg;
                     my_info.friends[i].last_msg = msg;
                 }
             }
             cJSON_Delete(msg_list_cjson);
         }
     }
-    cJSON_Delete(cjson);
+
+    cJSON* request_group_list = cJSON_CreateObject();
+    cJSON_AddItemToObject(request_group_list, "type", cJSON_CreateNumber(REQUEST_GROUP_LIST));
+    cJSON_AddItemToObject(request_group_list, "id", cJSON_CreateNumber(my_info.my_profile.id));
+    /* todo: here needs more varify information */
+    send_cjson(server, request_group_list);
+    cJSON_Delete(request_group_list);
+    cJSON* group_list_cjson = recv_cjson(server, server_buff, &server_buff_remain);
+    s = cJSON_GetObjectItem(group_list_cjson, "type")->valueint;
+    if(s == SUCCESS)
+    {
+        my_info.group_num = cJSON_GetObjectItem(group_list_cjson, "group_num")->valueint;
+        my_info.groups = malloc(my_info.group_num * sizeof(group));
+        cJSON* g_ids = cJSON_GetObjectItem(group_list_cjson, "group_ids");
+        cJSON* names = cJSON_GetObjectItem(group_list_cjson, "names");
+        cJSON* abouts = cJSON_GetObjectItem(group_list_cjson, "abouts");
+        cJSON* g_avatars = cJSON_GetObjectItem(group_list_cjson, "group_avatars");
+        for(int i = 0; i < my_info.group_num; ++i)
+        {
+            my_info.group[i].g_profile.id = cJSON_GetArrayItem(g_ids, i)->valueint;
+            my_info.group[i].g_profile.name = copy(cJSON_GetArrayItem(names, i)->string);
+            my_info.group[i].g_profile.about = copy(cJSON_GetArrayItem(abouts, i)->string);
+            my_info.group[i].g_profile.avatar = copy(cJSON_GetArrayItem(g_avatars, i)->string);
+            my_info.group[i].first_msg = my_info.group[i].last_msg = NULL;
+
+            cJSON* request_g_msg_list = cJSON_CreateObject();
+            cJSON_AddItemToObject(request_g_msg_list, "type", cJSON_CreateNumber(REQUEST_GROUP_MESSAGE_LIST));
+            cJSON_AddItemToObject(request_g_msg_list, "id", cJSON_CreateNumber(my_info.my_profile.id));
+            cJSON_AddItemToObject(request_g_msg_list, "group_id", cJSON_CreateNumber(my_info.groups[i].g_profile.id));
+            send_cjson(server, request_g_msg_list);
+            cJSON_Delete(request_g_msg_list);
+
+            cJSON* g_msg_list_cjson = recv_cjson(server, server_buff, &server_buff_remain);
+            printf("%s", cJSON_Print(g_msg_list_cjson));
+            int msg_num = cJSON_GetObjectItem(g_msg_list_cjson, "message_num")->valueint;
+            cJSON* contents = cJSON_GetObjectItem(g_msg_list_cjson, "contents");
+            cJSON* senders = cJSON_GetObjectItem(g_msg_list_cjson, "senders");
+            cJSON* dates = cJSON_GetObjectItem(g_msg_list_cjson, "dates");
+            cJSON* states = cJSON_GetObjectItem(g_msg_list_cjson, "states");
+            for(int j = 0; j < msg_num; ++j)
+            {
+                message* msg = malloc(sizeof(message));
+                msg->last = msg->next = NULL;
+                msg->sender = cJSON_GetArrayItem(senders, j)->valueint;
+                msg->checked = cJSON_GetArrayItem(states, j)->valueint;
+                msg->content = copy(cJSON_GetArrayItem(contents, j)->valuestring);
+                msg->date = copy(cJSON_GetArrayItem(dates, j)->valuestring);
+                if(my_info.groups[i].last_msg == NULL)
+                {
+                    my_info.groups[i].last_msg = msg;
+                    my_info.groups[i].first_msg = msg;
+                }
+                else
+                {
+                    /* add new message to the end of list */
+                    my_info.groups[i].last_msg->next = msg;
+                    msg->last = my_info.groups[j].last_msg;
+                    my_info.groups[i].last_msg = msg;
+                }
+            }
+            cJSON_Delete(g_msg_list_cjson);
+        }
+    }
+    //cJSON_Delete(cjson);
     return s;
 }
 
@@ -251,16 +293,18 @@ state logout()
 int main(int argc, char* argv[])
 {
     /* connect to server */
-    if((server = conn_to( inet_addr("127.0.0.1"), SERVER_PORT)) == -1)
+    if((server = conn_to( inet_addr("10.195.123.12"), SERVER_PORT)) == -1)
     {
         printf("cannot connect to server, try again later.\n");
         return -1;
     }
+    int id = 10006;
     /* test regist, login and send message */
-    //printf("regist result: %d\n", regist("pengyao", "123456"));
-    printf("login result: %d\n", login(10000, "123456"));
-    printf("add friend result: %d\n", add_friend(10001));
-    //printf("send message to friend result: %d\n", send_msg_to_friend(10001, "hello my friend"));
+    //printf("regist result: %d\n", regist("helloworld", "123456"));
+    printf("login result: %d\n", login(id, "123456"));
+    my_info.my_profile.id = id;
+    printf("add friend result: %d\n", add_friend(10000));
+    printf("send message to friend result: %d\n", send_msg_to_friend(10001, "hello my friend"));
     printf("logout result: %d\n", logout());
     //send_msg(server, "pengyao", "helloworld!");
 

@@ -20,7 +20,7 @@ typedef struct profile
   state online;
   char* ip;
   char* nick_name;
-  char* signiture;
+  char* signature;
   char* avatar;
 } profile;
 /* 消息结构体，用双向链表表示消息队列 */
@@ -41,11 +41,19 @@ typedef struct friend
   message* first_msg;
   message* last_msg;
 } friend;
-
+typedef struct group_profile
+{
+  int id;
+  char* name;
+  char* about;
+  char* avatar;
+} group_profile;
 /* 群聊结构体，包括群聊的基本信息和聊天消息 */
 typedef struct group
 {
-  profile group_profile;
+  group_profile g_profile;
+  int user_num;
+  profile profiles;
   message* first_msg;
   message* last_msg;
 } group;
@@ -79,23 +87,6 @@ state regist(const char* nick_name, const char* passwd);
   返回FAILURE（1），如果登陆过程中发生了错误返回ERROR（-1）
 */
 state login(const int id, const char* passwd);
-
-/*
-  request user's profile
-  请求用户的简要信息，区别于上面的的获取自己的详细信息，
-  这里的这个函数是获得好友的简要信息，用于列表显示。
-  传入用户的id和回调函数，返回SUCCESS（0）表示正在请求，
-  FAILURE（1）表示请求失败。
-  回调函数的作用：在调用请求用户信息的函数后，由于要和服务端
-  网络传输可能会堵塞主线程，为了避免这种情况发生，这里会创建一个
-  新的线程来执行请求，新的线程执行结束之后调用回调函数，在回调
-  函数里面执行更新界面操作。
-  回调函数的参数有state和profile，其中state用于表示请求的
-  结果，用SUCCESS（0）表示请求信息成功，FAILURE（1）表示
-  请求信息失败，ERROR（-1）表示请求过程中发生了错误；profile
-  结构体表示具体请求到的信息，用于更新界面。
-*/
-state request_user_profile(const int user_id, void(*callback)(state, profile));
 
 /*
   send message to friend
@@ -140,7 +131,7 @@ state send_file_to_friend(const int friend_id, const char* file_path, void(*call
 state send_file_to_group(const int group_id, const char* file_path, void(*callback)(state));
 
 /* 
-  通过id添加好友
+  通过id添加好友，返回添加结果
 */
 state add_friend(const int id);
 /*

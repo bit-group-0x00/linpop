@@ -22,6 +22,8 @@
 #define UNCHECKED 0x100
 #define ONLINE 0x200
 #define OFFLINE 0x300
+#define REQUEST_GROUP_LIST 0x400
+#define REQUEST_GROUP_MESSAGE_LIST 0x500
 
 typedef int state;
 //typedef unsigned long ip;

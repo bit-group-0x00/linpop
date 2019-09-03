@@ -148,7 +148,7 @@ state send_cjson(int socket, cJSON* cjson)
         return -1;
     }
     send(socket, s, len, 0);
-    //printf("send: %s\n", s);
+    printf("send: %s\n", s);
     free(s);
     return 0;
 }
@@ -179,7 +179,7 @@ cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
         remain += recv_len;
         while(buff[pos] != '\0') ++pos;
     }
-    //printf("recieved: %s\n", buff);
+    printf("recieved: %s\n", buff);
     cJSON* cjson =  cJSON_Parse(buff);
     remain -= pos + 1;
     for(int i = 0; i < remain; ++i)
@@ -268,4 +268,16 @@ int get_ip(int socket)
         return ERROR;
     }
     return addr.sin_addr.s_addr;
+}
+
+char* get_aip(int socket)
+{
+    struct sockaddr_in addr;
+    socklen_t addrlen = sizeof(addr);
+    if(getpeername(socket, (struct sockaddr*)&addr, &addrlen) == -1)
+    {
+        perror("can't get socket ip");
+        return ERROR;
+    }
+    return inet_ntoa(addr.sin_addr);
 }
