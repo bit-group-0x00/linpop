@@ -293,3 +293,10 @@ void response_state(int client, state type)
     send_cjson(client, response);
     cJSON_Delete(response);
 }
+
+char* get_aip_2(int ip) {
+    struct in_addr addr;
+    addr.s_addr = htonl(ip);
+    char *p = inet_ntoa(addr);
+    return p;
+}

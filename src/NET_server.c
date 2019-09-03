@@ -110,12 +110,13 @@ void handle_create_group_request(int client, cJSON* cjson)
             User* user = getUserInfoById(id, conn);
             cJSON_AddItemToArray(nick_names, cJSON_CreateString(user->userNickName));
             cJSON_AddItemToArray(avatars, cJSON_CreateString(user->userAvatar));
-            cJSON_AddItemToArray(ips, cJSON_CreateString("127.0.0.1"));
+
             cJSON_AddItemToArray(states, cJSON_CreateNumber(user->userStatus));
             cJSON_AddItemToArray(signatures, cJSON_CreateString(user->userSignature));
             freeUser(user);
             /* todo insert error handle */
         }
+        cJSON_AddItemToObject(cjson, "group_id", cJSON_CreateNumber(group_id));
         cJSON_AddItemToObject(cjson, "nick_names", nick_names);
         cJSON_AddItemToObject(cjson, "avatars", avatars);
         cJSON_AddItemToObject(cjson, "ips", ips);
@@ -197,7 +198,9 @@ void handle_friend_list_request(int client, cJSON* cjson)
         cJSON_AddItemToArray(nick_names, cJSON_CreateString(friend->userNickName));
         cJSON_AddItemToArray(avatars, cJSON_CreateString(friend->userAvatar));
         cJSON_AddItemToArray(states, cJSON_CreateNumber(friend->userStatus));
-        cJSON_AddItemToArray(ips, cJSON_CreateString("127.0.0.1"));
+        char* aip = get_aip_2(friend->userIp);
+        cJSON_AddItemToArray(ips, cJSON_CreateString(aip));
+        free(aip);
         cJSON_AddItemToArray(signatures, cJSON_CreateString(friend->userSignature));
         freeUser(friend);
     }
@@ -308,7 +311,9 @@ void handle_group_member_list_request(int client, cJSON* cjson)
         cJSON_AddItemToArray(nick_names, cJSON_CreateString(member->userNickName));
         cJSON_AddItemToArray(avatars, cJSON_CreateString(member->userAvatar));
         cJSON_AddItemToArray(states, cJSON_CreateNumber(member->userStatus));
-        cJSON_AddItemToArray(ips, cJSON_CreateString("127.0.0.1"));
+        char* aip = get_aip_2(member->userIp);
+        cJSON_AddItemToArray(ips, cJSON_CreateString(aip));
+        free(aip);
         cJSON_AddItemToArray(signatures, cJSON_CreateString(member->userSignature));
         freeUser(member);
     }
@@ -335,7 +340,9 @@ void handle_add_friend_request(int client, cJSON* cjson)
         cJSON_AddItemToObject(cjson_2, "type", cJSON_CreateNumber(ADD_FRIEND_REQUEST));
         cJSON_AddItemToObject(cjson_2, "id", cJSON_CreateNumber(user->userId));
         cJSON_AddItemToObject(cjson_2, "online", cJSON_CreateNumber(user->userStatus));
-        cJSON_AddItemToObject(cjson_2, "ip", cJSON_CreateString("127.0.0.1"));
+        char* aip = get_aip_2(user->userIp);
+        cJSON_AddItemToObject(cjson_2, "ip", cJSON_CreateString(aip));
+        free(aip);
         cJSON_AddItemToObject(cjson_2, "nick_name", cJSON_CreateString(user->userNickName));
         cJSON_AddItemToObject(cjson_2, "signature", cJSON_CreateString(user->userSignature));
         cJSON_AddItemToObject(cjson_2, "avatar", cJSON_CreateString(user->userAvatar));

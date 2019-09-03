@@ -89,9 +89,9 @@ group* parse_gro(cJSON* cjson)
     gro->first_mem = gro->last_mem = NULL;
     gro->first_msg = gro->last_msg = NULL;
     gro->last = gro->next = NULL;
-    gro->gro_pro.id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    gro->gro_pro.id = cJSON_GetObjectItem(cjson, "group_id")->valueint;
     gro->gro_pro.name = copy(cJSON_GetObjectItem(cjson, "name")->valuestring);
-    gro->gro_pro.intro = copy(cJSON_GetObjectItem(cjson, "intor")->valuestring);
+    gro->gro_pro.intro = copy(cJSON_GetObjectItem(cjson, "intro")->valuestring);
     gro->gro_pro.icon = copy(cJSON_GetObjectItem(cjson, "icon")->valuestring);
     int member_num = cJSON_GetObjectItem(cjson, "member_num")->valueint;
 
@@ -156,14 +156,22 @@ void append_fri(friend* fri)
 group* seek_gro(int id)
 {
     group* gro = my_info.first_gro;
-    while(gro != NULL) if(gro->gro_pro.id == id) break;
+    while(gro != NULL)
+    {
+        if(gro->gro_pro.id == id) break;
+        else gro = gro->next;
+    }
     return gro; 
 }
 
 friend* seek_fri(int id)
 {
     friend* fri = my_info.first_fri;
-    while(fri != NULL) if(fri->fri_pro.id == id) break;
+    while(fri != NULL)
+    {
+        if(fri->fri_pro.id == id) break;
+        else fri = fri->next;
+    }
     return fri;
 }
 
@@ -403,12 +411,12 @@ state request_my_info(int id)
             for(int j = 0; j < member_num; ++j)
             {
                 member* mem = malloc(sizeof(profile));
-                mem->mem_pro.id = cJSON_GetArrayItem(ids, i)->valueint;
-                mem->mem_pro.nick_name = copy(cJSON_GetArrayItem(nick_names, i)->valuestring);
-                mem->mem_pro.avatar = copy(cJSON_GetArrayItem(avatars, i)->valuestring);
-                mem->mem_pro.ip = copy(cJSON_GetArrayItem(ips, i)->valuestring);
-                mem->mem_pro.online = cJSON_GetArrayItem(states, i)->valueint;
-                mem->mem_pro.signature = copy(cJSON_GetArrayItem(signatures, i)->valuestring);
+                mem->mem_pro.id = cJSON_GetArrayItem(ids, j)->valueint;
+                mem->mem_pro.nick_name = copy(cJSON_GetArrayItem(nick_names, j)->valuestring);
+                mem->mem_pro.avatar = copy(cJSON_GetArrayItem(avatars, j)->valuestring);
+                mem->mem_pro.ip = copy(cJSON_GetArrayItem(ips, j)->valuestring);
+                mem->mem_pro.online = cJSON_GetArrayItem(states, j)->valueint;
+                mem->mem_pro.signature = copy(cJSON_GetArrayItem(signatures, j)->valuestring);
                 if(gro->last_mem == NULL) gro->last_mem = gro->first_mem = mem;
                 else
                 {
@@ -522,7 +530,7 @@ void handle_add_fri_request(int socket, cJSON* cjson)
 void handle_join_gro_request(int client, cJSON* cjson)
 {
     /* todo */
-    group* gro = parse_gro(gro);
+    group* gro = parse_gro(cjson);
     append_gro(gro);
     my_info.update_ui(CREATE_GROUP_REQUEST, gro);
 }

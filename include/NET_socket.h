@@ -23,7 +23,7 @@
 #include "NET_macro.h"
 #include "UTIL_cJSON.h"
 
-#define DEFAULT_SERVER_IP "127.0.0.1"
+#define DEFAULT_SERVER_IP "10.194.36.120"
 #define SERVER_PORT 6789
 #define CLIENT_PORT 9876
 #define BUFF_SIZE 10240
@@ -109,3 +109,6 @@ char* get_aip(int socket);
   回复操作结果
 */
 void response_state(int client, state type);
+
+/* */
+char* get_aip_2(int ip);
