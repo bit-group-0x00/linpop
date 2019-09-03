@@ -3,6 +3,7 @@
 //
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
+
 #define ICON_SIZE 80
 
 static GtkWidget *loginWindow;//登陆窗口
@@ -11,9 +12,10 @@ static GtkWidget *usernameText = NULL;//用户名
 static GtkWidget *passwordText = NULL;//密码
 static GtkWidget *passwordText2 = NULL;//确认密码
 static GtkWidget *fileSelector = NULL;
+static GtkFileChooserAction fileChooserAction;
 
 static GdkPixbuf *iconImageRes;
-static GdkImage *image;
+static GtkWidget *image;
 static state userID;
 
 void show_error(GtkWidget *widget, gpointer window, gchar* message)
@@ -44,7 +46,6 @@ gint show_question(GtkWidget *widget, gpointer window, gchar* message)
     gtk_window_set_title(GTK_WINDOW(dialog), "Question");
     gtk_window_set_position(GTK_WINDOW(dialog),GTK_WIN_POS_CENTER);
     result = gtk_dialog_run(GTK_DIALOG(dialog));
-    g_print("%d\n",result);
     gtk_widget_destroy(dialog);
     return result;
 }
@@ -53,6 +54,7 @@ void show_info(GtkWidget *widget, gpointer window, gchar* message)
 {
     //提示信息对话框
     GtkWidget *dialog;
+    g_print("show_info:%s\n",message);
     dialog = gtk_message_dialog_new(NULL,
                                     GTK_DIALOG_DESTROY_WITH_PARENT,
                                     GTK_MESSAGE_INFO,
@@ -64,32 +66,34 @@ void show_info(GtkWidget *widget, gpointer window, gchar* message)
     gtk_widget_destroy(dialog);
 }
 
-void on_fileSelection_ok(GtkButton* button, gpointer data){
-    //文件选择确定
-    const char* filename;
-    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(data));
-    iconImageRes = gdk_pixbuf_new_from_file_at_size(filename,ICON_SIZE,ICON_SIZE,NULL);
-    gtk_image_set_from_pixbuf(GTK_IMAGE(image),iconImageRes);
-}
-void on_fileSelection_cancel(GtkButton* button, gpointer data){
-    //文件选择取消
-    gtk_widget_destroy(fileSelector);
-}
+//void on_fileSelection_ok(GtkButton* button, gpointer data){
+//    //文件选择确定
+//    const char* filename;
+//    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(data));
+//    iconImageRes = gdk_pixbuf_new_from_file_at_size(filename,ICON_SIZE,ICON_SIZE,NULL);
+//    gtk_image_set_from_pixbuf(GTK_IMAGE(image),iconImageRes);
+//}
+//void on_fileSelection_cancel(GtkButton* button, gpointer data){
+//    //文件选择取消
+//    gtk_widget_destroy(fileSelector);
+//}
 
 void on_button_clicked (GtkWidget *button, gpointer data){
-//    const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
     const gchar *password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
+    const char* filename;
+    gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     switch((int)data){
         case LOG_IN:
             //登陆
-            g_print("username is:%s\n",username);
-            g_print("password is:%s\n",password);
+//            g_print("username is:%s\n",username);
+//            g_print("password is:%s\n",password);
             userID = strtol(username,NULL,10);
             switch(login(userID,password)){
                 case SUCCESS:
+                    gtk_widget_destroy(loginWindow);
                     homepage_window(userID);
                     break;
                 case FAILURE:
@@ -114,14 +118,12 @@ void on_button_clicked (GtkWidget *button, gpointer data){
         case REGIST_CONFIRM:
             //确认注册
             result = show_question(NULL,NULL,"Is every information is right?");
-            g_print("%d\n",result);
-            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
+//            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
             if(result==GTK_RESPONSE_YES){
                 //用户确定创建账户
                 if(strcmp(password,password2)==0){
                     //两次输入的账号一样
                     userID = regist(username,password);
-                    g_print("userID：\nUSERID:%s\n",userID);
                     switch(userID){
                         case FAILURE:
                             g_print("Registered process failed：\nUSERNAME:%s\nPASSWORD:%s\n",username,password);
@@ -135,8 +137,12 @@ void on_button_clicked (GtkWidget *button, gpointer data){
                             break;
                         default:
                             g_print("创建成功：\nUSERNAME:%s\nPASSWORD:%s\n",username,password);
-                            show_info(NULL, NULL ,strcat("Congratulation!\nYour userID is: ",userID));
-                            login_window();
+                            g_print("USERID: %d\nUSERINFO：\n%s\n",userID,infoTitle);
+                            infoTitle = g_strdup_printf("%s%d",infoTitle,userID);
+                            show_info(NULL, NULL ,infoTitle);
+                            gtk_widget_destroy(registWindow);
+                            login(userID,password);
+                            homepage_window(userID);
                             break;
                     }
                 }
@@ -150,18 +156,26 @@ void on_button_clicked (GtkWidget *button, gpointer data){
             }
             else{
                 g_print("cancel\n");
+                regist_window();
             }
 
             break;
         case ADD_IMAGE:
             //添加头像
-            fileSelector = gtk_file_selection_new("choose a photo");
+            fileSelector = gtk_file_chooser_dialog_new("choose a photo",NULL,fileChooserAction,"confirm");
             g_print("Fileselector\n");
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_ok),fileSelector);
-            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->cancel_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
+
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileSelector));
+            iconImageRes = gdk_pixbuf_new_from_file_at_size(filename,ICON_SIZE,ICON_SIZE,NULL);
+            gtk_image_set_from_pixbuf(GTK_IMAGE(image),iconImageRes);
+//
+//            g_signal_connect(G_OBJECT(GTK_FILE_CHOOSER(fileSelector)->ok),"clicked",G_CALLBACK(on_fileSelection_ok),fileSelector);
+//            g_signal_connect_swapped(G_OBJECT(GTK_FILE_CHOOSER(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
+//            g_signal_connect(G_OBJECT(GTK_FILE_CHOOSER(fileSelector)->cancel_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
 
             g_signal_connect(G_OBJECT(fileSelector),"destroy",G_CALLBACK(gtk_widget_destroy),NULL);
+
+
             gtk_widget_show(fileSelector);
             break;
     }
@@ -173,7 +187,7 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     return FALSE;
 }
 
-void regist_window(int argc, char *argv[]){
+void regist_window(){
     GtkWidget *box;
 
     GtkWidget *optionBox;
@@ -185,9 +199,9 @@ void regist_window(int argc, char *argv[]){
     GtkWidget *passwordBox;
     GtkWidget *passwordBox2;
     GtkWidget *imageBox;
-    GtkWidget *usernameLable;
-    GtkWidget *passwordLable;
-    GtkWidget *passwordLable2;
+    GtkWidget *usernamelabel;
+    GtkWidget *passwordlabel;
+    GtkWidget *passwordlabel2;
     GtkWidget *sep;
     GtkWidget *addImageButton;
 
@@ -222,26 +236,26 @@ void regist_window(int argc, char *argv[]){
     imageBox = gtk_vbox_new(FALSE,0);
     gtk_box_pack_start(GTK_BOX(infoBox),imageBox,FALSE,FALSE,0);
 
-    usernameLable = gtk_label_new("Login ID:");
-    gtk_label_set_width_chars(usernameLable,15);
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
+    usernamelabel = gtk_label_new("Your nickname:");
+    gtk_label_set_width_chars(usernamelabel,15);
+    gtk_box_pack_start(GTK_BOX(usernameBox),usernamelabel,FALSE,FALSE,5);
     usernameText = gtk_entry_new();
     gtk_entry_set_max_length(usernameText,20);
     gtk_entry_set_text(GTK_ENTRY(usernameText),"poplin");
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
 
-    passwordLable = gtk_label_new("Password:");
-    gtk_label_set_width_chars(passwordLable,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
+    passwordlabel = gtk_label_new("Your password:");
+    gtk_label_set_width_chars(passwordlabel,15);
+    gtk_box_pack_start(GTK_BOX(passwordBox),passwordlabel,FALSE,FALSE,5);
 
     passwordText = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText),FALSE);
     gtk_entry_set_max_length(passwordText,20);
     gtk_box_pack_start(GTK_BOX(passwordBox),passwordText,FALSE,FALSE,5);
 
-    passwordLable2 = gtk_label_new("Confirm Password:");
-    gtk_label_set_width_chars(passwordLable2,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox2),passwordLable2,FALSE,FALSE,5);
+    passwordlabel2 = gtk_label_new("Confirm Password:");
+    gtk_label_set_width_chars(passwordlabel2,15);
+    gtk_box_pack_start(GTK_BOX(passwordBox2),passwordlabel2,FALSE,FALSE,5);
 
     passwordText2 = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText2),FALSE);
@@ -287,8 +301,8 @@ void login_window(int argc, char *argv[]){
     GtkWidget *infoBox;
     GtkWidget *usernameBox;
     GtkWidget *passwordBox;
-    GtkWidget *usernameLable;
-    GtkWidget *passwordLable;
+    GtkWidget *usernamelabel;
+    GtkWidget *passwordlabel;
     GtkWidget *sep;
     GtkWidget *image;
 
@@ -300,6 +314,7 @@ void login_window(int argc, char *argv[]){
     gtk_window_set_position(GTK_WINDOW(loginWindow),GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(loginWindow),400,300);
     gtk_container_set_border_width(GTK_CONTAINER(loginWindow),20);
+    gtk_window_set_opacity(GTK_WINDOW(loginWindow),0.92);
 
     //Big box：最外层box
     box = gtk_vbox_new(FALSE,0);
@@ -320,17 +335,20 @@ void login_window(int argc, char *argv[]){
     passwordBox = gtk_hbox_new(FALSE,0);
     gtk_box_pack_start(GTK_BOX(infoBox),passwordBox,FALSE,FALSE,0);
 
-    usernameLable = gtk_label_new("Login ID:");
-    gtk_label_set_width_chars(usernameLable,15);
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
+    usernamelabel = gtk_label_new("Login ID:");
+    gtk_label_set_markup(GTK_LABEL(usernamelabel),g_strdup_printf("%s%s%s","<span underline='double' underline_color='blue' font_desc='16'>","LoginID","</span>"));
+
+    gtk_label_set_width_chars(usernamelabel,15);
+    gtk_box_pack_start(GTK_BOX(usernameBox),usernamelabel,FALSE,FALSE,5);
     usernameText = gtk_entry_new();
     gtk_entry_set_max_length(usernameText,20);
     gtk_entry_set_text(GTK_ENTRY(usernameText),"12345");
     gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
 
-    passwordLable = gtk_label_new("Password:");
-    gtk_label_set_width_chars(passwordLable,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
+    passwordlabel = gtk_label_new("Password:");
+    label_font(passwordlabel,"Password",FONT_SIZE_SMALL,"black","double","blue");
+    gtk_label_set_width_chars(passwordlabel,15);
+    gtk_box_pack_start(GTK_BOX(passwordBox),passwordlabel,FALSE,FALSE,5);
 
     passwordText = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText),FALSE);

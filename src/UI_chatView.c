@@ -2,293 +2,191 @@
 // Created by Anne Wu on 2019-08-30.
 //
 #include "../include/UI_chatView.h"
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 560
-#define BORDER_WIDTH 5
 
-void on_click_sendMsgBtn(GtkButton *button,BufferDeliver* BD ){
-    GtkTextBuffer *tmpBuffer;
+char buf[50];
+void deal_num(GtkButton *button, gpointer data)
+{
+    const char *text = gtk_button_get_label(button);
 
+    //退个操作
+    if (0 == strcmp(text, "c")) {
+        buf[strlen(buf) - 1] = 0;
+    }
+    else
+    {
+        int a = 0, b = 0;
+        char c;
+        strcat(buf,text);
 
-}
-void on_click_emojiBtn(GtkButton *button,gpointer data){
+        if (0 == strcmp("=", text)) {
+            printf("text==##%s##\n",text);
+            sscanf(buf,"%d%c%d", &a, &c, &b);
 
-}
-void on_click_sendFileBtn(GtkButton *button,gpointer data){
+            printf("---------001-----%c--\n",c);
+            if ('+' == c) {
+                sprintf(buf,"%d", a+b);
+            }
+            else if ('-' == c) {
+                sprintf(buf, "%d", a-b);
+            }
+            else if ('*' == c) {
+                sprintf(buf, "%d", a*b);
+            }
+            else if ('/' == c) {
+                sprintf(buf, "%d", a/b);
+            }
 
-}
-void on_click_viewHisMsgBtn(GtkButton *button,gpointer data){
+        }
+    }
 
-}
+    gtk_entry_set_text(GTK_ENTRY(data), buf);
 
-
-//infobox是一个10行40列的Box
-void opera_info_box(GtkTable *infoBox){
-    GtkWidget *frame;
-    frame=gtk_frame_new(NULL);
-
-    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
-
-    gtk_table_attach_defaults(GTK_TABLE(infoBox),frame,0,40,0,10);
-
-    //头像,使用图片控件,来在信息框上显示头像
-    GtkWidget *avatar;
-
-    GdkPixbuf *src=gdk_pixbuf_new_from_file("../res/test_icon.png",NULL);
-    GdkPixbuf *dst=gdk_pixbuf_scale_simple(GDK_PIXBUF(src),120,120,GDK_INTERP_BILINEAR);
-
-    avatar=gtk_image_new_from_pixbuf(GDK_PIXBUF(dst));
-
-    gtk_table_attach_defaults(GTK_TABLE(infoBox),avatar,0,40,0,3);
-
-    //利用label控件显示用户昵称
-    GtkWidget *nickname;
-
-    nickname=gtk_label_new("HolyGodMT");
-
-    gtk_table_attach_defaults(GTK_TABLE(infoBox),nickname,0,40,3,4);
-
-    //利用显示控件显示该用户的ID
-    GtkWidget *ID;
-
-    ID=gtk_label_new("ID: 154575261");
-
-    gtk_table_attach_defaults(GTK_TABLE(infoBox),ID,0,40,4,5);
-
-    //利用显示控件显示用户的IP地址
-    GtkWidget *IP_address;
-
-    IP_address=gtk_label_new("IP: 192.168.0.1");
-
-    gtk_table_attach_defaults(GTK_TABLE(infoBox),IP_address,0,40,5,6);
-
-    //利用显示控件显示该用户的个性签名,并用frame框起来
-    GtkWidget *signature;
-    //个性签名中的文本内容
-    GtkWidget *sigText;
-
-    signature=gtk_frame_new("Signature");
-
-    sigText=gtk_label_new("I'm Ironman\nI killed Thanos");
-
-    gtk_container_add(GTK_CONTAINER(signature),sigText);
-
-    gtk_table_attach_defaults(GTK_TABLE(infoBox),signature,5,35,6,9);
-
+    return;
 }
 
-//聊天界面为一个10*10的表格
-void opera_chatView_box(GtkTable *msgBox){
-    GtkWidget *frame;
-    frame=gtk_frame_new(NULL);
+/*测试函数*/
+void func(int argc,char *argv[])
+{
+    //1.gtk环境初始化
+    gtk_init(&argc, &argv);
 
-    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
+    //2.创建一个窗口
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-    gtk_table_attach_defaults(GTK_TABLE(msgBox),frame,0,10,0,10);
+    //3.创建一个表格容器5行4列
+    GtkWidget *table = gtk_table_new(5,4,TRUE);
+    //将table加入到window中
+    gtk_container_add(GTK_CONTAINER(window), table);
 
-}
+    //4.创建一个行编辑
+    GtkWidget *entry = gtk_entry_new();
+    //设置行编辑的内容
+    gtk_entry_set_text(GTK_ENTRY(entry), "");
+    //设置行编辑不允许编辑，只能显示用
+    gtk_editable_set_editable(GTK_EDITABLE(entry), FALSE);
 
-void opera_text_input_box(GtkTable *textBox){
-    GtkWidget *frame;
+    //5.创建多个按钮
+    GtkWidget *button0 = gtk_button_new_with_label("0");//数值键0
+    GtkWidget *button1 = gtk_button_new_with_label("1");//数值键1
+    GtkWidget *button2 = gtk_button_new_with_label("2");//数值键2
+    GtkWidget *button3 = gtk_button_new_with_label("3");//数值键3
+    GtkWidget *button4 = gtk_button_new_with_label("4");//数值键4
+    GtkWidget *button5 = gtk_button_new_with_label("5");//数值键5
+    GtkWidget *button6 = gtk_button_new_with_label("6");//数值键6
+    GtkWidget *button7 = gtk_button_new_with_label("7");//数值键7
+    GtkWidget *button8 = gtk_button_new_with_label("8");//数值键8
+    GtkWidget *button9 = gtk_button_new_with_label("9");//数值键9
 
-    frame=gtk_frame_new(NULL);
+    GtkWidget *button_add = gtk_button_new_with_label("+");//加号
+    GtkWidget *button_minus = gtk_button_new_with_label("-");//减号
+    GtkWidget *button_mul = gtk_button_new_with_label("*");//乘号
+    GtkWidget *button_div = gtk_button_new_with_label("/");//除号
+    GtkWidget *button_equal = gtk_button_new_with_label("=");//等号
+    GtkWidget *button_delete = gtk_button_new_with_label("c");//退格键
 
-    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
+    //6.布局将上面的按钮均放入table容器中
+    gtk_table_attach_defaults(GTK_TABLE(table), entry, 0, 4, 0, 1);
 
-    gtk_table_attach_defaults(GTK_TABLE(textBox),frame,0,20,0,10);
+    gtk_table_attach_defaults(GTK_TABLE(table), button0, 0, 1, 4, 5);
+    gtk_table_attach_defaults(GTK_TABLE(table), button1, 0, 1, 3, 4);
+    gtk_table_attach_defaults(GTK_TABLE(table), button2, 1, 2, 3, 4);
+    gtk_table_attach_defaults(GTK_TABLE(table), button3, 2, 3, 3, 4);
+    gtk_table_attach_defaults(GTK_TABLE(table), button4, 0, 1, 2, 3);
+    gtk_table_attach_defaults(GTK_TABLE(table), button5, 1, 2, 2, 3);
+    gtk_table_attach_defaults(GTK_TABLE(table), button6, 2, 3, 2, 3);
+    gtk_table_attach_defaults(GTK_TABLE(table), button7, 0, 1, 1, 2);
+    gtk_table_attach_defaults(GTK_TABLE(table), button8, 1, 2, 1, 2);
+    gtk_table_attach_defaults(GTK_TABLE(table), button9, 2, 3, 1, 2);
 
+    gtk_table_attach_defaults(GTK_TABLE(table), button_add, 1, 2, 4, 5);
+    gtk_table_attach_defaults(GTK_TABLE(table), button_minus, 2, 3, 4, 5);
+    gtk_table_attach_defaults(GTK_TABLE(table), button_mul , 3, 4, 2, 3);
+    gtk_table_attach_defaults(GTK_TABLE(table), button_div, 3, 4, 3, 4);
+    gtk_table_attach_defaults(GTK_TABLE(table), button_equal, 3, 4, 4, 5);
+    gtk_table_attach_defaults(GTK_TABLE(table), button_delete, 3, 4, 1, 2);
 
-    //textbox视为一个tablebox
+    //7.注册信号函数，把entry传给回调函数deal_num()
+    g_signal_connect(button0, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button1, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button2, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button3, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button4, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button5, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button6, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button7, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button8, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button9, "pressed", G_CALLBACK(deal_num), entry);
 
+    g_signal_connect(button_add, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button_mul, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button_div, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button_minus, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button_equal, "pressed", G_CALLBACK(deal_num), entry);
+    g_signal_connect(button_delete, "pressed", G_CALLBACK(deal_num), entry);
 
-
-}
-// 功能盒子
-void opera_function_box(GtkContainer *funcBox){
-//    GtkWidget *frame;
-//    frame=gtk_frame_new(NULL);
-//
-//    gtk_frame_set_shadow_type(GTK_FRAME(frame),GTK_SHADOW_ETCHED_IN);
-//
-//    gtk_container_add(GTK_CONTAINER(funcBox),frame);
-
-    GtkWidget *emojiBtn;
-    GtkWidget *sendFileBtn;
-    GtkWidget *historyMsg;
-
-    historyMsg=gtk_button_new_with_label("View history msg");
-
-    emojiBtn=gtk_button_new_with_label("Send emoji");
-
-    gtk_widget_set_size_request(GTK_WIDGET(emojiBtn),20,10);
-
-    sendFileBtn=gtk_button_new_with_label("Send file");
-
-    gtk_widget_set_size_request(GTK_WIDGET(sendFileBtn),20,10);
-
-    gtk_widget_set_size_request(GTK_WIDGET(historyMsg),20,10);
-
-    gtk_container_add(GTK_CONTAINER(funcBox),emojiBtn);
-    gtk_container_add(GTK_CONTAINER(funcBox),sendFileBtn);
-    gtk_container_add(GTK_CONTAINER(funcBox),historyMsg);
-
-    g_signal_connect(emojiBtn,"clicked",G_CALLBACK(on_click_emojiBtn),NULL);
-
-    g_signal_connect(sendFileBtn,"clicked",G_CALLBACK(on_click_sendFileBtn),NULL);
-
-    g_signal_connect(historyMsg,"clicked",G_CALLBACK(on_click_viewHisMsgBtn),NULL);
-}
-void connect_chatView_textInput(GtkTable *msgBox,GtkTable *inputBox){
-    opera_chatView_box(GTK_TABLE(msgBox));
-    opera_text_input_box(GTK_TABLE(inputBox));
-
-
-    //msgview
-    GtkWidget *msgView;
-
-    msgView=gtk_text_view_new();
-
-    GtkTextBuffer *msgBuffer;
-
-    msgBuffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(msgView));
-
-    gtk_table_attach_defaults(GTK_TABLE(msgBox),msgView,0,10,0,10);
-
-
-    //设置光标不可见
-    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(msgView),FALSE);
-
-    //设置不可编辑
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(msgView),FALSE);
-
-
-
-    //textview
-    //textbox视为一个tablebox
-
-    GtkWidget *sendBtn;
-
-    sendBtn=gtk_button_new_with_label("Send");
-
-    gtk_table_attach_defaults(GTK_TABLE(inputBox),sendBtn,17,20,8,10);
-
-    GtkWidget *text;
-    GtkTextBuffer *textBuffer;
-
-    text=gtk_text_view_new();
-    textBuffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
-
-    BufferDeliver BD;
-    BD.src_buffer=textBuffer;
-    BD.destination_buffer=msgBuffer;
-
-
-    gtk_table_attach_defaults(GTK_TABLE(inputBox),text,0,20,1,8);
-
-    g_signal_connect(sendBtn,"clicked",G_CALLBACK(on_click_sendMsgBtn),&BD);
-
-
-}
-
-void test(int argc,char argv[]){
-
-    GtkWidget *window;
-    GtkWidget *ok;
-    GtkWidget *close;
-    GtkWidget *vbox;
-    GtkWidget *hbox;
-    GtkWidget *halign;
-    GtkWidget *valign;
-
-    gtk_init(&argc,&argv);
-
-    window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-    gtk_widget_set_size_request(GTK_WINDOW(window),WINDOW_WIDTH,WINDOW_HEIGHT);
-
-    //居中显示
-    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
-
-    //设置窗口可伸缩
-    gtk_window_set_resizable(GTK_WINDOW(window),TRUE);
-    vbox = gtk_vbox_new(FALSE,5);
-
-    valign = gtk_alignment_new(0,0,0,0);
-    gtk_container_add(GTK_CONTAINER(vbox),valign);
-    gtk_container_add(GTK_CONTAINER(window),vbox);
-
-    hbox = gtk_hbox_new(TRUE,30);
-
-
-    //设定OK和close的大小并丢到hbox里
-    ok = gtk_button_new_with_label("OK");
-    gtk_widget_set_size_request(ok,70,30);
-    gtk_container_add(GTK_CONTAINER(hbox),ok);
-    close = gtk_button_new_with_label("Close");
-    gtk_container_add(GTK_CONTAINER(hbox),close);
-
-    halign = gtk_alignment_new(1,0,0,1);
-    gtk_container_add(GTK_CONTAINER(halign),hbox);
-
-    gtk_box_pack_end(GTK_BOX(vbox),halign,FALSE,FALSE,10);
-
-    g_signal_connect(window,"destroy",G_CALLBACK(gtk_main_quit),NULL);
-
+    //7.显示所有控件
     gtk_widget_show_all(window);
 
+    //8.主事件循环
     gtk_main();
 
-
+    return;
 }
 
+void windowLayout(GtkWindow* window){
+    //窗口的高度和宽度
+    gint width,height;
+    //信息框的宽度
+    gint infoBox_width=130;
+    //打字框的高度
+    gint typingBox_height=130;
+    //功能框的高度
+    gint functionBox_height=20;
 
-void window_Layout(GtkWindow* window){
+    gtk_window_get_size(window,width,height);
 
-    //将整个window设置为一个表格布局
-    GtkWidget *mainTable;
+    // 在window中创建一个固定布局以往里面放更多固定布局
+    GtkWidget *fixed=gtk_fixed_new();
+    gtk_container_add(GTK_CONTAINER(window),fixed);
 
-    mainTable=gtk_table_new(10,10,TRUE);
+    //个人信息框是一个fixed布局,但里面的内容遵循垂直布局
+    GtkWidget *fixed_info=gtk_fixed_new();
+    gtk_container_add(GTK_CONTAINER(fixed),fixed_info);
+    gtk_fixed_put(GTK_FIXED(fixed),fixed_info,width-infoBox_width,20);
+//    gtk_fixed_set_has_window(fixed_info,TRUE);
 
-    gtk_container_add(GTK_CONTAINER(window),mainTable);
+    GtkWidget *verticalBox_info=gtk_vbox_new(TRUE,10);
+    gtk_container_add(GTK_CONTAINER(fixed_info),verticalBox_info);
+    gtk_fixed_put(GTK_FIXED(fixed_info),verticalBox_info,20,20);
 
-    //消息框设置为一个列BOX
-    GtkWidget *infoBox;
-    infoBox=gtk_table_new(10,40,TRUE);
+    //创建一个除去info框的Default固定框
+    GtkWidget *fixed_default=gtk_fixed_new();
+    gtk_container_add(GTK_FIXED(fixed),fixed_default);
+    gtk_fixed_put(GTK_FIXED(fixed),fixed_default,20,20);
+//    gtk_fixed_set_has_window(fixed_default,TRUE);
 
+    //在chatTable也就是聊天框中加入demo
+    //其中文本输入框为fixed布局,历史消息显示框为layout布局
 
-    //聊天记录框
-    GtkWidget *msgBox;
-    msgBox=gtk_table_new(10,10,TRUE);
+    //打字框
+    GtkWidget *fixed_typing=gtk_fixed_new();
+    gtk_fixed_put(GTK_FIXED(fixed_default),fixed_typing,0,height-20-typingBox_height);
+//    gtk_fixed_set_has_window(fixed_typing,TRUE);
 
-    //文本输入框
-    GtkWidget *inputBox;
-    inputBox=gtk_table_new(10,20,TRUE);
+    //表情等功能框
+    GtkWidget *fixed_function=gtk_fixed_new();
+    gtk_fixed_put(GTK_FIXED(fixed_default),fixed_function,0,height-20-typingBox_height-functionBox_height);
+//    gtk_fixed_set_has_window(fixed_function,TRUE);
 
-    //功能框
-    GtkWidget *functionBox;
-    functionBox=gtk_hbox_new(TRUE,10);
-
-    //设置每个框所在的位置
-    gtk_table_attach_defaults(GTK_TABLE(mainTable),infoBox,8,10,0,10);
-    gtk_table_attach_defaults(GTK_TABLE(mainTable),msgBox,0,8,0,6);
-    gtk_table_attach_defaults(GTK_TABLE(mainTable),inputBox,0,8,7,10);
-    gtk_table_attach_defaults(GTK_TABLE(mainTable),functionBox,0,8,6,7);
-
-    //分别对每个框进行装饰以及功能的嵌入
-
-    //创建一个连接函数以实现两个控件的互动
-    connect_chatView_textInput(GTK_TABLE(msgBox),GTK_TABLE(inputBox));
-
-    opera_info_box(GTK_TABLE(infoBox));
-    opera_function_box(GTK_CONTAINER(functionBox));
-
+    //历史消息框
+    //GtkWidget *layout_history=gtk_layout_new()
 
 
 
 }
 
 /*绘制出基本的窗口并做出分区划片*/
-void chat_View(int argc, char *argv[]){
+void chatView(int argc, char *argv[]){
 
 
     GtkWidget *window;
@@ -303,19 +201,16 @@ void chat_View(int argc, char *argv[]){
     gtk_window_set_title(GTK_WINDOW(window),"chatView");
 
     //设置窗口大小
-    gtk_widget_set_size_request(GTK_WINDOW(window),WINDOW_WIDTH,WINDOW_HEIGHT);
-
-    //设置距离周围的宽度
-    gtk_container_set_border_width(GTK_CONTAINER(window),BORDER_WIDTH);
+    gtk_widget_set_size_request(GTK_WINDOW(window),800,560);
 
     //居中显示
     gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
 
     //设置窗口可伸缩
-    gtk_window_set_resizable(GTK_WINDOW(window),TRUE);
+    gtk_window_set_resizable(GTK_WINDOW(window),FALSE);
 
     //对窗口进行布局
-    window_Layout(GTK_WINDOW(window));
+    windowLayout(GTK_WINDOW(window));
 
     g_signal_connect(window,"destroy",G_CALLBACK(gtk_main_quit),NULL);
 
@@ -326,11 +221,11 @@ void chat_View(int argc, char *argv[]){
 }
 
 
-void individual_Chat(){
+void individualChat(){
 
 }
 
-void group_Chat(){
+void groupChat(){
 
 }
 

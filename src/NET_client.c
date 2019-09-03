@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
 //    login(11111111, "123456");
     //send_msg(server, "pengyao", "helloworld!");
     login_window();
-
+    chat_View();
 
     int socket = conn_to(SERVER_IP, SERVER_PORT);
     /* test send file */

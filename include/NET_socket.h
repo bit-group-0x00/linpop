@@ -5,6 +5,8 @@
   Author: PenYao
   Abstract Description: my socket
 */
+#ifndef LINPOP_NET_SOCKET_H
+#define LINPOP_NET_SOCKET_H
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -98,3 +100,4 @@ state recv_file(int socket, int size, const char* name);
   :return: (unsigned int)ip
 */
 // ip get_my_ip();
+#endif

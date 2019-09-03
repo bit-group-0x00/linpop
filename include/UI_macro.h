@@ -8,4 +8,14 @@
 
 #define ADD_IMAGE 0X421
 
-#define ISHIDE 0X431
+#define FRIEND 0X431
+#define GROUP 0X432
+#define USER_SELF 0X433
+
+#define ONLINE 0X443
+
+#define FONT_SIZE_BIG 36
+#define FONT_SIZE_MIDDLE 24
+#define FONT_SIZE_SMALL 16
+#define FONT_SIZE_SMALLER 12
+
