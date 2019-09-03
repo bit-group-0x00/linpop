@@ -1,12 +1,10 @@
 /*
   File Name: NET_socket.h
   Model Name: NET
-  Create 741 Date: 2019/8/29
-  Author: PenYao
+  Create Date: 2019/8/29
+  Author: PengYao
   Abstract Description: my socket
 */
-#ifndef LINPOP_NET_SOCKET_H
-#define LINPOP_NET_SOCKET_H
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -25,10 +23,10 @@
 #include "NET_macro.h"
 #include "UTIL_cJSON.h"
 
-#define SERVER_IP "127.0.0.1"
+#define DEFAULT_SERVER_IP "127.0.0.1"
 #define SERVER_PORT 6789
 #define CLIENT_PORT 9876
-#define BUFF_SIZE 2048
+#define BUFF_SIZE 10240
 
 struct args
 {
@@ -42,7 +40,7 @@ struct args
   :param port: port
   :return: socket
 */
-int conn_to(const char* ip, int port);
+int conn_to(int ip, int port);
 
 /* 
   socket monitor 
@@ -71,7 +69,7 @@ state send_cjson(int socket, cJSON* cjson);
   :param buff_remain: remain data in buffer
   :return: cjson
 */
-cJSON* recv_cjson(int socket, char buff[], int* buff_remain);
+cJSON* recv_cjson(int socket, char* buff, int* buff_remain);
 
 /*
   send file to socket
@@ -84,7 +82,7 @@ cJSON* recv_cjson(int socket, char buff[], int* buff_remain);
   E1～100表示进度值
   注：如果传入的callback为空就不调用该函数。
 */
-state send_file(int socket, char* file_path, void(*callback)(state));
+state send_file(int socket, const char* file_path, int size, void(*callback)(state));
 
 /*
   recieve file from socket
@@ -100,4 +98,9 @@ state recv_file(int socket, int size, const char* name);
   :return: (unsigned int)ip
 */
 // ip get_my_ip();
-#endif
+
+/* get ip by socket */
+int get_ip(int socket);
+
+/* get aip by socket */
+char* get_aip(int socket);

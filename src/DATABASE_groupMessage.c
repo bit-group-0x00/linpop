@@ -1,26 +1,59 @@
 //
 // Created by new on 8/31/19.
 //
-#include"../include/DATABASE_groupMessage.h"
+#include "../include/DATABASE_groupMessage.h"
 #include "../include/DATABASE_mysql.h"
+
+void freeGroupMessage(GroupMessage *groupMessage) {
+    if (groupMessage == NULL) {
+        return;
+    }
+    if (groupMessage->gmDateTime != NULL) {
+        free(groupMessage->gmDateTime);
+        groupMessage->gmDateTime = NULL;
+    }
+    if (groupMessage->gmContent != NULL) {
+        free(groupMessage->gmContent);
+        groupMessage->gmContent = NULL;
+    }
+    groupMessage = NULL;
+}
+
+void freeGroupMessageList(GroupMessageList groupMessageList) {
+    for (int i = 0; i < groupMessageList.gmNum; i++) {
+        freeGroupMessage(groupMessageList.gmMsgs + i);
+    }
+}
+
+void mallocGroupMessage(GroupMessage *groupMessage) {
+
+    groupMessage = (GroupMessage *) malloc(sizeof(GroupMessage));
+    groupMessage->gmContent = (char *) malloc(sizeof(char) * MESSAGE_MAX_LENGTH);
+    groupMessage->gmDateTime = (char *) malloc(sizeof(char) * DATETIME_LENGTH);
+}
+
 int insertGmMsg(GroupMessage *msg, MYSQL* connection)
 {
     char insertMessageSql[200];
     MYSQL_RES *res;
     MYSQL_ROW row;
     memset(insertMessageSql, '\0', sizeof(insertMessageSql));
-    mysql_query(connection, "SET names utf8");
-    sprintf(insertMessageSql, "insert into User.group_message(gmGroupID, gmContent, gmFromId, gmDateTime) values(%d, \"%s\", %d, now());", msg->gmGroupId, msg->gmContent, msg->gmFromId);
+    mysql_query(connection, "SET NAMES utf8");
+    sprintf(insertMessageSql,
+            "INSERT INTO linpop.group_message(gmGroupID, gmContent, gmFromId, gmDateTime)\n"
+            "VALUES(%d, \"%s\", %d, NOW());",
+            msg->gmGroupId, msg->gmContent, msg->gmFromId);
+
     if(mysql_real_query(connection, insertMessageSql, strlen(insertMessageSql)))
     {
-        printf("Insert failure of groupMessage\n");
+        perror("INSERT GROUP MESSAGE: QUERY ERROR\n");
         return -1;
     }
     else
     {
-        if(mysql_real_query(connection, SELECT_LAST_ID, strlen(SELECT_LAST_ID)))
+        if(mysql_real_query(connection, SQL_SELECT_LAST_ID, strlen(SQL_SELECT_LAST_ID)))
         {
-            printf("Failure of getting ID In groupMessage\n");
+            perror("SELECT LAST ID AFTER INSERT GROUP MESSAGE: QUERY ERROR\n");
             return -1;
         }
         else
@@ -32,55 +65,57 @@ int insertGmMsg(GroupMessage *msg, MYSQL* connection)
                 msg->gmId = atoi(row[0]);
             }
         }
-        printf("Insert success of groupMessage\n");
     }
     return  msg->gmId;
 }
 
 GroupMessageList getGmMsgList(int groupId, MYSQL* connection)
 {
-    int countMessage;
-    GroupMessageList result;
-    GroupMessage *go;
+    GroupMessageList groupMessageList;
+    groupMessageList.gmNum = 0;
+    groupMessageList.gmMsgs = NULL;
+
+    if (connection == NULL) {
+        perror("GET GROUP MESSAGE LIST ERROR");
+        return groupMessageList;
+    }
+
     MYSQL_RES* res;
     MYSQL_ROW row;
-    result.gmNum = 0;
     char strSelectSql[200];
-    sprintf(strSelectSql, "SELECT * FROM User.group_message WHERE gmGroupId=%d;", groupId);
+    sprintf(strSelectSql, "SELECT * FROM User.group_message\n"
+                          "WHERE gmGroupId=%d;", groupId);
+
     if(mysql_real_query(connection, strSelectSql, strlen(strSelectSql)))
     {
-        printf("error of exec of groupMessage\n");
-        exit(1);
+        perror("GET GROUP MESSAGE LIST: QUERY ERROR\n");
+        return groupMessageList;
     }
     else
     {
-        mysql_query(connection, "SET names utf8");
+        mysql_query(connection, "SET NAMES utf8");
         res = mysql_store_result(connection);
         if(res)
         {
-            countMessage = mysql_num_rows(res);
-            if(countMessage == 0)
-            {
-                result.gmMsgs = NULL;
-                return result;
-            }
-            result.gmMsgs = (GroupMessage *)malloc(sizeof(result.gmMsgs) * countMessage);
-            go = result.gmMsgs;
+            groupMessageList.gmNum = mysql_num_rows(res);
+            groupMessageList.gmMsgs = (GroupMessage *) malloc(sizeof(groupMessageList.gmMsgs) * groupMessageList.gmNum);
+
             row = mysql_fetch_row(res);
+            int index = 0;
             while(row)
             {
-                go->gmContent = (char *)malloc(sizeof(char) * messageMaxSize);
-                go->dataTime = (char *)malloc(sizeof(char) *dateTimeMaxSize);
-                go->gmId = atoi(row[0]);
-                go->gmGroupId = atoi(row[1]);
-                strcpy(go->gmContent, row[2]);
-                go->gmFromId = atoi(row[3]);
-                strcpy(go->dataTime, row[4]);
-                go++;
+                mallocGroupMessage(groupMessageList.gmMsgs + index);
+                GroupMessage *p = groupMessageList.gmMsgs + index;
+
+                p->gmId = atoi(row[0]);
+                p->gmGroupId = atoi(row[1]);
+                strcpy(p->gmContent, row[2]);
+                p->gmFromId = atoi(row[3]);
+                strcpy(p->gmDateTime, row[4]);
+                index++;
                 row = mysql_fetch_row(res);
-                result.gmNum++;
             }
         }
-        return result;
+        return groupMessageList;
     }
 }

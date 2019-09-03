@@ -1,19 +1,15 @@
 //
 // Created by junqi on 2019/9/1.
 //
-#include "../include/DATABASE_user.h"
 #include "../include/DATABASE_friends.h"
-#include <string.h>
-#include <stdio.h>
-#define SQL_LENGTH_MAX 1000
 
 Status isFriends(int userId1, int userId2, MYSQL *connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
+        perror("IS FRIENDS: CONNECTION NULL ERROR\n");
         return -1;
     }
     if (userId1 == userId2) {
-        printf("the same ID error");
+        printf("IS FRIENDS: SAME ID ERROR\n");
         return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
@@ -34,17 +30,16 @@ Status isFriends(int userId1, int userId2, MYSQL *connection) {
     MYSQL_ROW row;
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query is friends failed\n");
+        perror("IS FRIEND: QUERY ERROR\n");
     } else {
         res = mysql_store_result(connection);
         if (res) {
             row = mysql_fetch_row(res);
             if (row) {
-                printf("query is friends success\n");
-                return row[0][0] - '0' == 0 ? false : true;
+                return row[0][0] - '0' == 0 ? 0 : 1;
             }
         } else {
-            printf("query is friends: res is NULL\n");
+            perror("IS FRIEND: RES NULL ERROR\n");
         }
     }
     return -1;
@@ -52,41 +47,40 @@ Status isFriends(int userId1, int userId2, MYSQL *connection) {
 
 Status insertFriends(int userId1, int userId2, MYSQL *connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
-        return false;
+        perror("INSERT FRIENDS: CONNECTION NULL ERROR\n");
+        return -1;
     }
     if (userId1 == userId2) {
-        printf("same user id error");
-        return false;
+        perror("INSERT FRIENDS: SAME ID ERROR\n");
+        return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
 
     char insertSql[SQL_LENGTH_MAX];
     memset(insertSql, '\0', sizeof(insertSql));
     if (userId1 < userId2) {
-        if (isFriends(userId1, userId2, connection) == true) {
-            printf("already friends error");
-            return false;
+        if (isFriends(userId1, userId2, connection) == 1) {
+            perror("INSERT FRIENDS: ALREADY FRIENDS ERROR\n");
+            return -1;
         }
         sprintf(insertSql, "INSERT INTO linpop.friends(friUserId1, friUserId2)\n"
                            "VALUES(%d,%d);", userId1, userId2);
     } else {
-        if (isFriends(userId2, userId1, connection) == true) {
-            printf("already friends error");
-            return false;
+        if (isFriends(userId2, userId1, connection) == 1) {
+            perror("INSERT FRIENDS: ALREADY FRIENDS ERROR\n");
+            return -1;
         }
         sprintf(insertSql, "INSERT INTO linpop.friends(friUserId1, friUserId2)\n"
                            "VALUES(%d,%d);", userId2, userId1);
     }
 
     if (mysql_real_query(connection, insertSql, strlen(insertSql))) {
-        printf("insert friends fail\n");
-        return false;
+        perror("INSERT FRIENDS: QUERY ERROR\n");
+        return -1;
     } else {
-        printf("insert success\n");
         updateUserFriendNum(userId1, connection, INCREASE);
         updateUserFriendNum(userId2, connection, INCREASE);
-        return true;
+        return 1;
     }
 }
 
@@ -96,7 +90,7 @@ FriendList getFriList(int userId, MYSQL *connection) {
     friendList.userId = userId;
     friendList.friendsNum = 0;
     if (connection == NULL) {
-        printf("connection is NULL");
+        perror("GET FRIEND LIST: CONNECTION NULL ERROR\n");
         return friendList;
     }
     mysql_query(connection,"SET NAMES utf8");
@@ -109,7 +103,7 @@ FriendList getFriList(int userId, MYSQL *connection) {
     MYSQL_RES* res;
     MYSQL_ROW row;
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query friends list failed\n");
+        perror("GET FRIEND LIST: QUERY ERROR\n");
     } else {
         res = mysql_store_result(connection);
         if (res) {
@@ -130,7 +124,7 @@ FriendList getFriList(int userId, MYSQL *connection) {
                 row = mysql_fetch_row(res);
             }
         } else {
-            printf("query user info: res is NULL");
+            perror("GET FRIEND LIST: RES NULL ERROR\n");
         }
     }
     return friendList;
@@ -138,43 +132,42 @@ FriendList getFriList(int userId, MYSQL *connection) {
 
 Status deleteFriends(int userId1, int userId2, MYSQL *connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
-        return false;
+        perror("DELETE FRIENDS: CONNECTION NULL ERROR\n");
+        return -1;
     }
     if (userId1 == userId2) {
-        printf("same user id error");
-        return false;
+        perror("DELETE FRIENDS: SAME ID ERROR\n");
+        return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
 
     char insertSql[SQL_LENGTH_MAX];
     memset(insertSql, '\0', sizeof(insertSql));
     if (userId1 < userId2) {
-        if (isFriends(userId1, userId2, connection) == true) {
+        if (isFriends(userId1, userId2, connection) == 1) {
             sprintf(insertSql, "DELETE FROM linpop.friends\n"
                                "WHERE friUserId1=%d and friUserId2=%d;", userId1, userId2);
         } else {
-            printf("user1 and user2 are not friends error");
-            return false;
+            perror("DELETE FRIENDS: NO SUCH FRIENDS ERROR\n");
+            return -1;
         }
     } else {
-        if (isFriends(userId2, userId1, connection) == true) {
+        if (isFriends(userId2, userId1, connection) == 1) {
             sprintf(insertSql, "DELETE FROM linpop.friends\n"
                                "WHERE friUserId1=%d and friUserId2=%d;", userId2, userId1);
         } else {
-            printf("user1 and user2 are not friends error");
-            return false;
+            perror("DELETE FRIENDS: NO SUCH FRIENDS ERROR\n");
+            return -1;
         }
     }
 
     if (mysql_real_query(connection, insertSql, strlen(insertSql))) {
-        printf("delete friends fail\n");
-        return false;
+        perror("DELETE FRIENDS: QUERY ERROR\n");
+        return -1;
     } else {
-        printf("delete success\n");
         updateUserFriendNum(userId1, connection, DECREASE);
         updateUserFriendNum(userId2, connection, DECREASE);
-        return true;
+        return 1;
     }
 }
 

@@ -26,12 +26,12 @@ GtkWidget *user_profile_test(profile userInfoDisplay, int type, int avaterSize){
     else {
         GtkWidget *IPaddress = gtk_label_new(NULL);
         GtkWidget *ID = gtk_label_new(NULL);
-        label_font(IPaddress,userInfoDisplay.IPaddress,10,"#213174","single","black");
+        label_font(IPaddress,userInfoDisplay.ip,10,"#213174","single","black");
         label_font(ID,g_strdup_printf("%d",userInfoDisplay.id),10,"#213174","single","black");
         if(type == FRIEND){
             if(userInfoDisplay.online == ONLINE){
                 //在线好友
-                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"red","double","blue");
+                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C8ADC4","double","blue");
             }
             else{
                 //不在线好友

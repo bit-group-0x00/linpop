@@ -5,16 +5,7 @@
 #ifndef LINPOP_DATABASE_USER_H
 #define LINPOP_DATABASE_USER_H
 
-#include <mysql/mysql.h>
-#include <stdbool.h>
-
-typedef int Status;
-
-#define AVATAR 1
-#define NICKNAME 2
-#define SIGNATURE 3
-#define INCREASE 1
-#define DECREASE -1
+#include "DATABASE_mysql.h"
 
 typedef struct
 {
@@ -53,7 +44,7 @@ User* getUserInfoById(int userId, MYSQL* connection);
 /**
  * 查询数据库中是否存在该用户, true和false是宏定义的1和0
  * @param userId 用户ID
- * @return true: 用户存在数据库中; false: 用户不存在数据库中; -1: query failed
+ * @return 1: 用户存在数据库中; 0: 用户不存在数据库中; -1: query failed
  */
 Status isUserExist(int userId, MYSQL* connection);
 
@@ -81,7 +72,7 @@ int insertUser(User* user, MYSQL* connection);
  * @param string the string user wants to change to. the end of string must be '\0'
  * @param connection MYSQL connection pointer
  * @param type 1: AVATAR; 2: NICKNAME; 3: SIGNATURE
- * @return true: update success; false: update failure
+ * @return 1: update success; -1: update failure
  */
 Status updateUserString(int userId, char *string, MYSQL* connection, int type);
 
@@ -89,7 +80,7 @@ Status updateUserString(int userId, char *string, MYSQL* connection, int type);
  * 当用户上线或下线时调用此函数.
  * @param userId 用户ID
  * @param status 1: 上线, 0: 下线
- * @return true: 更新数据库成功, false: 更新数据库失败
+ * @return 1: 更新数据库成功, -1: 更新数据库失败
  */
 Status updateUserStatus(int userId, int status, MYSQL* connection);
 
@@ -98,7 +89,7 @@ Status updateUserStatus(int userId, int status, MYSQL* connection);
  * 下线时好像调用与否都不影响. 交由使用者判断是否调用
  * @param userId 用户ID
  * @param userIp 网络状态改变后的ip地址
- * @return true: 更新数据库成功, false: 更新数据库失败
+ * @return 1: 更新数据库成功, -1: 更新数据库失败
  */
 Status updateUserIp(int userId, int userIp, MYSQL* connection);
 
@@ -106,7 +97,7 @@ Status updateUserIp(int userId, int userIp, MYSQL* connection);
  * 验证密码时调用此函数
  * @param userId 用户ID
  * @param password 要验证的密码
- * @return true: 密码正确; false: 密码错误; -1: query failed
+ * @return 1: 密码正确; 0: 密码错误; -1: query failed
  */
 Status checkUserPassword(int userId, char *password, MYSQL* connection);
 
@@ -115,7 +106,7 @@ Status checkUserPassword(int userId, char *password, MYSQL* connection);
  * @param userId
  * @param connection MYSQL* connection
  * @param type INCREASE: 1; DECREASE: -1
- * @return true: update success; false: update fail
+ * @return 1: update success; -1: update fail
  */
 Status updateUserFriendNum(int userId, MYSQL *connection, int type);
 
