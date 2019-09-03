@@ -156,13 +156,16 @@ state send_cjson(int socket, cJSON* cjson)
 cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
 {
     /* the pos of spliter '\0' */
+    printf("before send\n");
     int pos = 0, remain = buff_remain == NULL ? 0 : *buff_remain;
     if(buff == NULL)
     {
         char temp[BUFF_SIZE];
         buff = temp;
     }
+    printf("after send\n");
     while(pos < remain && buff[pos] != '\0') ++pos;
+    printf("after after\n");
     if(pos == remain)
     {
         int recv_len = recv(socket, buff + remain, BUFF_SIZE - remain, 0);
@@ -187,6 +190,7 @@ cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
         buff[i] = buff[i + pos + 1];
     }
     if(buff_remain != NULL) *buff_remain = remain;
+    printf("out\n");
     return cjson;
 }
 
@@ -280,4 +284,12 @@ char* get_aip(int socket)
         return ERROR;
     }
     return inet_ntoa(addr.sin_addr);
+}
+
+void response_state(int client, state type)
+{
+    cJSON* response = cJSON_CreateObject();
+    cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(type));
+    send_cjson(client, response);
+    cJSON_Delete(response);
 }

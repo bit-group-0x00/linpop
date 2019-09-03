@@ -494,7 +494,9 @@ state send_msg_to_friend(const int friend_id, const char* msg)
 
 void handle_msg_recv(int client, cJSON* cjson)
 {
+    printf("before");
     message* msg = parse_msg(cjson);
+    printf("here");
     /* friend message */
     if(msg->sender >= 9999)
     {
@@ -505,6 +507,7 @@ void handle_msg_recv(int client, cJSON* cjson)
         group* gro = seek_gro(msg->sender);
         append_msg_to_gro(gro, msg);
     }
+
     my_info.update_ui(SEND_MESSAGE, msg);
 }
 
@@ -525,6 +528,7 @@ void handle_join_gro_request(int client, cJSON* cjson)
 
 void handle_cjson(int socket, cJSON* cjson)
 {
+    printf("here");
     cJSON* type = cJSON_GetObjectItem(cjson, "type");
     void (*handle)(int, cJSON*);
     switch(type->valueint)
@@ -585,8 +589,10 @@ void update_ui(state type, void* origin)
 
 int main(int argc, char* argv[])
 {
+    pthread_t thread;
     struct args arg;
     arg.value = CLIENT_PORT, arg.handle = handle_cjson;
+    pthread_create(&thread, NULL, monitor_port, (void*)&arg);
     //monitor_port((void*)&arg);
 
 

@@ -10,11 +10,6 @@
 
 MYSQL* conn = NULL;
 
-/*
-  回复操作成功
-*/
-void response_state(int client, state type);
-
 /* 
   服务端的handle函数，在接受到注册请求后会自动调用该函数
   函数的参数三请求方的socket和接受到的cjson
@@ -70,15 +65,6 @@ void handle_group_member_list_request(int client, cJSON* cjson);
 void handle_create_group_request(int client, cJSON* cjson);
 
 void handle_join_group_request(int client, cJSON* cjson);
-
-
-void response_state(int client, state type)
-{
-    cJSON* response = cJSON_CreateObject();
-    cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(type));
-    send_cjson(client, response);
-    cJSON_Delete(response);
-}
 
 void handle_regist_request(int client, cJSON* cjson)
 {
@@ -329,18 +315,20 @@ void handle_msg_send(int client, cJSON* cjson)
         int client_2 = conn_to(user->userIp, CLIENT_PORT);
 
         cJSON* cjson_2 = cJSON_CreateObject();
+        cJSON_AddItemToObject(cjson_2, "type", cJSON_CreateNumber(SEND_MESSAGE));
         cJSON_AddItemToObject(cjson_2, "sender", cJSON_CreateNumber(msg.msgFromId));
         cJSON_AddItemToObject(cjson_2, "checked", cJSON_CreateNumber(UNCHECKED));
         cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("2019/9/3"));
-        cJSON_AddItemToObject(cjson_2, "contend", cJSON_CreateString(msg.msgContent));
-        //send_cjson(client_2, cjson_2);
+        cJSON_AddItemToObject(cjson_2, "content", cJSON_CreateString(msg.msgContent));
+        send_cjson(client_2, cjson_2);
         cJSON_Delete(cjson_2);
-        //cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
-        // if(cj_2 != NULL)
-        // {
-        //     msg.msgStatus = CHECKED;
-        //     cJSON_Delete(cj_2);
-        // }
+        cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
+        close(client_2);
+        if(cj_2 != NULL)
+        {
+            msg.msgStatus = CHECKED;
+            cJSON_Delete(cj_2);
+        }
     }
     insertMsg(&msg, conn);
     freeUser(user);
