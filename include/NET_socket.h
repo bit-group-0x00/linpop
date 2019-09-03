@@ -23,7 +23,7 @@
 #include "NET_macro.h"
 #include "UTIL_cJSON.h"
 
-#define DEFAULT_SERVER_IP "10.194.36.120"
+#define DEFAULT_SERVER_IP "127.0.0.1"
 #define SERVER_PORT 6789
 #define CLIENT_PORT 9876
 #define BUFF_SIZE 10240
