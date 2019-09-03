@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.14)
 project(linpop C)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
-include_directories(${GTK2_INCLUDE_DIRS})
-link_directories(${GTK2_LIBRARY_DIRS})
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+include_directories(${GTK3_INCLUDE_DIRS})
+link_directories(${GTK3_LIBRARY_DIRS})
 
-add_definitions(${GTK2_CFLAGS_OTHER})
+add_definitions(${GTK3_CFLAGS_OTHER})
 
 set(CMAKE_C_STANDARD 99)
 
@@ -34,10 +34,10 @@ add_executable(linpop_UItest
 find_package(Threads REQUIRED)
 
 target_link_libraries(linpop_client Threads::Threads -lm)
-target_link_libraries(linpop_client ${GTK2_LIBRARIES})
+target_link_libraries(linpop_client ${GTK3_LIBRARIES})
 
 target_link_libraries(linpop_server Threads::Threads -lm)
-target_link_libraries(linpop_server ${GTK2_LIBRARIES})
+target_link_libraries(linpop_server ${GTK3_LIBRARIES})
 
 target_link_libraries(linpop_UItest Threads::Threads -lm)
-target_link_libraries(linpop_UItest ${GTK2_LIBRARIES})
+target_link_libraries(linpop_UItest ${GTK3_LIBRARIES})

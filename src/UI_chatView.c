@@ -153,7 +153,7 @@ void windowLayout(GtkWindow* window){
     GtkWidget *fixed_info=gtk_fixed_new();
     gtk_container_add(GTK_CONTAINER(fixed),fixed_info);
     gtk_fixed_put(GTK_FIXED(fixed),fixed_info,width-infoBox_width,20);
-    gtk_fixed_set_has_window(fixed_info,TRUE);
+//    gtk_fixed_set_has_window(fixed_info,TRUE);
 
     GtkWidget *verticalBox_info=gtk_vbox_new(TRUE,10);
     gtk_container_add(GTK_CONTAINER(fixed_info),verticalBox_info);
@@ -163,7 +163,7 @@ void windowLayout(GtkWindow* window){
     GtkWidget *fixed_default=gtk_fixed_new();
     gtk_container_add(GTK_FIXED(fixed),fixed_default);
     gtk_fixed_put(GTK_FIXED(fixed),fixed_default,20,20);
-    gtk_fixed_set_has_window(fixed_default,TRUE);
+//    gtk_fixed_set_has_window(fixed_default,TRUE);
 
     //在chatTable也就是聊天框中加入demo
     //其中文本输入框为fixed布局,历史消息显示框为layout布局
@@ -171,12 +171,12 @@ void windowLayout(GtkWindow* window){
     //打字框
     GtkWidget *fixed_typing=gtk_fixed_new();
     gtk_fixed_put(GTK_FIXED(fixed_default),fixed_typing,0,height-20-typingBox_height);
-    gtk_fixed_set_has_window(fixed_typing,TRUE);
+//    gtk_fixed_set_has_window(fixed_typing,TRUE);
 
     //表情等功能框
     GtkWidget *fixed_function=gtk_fixed_new();
     gtk_fixed_put(GTK_FIXED(fixed_default),fixed_function,0,height-20-typingBox_height-functionBox_height);
-    gtk_fixed_set_has_window(fixed_function,TRUE);
+//    gtk_fixed_set_has_window(fixed_function,TRUE);
 
     //历史消息框
     //GtkWidget *layout_history=gtk_layout_new()

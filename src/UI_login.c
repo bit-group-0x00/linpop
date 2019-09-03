@@ -12,9 +12,10 @@ static GtkWidget *usernameText = NULL;//用户名
 static GtkWidget *passwordText = NULL;//密码
 static GtkWidget *passwordText2 = NULL;//确认密码
 static GtkWidget *fileSelector = NULL;
+static GtkFileChooserAction fileChooserAction;
 
 static GdkPixbuf *iconImageRes;
-static GdkImage *image;
+static GtkWidget *image;
 static state userID;
 
 void show_error(GtkWidget *widget, gpointer window, gchar* message)
@@ -65,22 +66,23 @@ void show_info(GtkWidget *widget, gpointer window, gchar* message)
     gtk_widget_destroy(dialog);
 }
 
-void on_fileSelection_ok(GtkButton* button, gpointer data){
-    //文件选择确定
-    const char* filename;
-    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(data));
-    iconImageRes = gdk_pixbuf_new_from_file_at_size(filename,ICON_SIZE,ICON_SIZE,NULL);
-    gtk_image_set_from_pixbuf(GTK_IMAGE(image),iconImageRes);
-}
-void on_fileSelection_cancel(GtkButton* button, gpointer data){
-    //文件选择取消
-    gtk_widget_destroy(fileSelector);
-}
+//void on_fileSelection_ok(GtkButton* button, gpointer data){
+//    //文件选择确定
+//    const char* filename;
+//    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(data));
+//    iconImageRes = gdk_pixbuf_new_from_file_at_size(filename,ICON_SIZE,ICON_SIZE,NULL);
+//    gtk_image_set_from_pixbuf(GTK_IMAGE(image),iconImageRes);
+//}
+//void on_fileSelection_cancel(GtkButton* button, gpointer data){
+//    //文件选择取消
+//    gtk_widget_destroy(fileSelector);
+//}
 
 void on_button_clicked (GtkWidget *button, gpointer data){
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
     const gchar *password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
+    const char* filename;
     gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     switch((int)data){
@@ -160,13 +162,20 @@ void on_button_clicked (GtkWidget *button, gpointer data){
             break;
         case ADD_IMAGE:
             //添加头像
-            fileSelector = gtk_file_selection_new("choose a photo");
+            fileSelector = gtk_file_chooser_dialog_new("choose a photo",NULL,fileChooserAction,"confirm");
             g_print("Fileselector\n");
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_ok),fileSelector);
-            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->cancel_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
+
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fileSelector));
+            iconImageRes = gdk_pixbuf_new_from_file_at_size(filename,ICON_SIZE,ICON_SIZE,NULL);
+            gtk_image_set_from_pixbuf(GTK_IMAGE(image),iconImageRes);
+//
+//            g_signal_connect(G_OBJECT(GTK_FILE_CHOOSER(fileSelector)->ok),"clicked",G_CALLBACK(on_fileSelection_ok),fileSelector);
+//            g_signal_connect_swapped(G_OBJECT(GTK_FILE_CHOOSER(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
+//            g_signal_connect(G_OBJECT(GTK_FILE_CHOOSER(fileSelector)->cancel_button),"clicked",G_CALLBACK(on_fileSelection_cancel),NULL);
 
             g_signal_connect(G_OBJECT(fileSelector),"destroy",G_CALLBACK(gtk_widget_destroy),NULL);
+
+
             gtk_widget_show(fileSelector);
             break;
     }
@@ -305,6 +314,7 @@ void login_window(int argc, char *argv[]){
     gtk_window_set_position(GTK_WINDOW(loginWindow),GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(loginWindow),400,300);
     gtk_container_set_border_width(GTK_CONTAINER(loginWindow),20);
+    gtk_window_set_opacity(GTK_WINDOW(loginWindow),0.92);
 
     //Big box：最外层box
     box = gtk_vbox_new(FALSE,0);
@@ -347,7 +357,7 @@ void login_window(int argc, char *argv[]){
     gtk_box_pack_start(GTK_BOX(passwordBox),passwordText,FALSE,FALSE,5);
 
     sep = gtk_hseparator_new();
-    gtk_box_pack_start(GTK_BOX(infoBox),sep,FALSE,FALSE,100);
+    gtk_box_pack_start(GTK_BOX(infoBox),sep,FALSE,FALSE,5);
 
     //button box
     optionBox = gtk_hbutton_box_new();
