@@ -60,4 +60,5 @@ state login(const int id, const char* passwd)
 
 int main(){
     login_window();
+//    homepage_window(1234);
 }
