@@ -95,17 +95,18 @@ void handle_cjson(int socket, cJSON* cjson)
 int main(int argc, char* argv[])
 {
     /* connect to server */
-    if((server = conn_to(SERVER_IP, SERVER_PORT)) == -1)
-    {
-        printf("cannot connect to server, try again later.\n");
-        return -1;
-    }
+//    if((server = conn_to(SERVER_IP, SERVER_PORT)) == -1)
+//    {
+//        printf("cannot connect to server, try again later.\n");
+//        return -1;
+//    }
     /* test regist, login and send message */
 //    regist("pengyao", "123456");
 //    login(11111111, "123456");
     //send_msg(server, "pengyao", "helloworld!");
-    login_window();
-    chat_View();
+//    login_window();
+//    chat_View();
+    add_friend_window();
 
     int socket = conn_to(SERVER_IP, SERVER_PORT);
     /* test send file */

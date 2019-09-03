@@ -1,7 +1,7 @@
 //
 // Created by Anne Wu on 2019-08-30.
 //
-#include "../include/UI_login.h"
+#include "../include/UI_interface.h"
 #include "../include/NET_client.h"
 
 GtkWidget *SearchResultBox;
@@ -94,7 +94,7 @@ void enter_callback(GtkWidget *widget,GtkWidget *entry)
 }
 
 
-void addFriend(int argc, char *argv[])
+void add_friend_window(int argc, char *argv[])
 {
     GtkWidget *window;
     GtkWidget *vBox;
@@ -158,12 +158,6 @@ void addFriend(int argc, char *argv[])
     //SearchResultNickName
 
 
-
-
-
-
-
-
     //
 
 //optionBox
@@ -173,7 +167,7 @@ void addFriend(int argc, char *argv[])
     AddButton = gtk_button_new_with_label("AddButton");
     gtk_box_pack_start(GTK_BOX(OptionBox),AddButton,FALSE,FALSE,0);
     gtk_widget_set_sensitive(AddButton,FALSE);
-    g_signal_connect(G_OBJECT(AddButton),"clicked",)
+    g_signal_connect(G_OBJECT(AddButton),"clicked",G_CALLBACK(show_info),"success");
     //g_signal_connect(G_OBJECT(AddButton),"clicked",G_CALLBACK())
     //CancelButton
     CancelButton = gtk_button_new_with_label("CancelButton");
@@ -182,19 +176,7 @@ void addFriend(int argc, char *argv[])
 
 
 
-
     gtk_widget_show(window);
-
-
-
-
-
-
-
-
-
-
-
 
 
     gtk_widget_show_all(window);

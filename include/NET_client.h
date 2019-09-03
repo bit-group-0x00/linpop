@@ -22,6 +22,9 @@ typedef struct profile
   int id;
   char* nick_name;
   char* avatar;
+  state online;
+  char* signature;
+  char* IPaddress;
 } profile;
 /* 消息结构体，用双向链表表示消息队列 */
 typedef struct message
