@@ -66,10 +66,16 @@ void  on_changed(GtkWidget *widget, gpointer label)
 
 }
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
+    gint state;
     g_print("delete event occured\n");
-    gtk_main_quit();
-//    log_out(userID);
-    return FALSE;
+    if(show_question(NULL,NULL,"do you really want to exit?") == GTK_RESPONSE_YES){
+//        log_out(userID);
+        gtk_main_quit();
+        return FALSE;
+    }
+    else{
+        return TRUE;
+    }
 }
 void label_font(GtkWidget *lable, gchar* context, int fontSize, gchar *foreColor, gchar *underline, gchar *underlineColor){
     gtk_label_set_markup(GTK_LABEL(lable), g_strdup_printf("%s%s%s%s%s%s%s%d%s%s%s","<span foreground='",foreColor,"' underline='",underline,"' underline_color='",underlineColor,"' font_desc='",fontSize,"'>",context,"</span>"));
@@ -195,8 +201,6 @@ void homepage_window(int userID){
         add_to_list(list,testbox);
     }
 
-//
-//    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(list));
 
     gtk_widget_show_all(homepageWindow);
     g_signal_connect(G_OBJECT(homepageWindow),"delete_event",G_CALLBACK(delete_event),NULL);

@@ -291,6 +291,7 @@ void regist_window(){
 
     gtk_widget_show_all(registWindow);
 }
+
 void login_window(int argc, char *argv[]){
     GtkWidget *box;
 
@@ -304,7 +305,6 @@ void login_window(int argc, char *argv[]){
     GtkWidget *usernamelabel;
     GtkWidget *passwordlabel;
     GtkWidget *sep;
-    GtkWidget *image;
 
     //主窗口初始化
     gtk_init(&argc,&argv);
