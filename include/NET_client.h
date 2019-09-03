@@ -22,10 +22,6 @@ typedef struct profile
   int id;
   char* nick_name;
   char* avatar;
-  char* IPaddress;
-  state online;
-  char* signature;
-
 } profile;
 /* 消息结构体，用双向链表表示消息队列 */
 typedef struct message
@@ -46,7 +42,7 @@ typedef struct friend
 typedef struct group
 {
   profile group_profile;
-  struct message msg;
+  message msg;
 } group;
 
 /*
@@ -128,7 +124,6 @@ state send_msg_to_friend(const int friend_id, const char* msg, void(*callback)(s
   发送结果，SUCCESS（0）表示发送成功，FAILURE（1）表示
   发送失败，ERROR（-1）表示发送过程中出现了错误。
 */
-
 state send_msg_to_group(const int group_id, const char* msg, void(*callback)(state));
 
 /*
