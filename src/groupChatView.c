@@ -25,8 +25,11 @@ void add_item_list_box(GtkWidget *listbox,gchar*messageSenderIcon,int senderId,g
     gtk_box_pack_start(GTK_BOX(messageBox),SenderIcon,TRUE,FALSE,0);
 
     text = gtk_text_view_new();
-    gchar_con
-    gtk_text_buffer_set_text()
+    textBuffer = gtk_text_buffer_new(NULL);
+    gtk_text_buffer_set_text(textBuffer,message,-1);
+    gtk_text_view_set_buffer(text,textBuffer);
+    gtk_box_pack_start(GTK_BOX(messageBox),text,TRUE,FALSE,0);
+
 
    // gtk_text_buffer_set_text()
 

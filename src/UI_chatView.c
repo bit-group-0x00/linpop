@@ -1,26 +1,69 @@
-//
-// Created by Anne Wu on 2019-08-30.
-//
 #include "../include/UI_chatView.h"
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 560
 #define BORDER_WIDTH 5
 
-void on_click_sendMsgBtn(GtkButton *button,BufferDeliver* BD ){
-    GtkTextBuffer *tmpBuffer;
+BufferDeliver BD;
 
+gchar *selfNickname="HolyGodMT";
+gchar *friendNickname="Ironman";
+gchar *friendID="4354363452";
+gchar *friendIP="192.158.0.1";
+gchar *friendSignature="I'm Ironman\nI killed Thanos";
+gchar *friendMsg="I'm good. And you ?";
+GdkPixbuf *avatarSrc;
+GtkTextBuffer *textBuffer;
+GtkTextBuffer *msgBuffer;
+
+
+// 按下发送按钮时发送文本框的内容至消息框,并删除文本编辑框的内容
+void on_click_sendMsgBtn(GtkButton *button,gpointer data ){
+
+    //临时字符串用来保存文本框中的信息
+    gchar* tmpBuffer;
+
+    // 消息框的Iter起点与终点
+    GtkTextIter destinationStart,destinationEnd;
+
+    //文本框的Iter起点与终点
+    GtkTextIter srcStart,srcEnd;
+
+    gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(textBuffer),&srcStart,&srcEnd);
+
+    const GtkTextIter s=srcStart,e=srcEnd;
+
+    tmpBuffer = gtk_text_buffer_get_text(textBuffer,&s,&e,FALSE);
+
+    g_print("text input seccessful\n");
+
+    gtk_text_buffer_get_bounds(msgBuffer,&destinationStart,&destinationEnd);
+
+    //编辑发消息时的内容
+    gtk_text_buffer_insert(msgBuffer,&destinationEnd,selfNickname,-1);
+
+    gtk_text_buffer_insert(msgBuffer,&destinationEnd,":  ",-1);
+
+    gtk_text_buffer_insert(msgBuffer,&destinationEnd,tmpBuffer,-1);
+
+    gtk_text_buffer_insert(msgBuffer,&destinationEnd,"\n",-1);
+
+
+    //删除文本编辑框内的内容
+    gtk_text_buffer_delete(GTK_TEXT_BUFFER(textBuffer),&srcStart,&srcEnd);
 
 }
+
 void on_click_emojiBtn(GtkButton *button,gpointer data){
 
 }
+
 void on_click_sendFileBtn(GtkButton *button,gpointer data){
 
 }
+
 void on_click_viewHisMsgBtn(GtkButton *button,gpointer data){
 
 }
-
 
 //infobox是一个10行40列的Box
 void opera_info_box(GtkTable *infoBox){
@@ -34,8 +77,9 @@ void opera_info_box(GtkTable *infoBox){
     //头像,使用图片控件,来在信息框上显示头像
     GtkWidget *avatar;
 
-    GdkPixbuf *src=gdk_pixbuf_new_from_file("../res/test_icon.png",NULL);
-    GdkPixbuf *dst=gdk_pixbuf_scale_simple(GDK_PIXBUF(src),120,120,GDK_INTERP_BILINEAR);
+    avatarSrc=gdk_pixbuf_new_from_file("../res/icon.png",NULL);
+
+    GdkPixbuf *dst=gdk_pixbuf_scale_simple(GDK_PIXBUF(avatarSrc),120,120,GDK_INTERP_BILINEAR);
 
     avatar=gtk_image_new_from_pixbuf(GDK_PIXBUF(dst));
 
@@ -44,21 +88,27 @@ void opera_info_box(GtkTable *infoBox){
     //利用label控件显示用户昵称
     GtkWidget *nickname;
 
-    nickname=gtk_label_new("HolyGodMT");
+    nickname=gtk_label_new(friendNickname);
 
     gtk_table_attach_defaults(GTK_TABLE(infoBox),nickname,0,40,3,4);
 
     //利用显示控件显示该用户的ID
     GtkWidget *ID;
 
-    ID=gtk_label_new("ID: 154575261");
+    gchar *tmpID="ID: ";
+    tmpID=g_strconcat(tmpID,friendID,NULL);
+
+    ID=gtk_label_new(tmpID);
 
     gtk_table_attach_defaults(GTK_TABLE(infoBox),ID,0,40,4,5);
 
     //利用显示控件显示用户的IP地址
     GtkWidget *IP_address;
 
-    IP_address=gtk_label_new("IP: 192.168.0.1");
+    gchar *tmpIP="IP: ";
+    tmpIP=g_strconcat(tmpIP,friendIP,NULL);
+
+    IP_address=gtk_label_new((tmpIP));
 
     gtk_table_attach_defaults(GTK_TABLE(infoBox),IP_address,0,40,5,6);
 
@@ -69,7 +119,7 @@ void opera_info_box(GtkTable *infoBox){
 
     signature=gtk_frame_new("Signature");
 
-    sigText=gtk_label_new("I'm Ironman\nI killed Thanos");
+    sigText=gtk_label_new(friendSignature);
 
     gtk_container_add(GTK_CONTAINER(signature),sigText);
 
@@ -138,6 +188,7 @@ void opera_function_box(GtkContainer *funcBox){
 
     g_signal_connect(historyMsg,"clicked",G_CALLBACK(on_click_viewHisMsgBtn),NULL);
 }
+
 void connect_chatView_textInput(GtkTable *msgBox,GtkTable *inputBox){
     opera_chatView_box(GTK_TABLE(msgBox));
     opera_text_input_box(GTK_TABLE(inputBox));
@@ -146,9 +197,10 @@ void connect_chatView_textInput(GtkTable *msgBox,GtkTable *inputBox){
     //msgview
     GtkWidget *msgView;
 
-    msgView=gtk_text_view_new();
+    msgBuffer=gtk_text_buffer_new(NULL);
 
-    GtkTextBuffer *msgBuffer;
+    msgView=gtk_text_view_new_with_buffer(msgBuffer);
+
 
     msgBuffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(msgView));
 
@@ -173,14 +225,20 @@ void connect_chatView_textInput(GtkTable *msgBox,GtkTable *inputBox){
     gtk_table_attach_defaults(GTK_TABLE(inputBox),sendBtn,17,20,8,10);
 
     GtkWidget *text;
-    GtkTextBuffer *textBuffer;
 
-    text=gtk_text_view_new();
-    textBuffer=gtk_text_view_get_buffer(GTK_TEXT_VIEW(text));
+    textBuffer=gtk_text_buffer_new(NULL);
 
-    BufferDeliver BD;
+    text=gtk_text_view_new_with_buffer(textBuffer);
+
     BD.src_buffer=textBuffer;
     BD.destination_buffer=msgBuffer;
+
+    //消息框的Iter起点与终点
+    GtkTextIter msgIterStart,msgIterEnd;
+
+    gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(msgBuffer),&msgIterStart,&msgIterEnd);
+
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&msgIterEnd,"                                                       Hello, life is beautiful! Let's start chatting!\n",-1);
 
 
     gtk_table_attach_defaults(GTK_TABLE(inputBox),text,0,20,1,8);
@@ -240,7 +298,6 @@ void test(int argc,char argv[]){
 
 
 }
-
 
 void window_Layout(GtkWindow* window){
 
@@ -303,7 +360,7 @@ void chat_View(int argc, char *argv[]){
     gtk_window_set_title(GTK_WINDOW(window),"chatView");
 
     //设置窗口大小
-    gtk_widget_set_size_request(GTK_WINDOW(window),WINDOW_WIDTH,WINDOW_HEIGHT);
+    gtk_widget_set_size_request(window,WINDOW_WIDTH,WINDOW_HEIGHT);
 
     //设置距离周围的宽度
     gtk_container_set_border_width(GTK_CONTAINER(window),BORDER_WIDTH);
@@ -324,7 +381,6 @@ void chat_View(int argc, char *argv[]){
     gtk_main();
 
 }
-
 
 void individual_Chat(){
 

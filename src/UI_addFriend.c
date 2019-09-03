@@ -104,8 +104,6 @@ void add_friend_window(int argc, char *argv[])
     GtkWidget *Entry_ID;
     GtkWidget *SearchButton;
 
-
-
     GtkWidget *OptionBox;
 
     GtkWidget *CancelButton;
