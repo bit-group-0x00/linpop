@@ -130,7 +130,7 @@ void handle_join_group_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     int group_id = cJSON_GetObjectItem(cjson, "group_id")->valueint;
-    if(insertGroupUser(group_id, id, conn)) response_state(client, SUCCESS);
+    if(insertGroupUser(group_id, id, conn) == 1) response_state(client, SUCCESS);
     else response_state(client, FAILURE);
 }
 
@@ -276,8 +276,34 @@ void handle_group_message_list_request(int client, cJSON* cjson)
 
 void handle_group_member_list_request(int client, cJSON* cjson)
 {
-    /* todo */
-
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    int group_id = cJSON_GetObjectItem(cjson, "group_id")->valueint;
+    GroupUserList group_member_list = getUserListByGroupId(group_id, conn);
+    cJSON* group_member_list_cjson = cJSON_CreateObject();
+    cJSON_AddItemToObject(group_member_list_cjson, "type", cJSON_CreateNumber(SUCCESS));
+    cJSON_AddItemToObject(group_member_list_cjson, "member_num", cJSON_CreateNumber(group_member_list.userNum));
+    cJSON_AddItemToObject(group_member_list_cjson, "member_ids", cJSON_CreateIntArray(group_member_list.userIds, group_member_list.userNum));
+    cJSON* nick_names = cJSON_CreateArray(), *avatars = cJSON_CreateArray();
+    cJSON* states = cJSON_CreateArray(), *ips = cJSON_CreateArray(), *signatures = cJSON_CreateArray();
+    for(int i = 0; i < group_member_list.userNum; ++i)
+    {
+        User* member = getUserInfoById(group_member_list.userIds[i], conn);
+        cJSON_AddItemToArray(nick_names, cJSON_CreateString(member->userNickName));
+        cJSON_AddItemToArray(avatars, cJSON_CreateString(member->userAvatar));
+        cJSON_AddItemToArray(states, cJSON_CreateNumber(member->userStatus));
+        cJSON_AddItemToArray(ips, cJSON_CreateString("127.0.0.1"));
+        cJSON_AddItemToArray(signatures, cJSON_CreateString(member->userSignature));
+        freeUser(member);
+    }
+    freeGroupUserList(group_member_list);
+    cJSON_AddItemToObject(group_member_list_cjson, "nick_names", nick_names);
+    cJSON_AddItemToObject(group_member_list_cjson, "avatars", avatars);
+    cJSON_AddItemToObject(group_member_list_cjson, "states", states);
+    cJSON_AddItemToObject(group_member_list_cjson, "ips", ips);
+    cJSON_AddItemToObject(group_member_list_cjson, "signatures", signatures);
+    send_cjson(client, group_member_list_cjson);
+    //printf("%s", cJSON_Print(group_msg_list_cjson));
+    cJSON_Delete(group_member_list_cjson);
 }
 
 void handle_add_friend_request(int client, cJSON* cjson)

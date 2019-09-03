@@ -190,6 +190,7 @@ state request_my_info(int id)
             my_info.groups[i].g_profile.icon = copy(cJSON_GetArrayItem(icons, i)->valuestring);
             my_info.groups[i].first_msg = my_info.groups[i].last_msg = NULL;
 
+
             cJSON* request_g_msg_list = cJSON_CreateObject();
             cJSON_AddItemToObject(request_g_msg_list, "type", cJSON_CreateNumber(REQUEST_GROUP_MESSAGE_LIST));
             cJSON_AddItemToObject(request_g_msg_list, "id", cJSON_CreateNumber(my_info.my_profile.id));
@@ -198,7 +199,7 @@ state request_my_info(int id)
             cJSON_Delete(request_g_msg_list);
 
             cJSON* g_msg_list_cjson = recv_cjson(server, server_buff, &server_buff_remain);
-            printf("%s", cJSON_Print(g_msg_list_cjson));
+            //printf("%s", cJSON_Print(g_msg_list_cjson));
             int msg_num = cJSON_GetObjectItem(g_msg_list_cjson, "message_num")->valueint;
             cJSON* contents = cJSON_GetObjectItem(g_msg_list_cjson, "contents");
             cJSON* senders = cJSON_GetObjectItem(g_msg_list_cjson, "senders");
@@ -226,6 +227,34 @@ state request_my_info(int id)
                 }
             }
             cJSON_Delete(g_msg_list_cjson);
+
+
+            cJSON* request_g_member_list_cjson = cJSON_CreateObject();
+            cJSON_AddItemToObject(request_g_member_list_cjson, "type", cJSON_CreateNumber(REQUEST_GROUP_MEMBER_LIST));
+            cJSON_AddItemToObject(request_g_member_list_cjson, "id", cJSON_CreateNumber(my_info.my_profile.id));
+            cJSON_AddItemToObject(request_g_member_list_cjson, "group_id", cJSON_CreateNumber(my_info.groups[i].g_profile.id));
+            send_cjson(server, request_g_member_list_cjson);
+            cJSON_Delete(request_g_member_list_cjson);
+            cJSON* g_member_list_cjson = recv_cjson(server, server_buff, &server_buff_remain);
+            my_info.groups[i].member_num = cJSON_GetObjectItem(g_member_list_cjson, "member_num")->valueint;
+            my_info.groups[i].members = malloc(my_info.groups[i].member_num * sizeof(profile));
+            cJSON* ids = cJSON_GetObjectItem(g_member_list_cjson, "ids");
+            cJSON* nick_names = cJSON_GetObjectItem(g_member_list_cjson, "nick_names");
+            cJSON* avatars = cJSON_GetObjectItem(g_member_list_cjson, "avatars");
+            cJSON* ips = cJSON_GetObjectItem(g_member_list_cjson, "ips");
+            states = cJSON_GetObjectItem(g_member_list_cjson, "states");
+            //cJSON* states = cJSON_GetObjectItem(g_member_list_cjson, "states");
+            cJSON* signatures = cJSON_GetObjectItem(g_member_list_cjson, "signatures");
+            for(int j = 0; j < my_info.groups[j].member_num; ++j)
+            {
+                my_info.groups[i].members[j].id = cJSON_GetArrayItem(ids, i)->valueint;
+                my_info.groups[i].members[j].nick_name = copy(cJSON_GetArrayItem(nick_names, i)->valuestring);
+                my_info.groups[i].members[j].avatar = copy(cJSON_GetArrayItem(avatars, i)->valuestring);
+                my_info.groups[i].members[j].ip = copy(cJSON_GetArrayItem(ips, i)->valuestring);
+                my_info.groups[i].members[j].online = cJSON_GetArrayItem(states, i)->valueint;
+                my_info.groups[i].members[j].signature = copy(cJSON_GetArrayItem(signatures, i)->valuestring);
+            }
+            cJSON_Delete(g_member_list_cjson);
         }
     }
     //cJSON_Delete(cjson);

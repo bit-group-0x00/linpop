@@ -52,8 +52,8 @@ typedef struct group_profile
 typedef struct group
 {
   group_profile g_profile;
-  int user_num;
-  profile profiles;
+  int member_num;
+  profile* members;
   message* first_msg;
   message* last_msg;
 } group;
