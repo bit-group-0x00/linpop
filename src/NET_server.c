@@ -318,7 +318,7 @@ void handle_add_friend_request(int client, cJSON* cjson)
 void handle_msg_send(int client, cJSON* cjson)
 {
     Message msg;
-    msg.msgFromId = cJSON_GetObjectItem(cjson, "origin")->valueint;
+    msg.msgFromId = cJSON_GetObjectItem(cjson, "sender")->valueint;
     msg.msgToId = cJSON_GetObjectItem(cjson, "target")->valueint;
     msg.msgContent = cJSON_GetObjectItem(cjson, "message")->valuestring;
     msg.msgStatus = 0;
@@ -327,11 +327,18 @@ void handle_msg_send(int client, cJSON* cjson)
     if(user->userStatus == 1)
     {
         int client_2 = conn_to(user->userIp, CLIENT_PORT);
-        send_cjson(client_2, cjson);
+
+        cJSON* cjson_2 = cJSON_CreateObject();
+        cJSON_AddItemToObject(cjson_2, "sender", cJSON_CreateNumber(msg.msgFromId));
+        cJSON_AddItemToObject(cjson_2, "checked", cJSON_CreateNumber(UNCHECKED));
+        cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("2019/9/3"));
+        cJSON_AddItemToObject(cjson_2, "contend", cJSON_CreateString(msg.msgContent));
+        send_cjson(client_2, cjson_2);
+        cJSON_Delete(cjson_2);
         cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
         if(cj_2 != NULL)
         {
-            msg.msgStatus = 1;
+            msg.msgStatus = CHECKED;
             cJSON_Delete(cj_2);
         }
     }

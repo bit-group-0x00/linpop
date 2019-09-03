@@ -62,6 +62,16 @@ void append_mem_to_gro(group* gro, member* mem);
 
 group* parse_gro(cJSON* cjson);
 
+void append_gro(group* gro)
+{
+    if(my_info.last_gro != NULL)
+    {
+        my_info.last_gro->next = gro;
+        gro->last = my_info.last_gro;
+        my_info.last_gro = gro;
+    } else my_info.last_gro = my_info.first_gro = gro;
+}
+
 void append_mem_to_gro(group* gro, member* mem)
 {
     if(gro == NULL) return;
@@ -91,11 +101,11 @@ group* parse_gro(cJSON* cjson)
     cJSON* ips = cJSON_GetObjectItem(cjson, "ips");
     cJSON* states = cJSON_GetObjectItem(cjson, "states");
     cJSON* signatures = cJSON_GetObjectItem(cjson, "signatures");
-    for(int j = 0; j < member_num; ++j)
+    for(int i = 0; i < member_num; ++i)
     {
         member* mem = malloc(sizeof(profile));
         mem->mem_pro.id = cJSON_GetArrayItem(ids, i)->valueint;
-        friend* fri = seek_fri();
+        friend* fri = seek_fri(mem->mem_pro.id);
         /* if user's profie already exist */
         if(fri != NULL) mem->mem_pro = fri->fri_pro;
         else
@@ -172,14 +182,14 @@ friend* parse_fri(cJSON* cjson)
 {
     friend* fri = malloc(sizeof(friend));
     fri->last_msg = fri->first_msg = NULL;
-    fri->last = fri->first = NULL;
-    fri->pro.id = cJSON_GetObjectItem(cjson, "id")->valueint;
-    fri->pro.online = cJSON_GetObjectItem(cjson, "online")->valueint;
-    fri->pro.ip = copy(cJSON_GetObjectItem(cjson, "ip")->valuestring);
-    fri->pro.nick_name = copy(cJSON_GetObjectItem(cjson, "nick_name")->valuestring);
-    fri->pro.signature = copy(cJSON_GetObjectItem(cjson, "signature")->valuestring);
-    fri->pro.avatar = copy(cJSON_GetObjectItem(cjson, "avatar")->valuestring);
-    return pro;
+    fri->last_msg = fri->first_msg = NULL;
+    fri->fri_pro.id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    fri->fri_pro.online = cJSON_GetObjectItem(cjson, "online")->valueint;
+    fri->fri_pro.ip = copy(cJSON_GetObjectItem(cjson, "ip")->valuestring);
+    fri->fri_pro.nick_name = copy(cJSON_GetObjectItem(cjson, "nick_name")->valuestring);
+    fri->fri_pro.signature = copy(cJSON_GetObjectItem(cjson, "signature")->valuestring);
+    fri->fri_pro.avatar = copy(cJSON_GetObjectItem(cjson, "avatar")->valuestring);
+    return fri;
 }
 
 
@@ -508,7 +518,7 @@ void handle_add_fri_request(int client, cJSON* cjson)
 void handle_join_gro_request(int client, cJSON* cjson)
 {
     /* todo */
-    group* gro = parse(gro);
+    group* gro = parse_gro(gro);
     append_gro(gro);
     my_info.update_ui(CREATE_GROUP_REQUEST, gro);
 }
@@ -568,8 +578,18 @@ state logout()
     return s;
 }
 
+void update_ui(state type, void* origin)
+{
+    printf("type is %d\n", type);
+}
+
 int main(int argc, char* argv[])
 {
+    struct args arg;
+    arg.value = CLIENT_PORT, arg.handle = handle_cjson;
+    //monitor_port((void*)&arg);
+
+
     /* connect to server */
     if((server = conn_to( inet_addr(DEFAULT_SERVER_IP), SERVER_PORT)) == -1)
     {
@@ -577,6 +597,7 @@ int main(int argc, char* argv[])
         return -1;
     }
     int id = 10000;
+    my_info.update_ui = update_ui;
     /* test regist, login and send message */
     //printf("regist result: %d\n", regist("helloworld", "123456"));
     printf("login result: %d\n", login(id, "123456"));
@@ -585,7 +606,7 @@ int main(int argc, char* argv[])
     //printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
     //printf("join group result: %d\n", join_group(1));
     //printf("add friend result: %d\n", add_friend(10000));
-    //printf("send message to friend result: %d\n", send_msg_to_friend(10001, "hello my friend"));
+    printf("send message to friend result: %d\n", send_msg_to_friend(10000, "hello my friend"));
     printf("logout result: %d\n", logout());
     //send_msg(server, "pengyao", "helloworld!");
 
@@ -597,5 +618,6 @@ int main(int argc, char* argv[])
     get_file_size("/home/onlyrobot/t/test.txt"), NULL);
     //close(server);
     //close(socket);
+    while(1);
     return 0;
 }
