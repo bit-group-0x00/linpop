@@ -4,7 +4,38 @@
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
 
-void group_chat_window(int argc, char* argcv[])
+
+
+void add_item_list_box(GtkWidget *listbox,gchar*messageSenderIcon,int senderId,gchar*messageSenderName,gchar*message,int type)
+{
+    GtkWidget *messageBox;
+    GtkWidget *SenderIcon;
+    GtkWidget *src;
+    GtkWidget *dst;
+
+    GtkTextView *text;
+    GtkTextBuffer*textBuffer;
+
+    messageBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+    src = gdk_pixbuf_new_from_file(messageSenderIcon, NULL);
+    dst = gdk_pixbuf_scale_simple(src, 20, 20, GDK_INTERP_BILINEAR);
+    SenderIcon = gtk_image_new_from_pixbuf(dst);
+    g_object_unref(src);	// pixbuf使用完，需要人为释放资源
+    g_object_unref(dst);
+    gtk_box_pack_start(GTK_BOX(messageBox),SenderIcon,TRUE,FALSE,0);
+
+    text = gtk_text_view_new();
+    gchar_con
+    gtk_text_buffer_set_text()
+
+   // gtk_text_buffer_set_text()
+
+
+
+}
+
+
+void group_chat_window(int argc, char *argv[])
 {
     GtkWidget *window;
     GtkWidget *bigBox;
@@ -24,7 +55,7 @@ void group_chat_window(int argc, char* argcv[])
     GtkWidget *downFrame;
     //upFrame
     GtkWidget *scrolledMessageList;
-    GtkWidget *listbox;
+    GtkWidget *listBox;
     //downFrame
     GtkWidget *toolBar;
     GtkWidget *textView;
@@ -84,7 +115,28 @@ void group_chat_window(int argc, char* argcv[])
     gtk_widget_set_size_request(upFrame,-1,354);
     gtk_paned_pack1(GTK_PANED(vPaned),upFrame,TRUE,TRUE);
 
-    listbox = gtk_list_box_new();
+/*
+    GtkWidget *friendListScrolledWindow = gtk_scrolled_window_new(NULL,NULL);
+    gtk_box_pack_start(GTK_BOX(homepagePaned),friendListScrolledWindow,TRUE,TRUE,5);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(friendListScrolledWindow),
+                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW(friendListScrolledWindow),
+                                         GTK_SHADOW_ETCHED_IN);
+
+    GtkWidget *testbox = user_profile(userInfo.my_profile,FRIEND,30);
+    GtkWidget *listbox = gtk_list_box_new();
+    gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),listbox);
+    gtk_list_box_prepend(GTK_LIST_BOX(listbox),testbox);
+   */
+
+    scrolledMessageList = gtk_scrolled_window_new(NULL,NULL);
+    gtk_paned_pack1(GTK_PANED(vPaned),scrolledMessageList,TRUE,TRUE);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledMessageList),GTK_POLICY_NEVER,GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledMessageList),GTK_SHADOW_IN);
+
+
+    listBox = gtk_list_box_new();
+    gtk_container_add(GTK_CONTAINER(scrolledMessageList),listBox);
 
    // g_signal_connect(listbox,"selection_changed",G_CALLBACK(listbox_changed),NULL);
 

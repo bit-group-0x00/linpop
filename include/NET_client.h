@@ -10,9 +10,6 @@
 #include "NET_socket.h"
 #include "UTIL_cJSON.h"
 
-/* 我的账号、当前账号 */
-extern int my_id;
-
 /*
   存放用户简要信息的结构体，用于向其他用户展示
   和显示在自己的信息栏
@@ -20,32 +17,56 @@ extern int my_id;
 typedef struct profile
 {
   int id;
-  char* nick_name;
-  char* avatar;
-  char* signature;
   state online;
-  char* IPaddress;
+  char* ip;
+  char* nick_name;
+  char* signature;
+  char* avatar;
 } profile;
 /* 消息结构体，用双向链表表示消息队列 */
 typedef struct message
 {
   int sender;
-  char* msg;
+  char* date;
+  state checked;
+  char* content;
   struct message* last;
   struct message* next;
 } message;
 /* 好友结构体，包含好友的简要信息和聊天消息 */
 typedef struct friend
 {
-  profile friend_profile;
-  message msg;
+  profile fri_pro;
+  message* first_msg;
+  message* last_msg;
+  struct friend* last;
+  struct friend* next;
 } friend;
+typedef struct group_profile
+{
+  int id;
+  char* name;
+  char* intro;
+  char* icon;
+} group_profile;
+
+typedef struct member
+{
+  profile mem_pro;
+  struct member* last;
+  struct member* next;
+} member;
 
 /* 群聊结构体，包括群聊的基本信息和聊天消息 */
 typedef struct group
 {
-  profile group_profile;
-  message msg;
+  group_profile gro_pro;
+  member* first_mem;
+  member* last_mem;
+  message* first_msg;
+  message* last_msg;
+  struct group* last;
+  struct group* next;
 } group;
 
 /*
@@ -54,12 +75,15 @@ typedef struct group
 */
 typedef struct info
 {
-  profile my_profile;
-  int friend_num;
-  friend* friends;
-  int group_num;
-  group* groups;
+  profile my_pro;
+  friend* first_fri;
+  friend* last_fri;
+  group* first_gro;
+  group* last_gro;
+  void (*update_ui)(state type, void* origin)
 } info;
+
+extern info my_info;
 
 /* 
   client regist fuction
@@ -77,33 +101,10 @@ state regist(const char* nick_name, const char* passwd);
 state login(const int id, const char* passwd);
 
 /*
-  request my info
-  请求自己的详细信息，传入存放详细信息的结构体指针，返回值表示
-  请求的结果SUCCESS（0）表示成功，FAILURE（1）表示失败，
-  ERROR（-1）表示请求过程中发生了错误。最后的用户数据放在my_info
-  指向的结构体里面。
-*/
-state request_my_info(info* my_info);
-
-/*
-  request user's profile
-  请求用户的简要信息，区别于上面的的获取自己的详细信息，
-  这里的这个函数是获得好友的简要信息，用于列表显示。
-  传入用户的id和回调函数，返回SUCCESS（0）表示正在请求，
-  FAILURE（1）表示请求失败。
-  回调函数的作用：在调用请求用户信息的函数后，由于要和服务端
-  网络传输可能会堵塞主线程，为了避免这种情况发生，这里会创建一个
-  新的线程来执行请求，新的线程执行结束之后调用回调函数，在回调
-  函数里面执行更新界面操作。
-  回调函数的参数有state和profile，其中state用于表示请求的
-  结果，用SUCCESS（0）表示请求信息成功，FAILURE（1）表示
-  请求信息失败，ERROR（-1）表示请求过程中发生了错误；profile
-  结构体表示具体请求到的信息，用于更新界面。
-*/
-state request_user_profile(const int user_id, void(*callback)(state, profile));
-
-/*
   send message to friend
+
+  更新：取消回调函数
+
   实现发送消息至某个好友，传入好友账号、要发送的消息和回调函数。
   说明下回调函数的作用：由于发送过程可能很长，而用户在发送消息
   的同时可能要去做其他的事情，所以在这里传入一个回调函数，当消息
@@ -115,7 +116,7 @@ state request_user_profile(const int user_id, void(*callback)(state, profile));
   如果满足，则返回SUCCESS（0），表示消息正在发送中。消息发送完成后
   调用回调函数，并传入发送结果。
 */
-state send_msg_to_friend(const int friend_id, const char* msg, void(*callback)(state));
+state send_msg_to_friend(const int friend_id, const char* msg);
 
 /* 
   send message to a group 
@@ -140,3 +141,24 @@ state send_file_to_friend(const int friend_id, const char* file_path, void(*call
   作为参数
 */
 state send_file_to_group(const int group_id, const char* file_path, void(*callback)(state));
+
+/* 
+  通过id添加好友，返回添加结果
+*/
+state add_friend(const int id);
+
+/*
+  通过群聊id添加群聊
+*/
+state join_group(const int id);
+/*
+  创建群聊，返回群聊id
+*/
+state create_group(char* name, char* intro, char* avatar, int member_num, int *member_ids);
+/*
+  创建
+  登出函数，当用户关闭主窗口时调用该函数，该函数用于向服务器更新
+  用户状态和释放各类资源，返回值SUCCESS（0）表示成功，FAILURE（0）表示失败
+  ERROR（-1）表示出现错误。
+*/
+state logout();

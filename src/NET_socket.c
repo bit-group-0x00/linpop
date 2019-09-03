@@ -10,7 +10,53 @@
 
 //char buffer[BUFF_SIZE];
 
-int conn_to(const char* ip, int port)
+/* get path */
+void get_path(char buff[], char* name);
+
+/* get file size */
+int get_file_size(char* file_path);
+
+/* get file name */
+char* get_file_name(char* file_path);
+
+void get_path(char buff[], char* name)
+{
+    if(name[0] == '/') strcpy(buff, name);
+    else
+    {
+        char* home = getenv("HOME");
+        int pos = 0;
+        while(home[pos] != '\0') buff[pos++] = home[pos];
+        strcpy(buff + pos, "/linpop/");
+        /* if directory is not exist, create one */
+        if(access(buff, 0755) != 0)
+            mkdir(buff, 0755);
+        strcat(buff, "file/");
+        if(access(buff, 0755) != 0)
+            mkdir(buff, 0755);
+        strcat(buff, name);
+    }
+}
+
+int get_file_size(char* file_path)
+{
+    struct stat stat_buf;
+    stat(file_path, &stat_buf);
+    return stat_buf.st_size;
+}
+
+char* get_file_name(char* file_path)
+{
+    char *file_name = file_path, *temp = file_path;
+    while(*temp != '\0')
+    {
+        if(*temp == '/') file_name = temp;
+        ++temp;
+    }
+    return ++file_name;
+}
+
+int conn_to(int ip, int port)
 {
     int sckt;
     struct sockaddr_in addr;
@@ -21,7 +67,7 @@ int conn_to(const char* ip, int port)
     }
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(ip);
+    addr.sin_addr.s_addr = ip;
     if(connect(sckt, (struct sockaddr*)&addr, sizeof(addr)) < 0)
     {
         perror("connect");
@@ -35,10 +81,10 @@ void* monitor_socket(void* arg)
     pthread_detach(pthread_self());
     int socket = ((struct args*)arg)->value, buff_remain = 0;
     void (*handle)(int, cJSON*) = ((struct args*)arg)->handle;
-    char buffer[BUFF_SIZE];
+    char buff[BUFF_SIZE];
     while(1)
     {
-        cJSON* cjson = recv_cjson(socket, buffer, &buff_remain);
+        cJSON* cjson = recv_cjson(socket, buff, &buff_remain);
         if(cjson == NULL) break;
         handle(socket, cjson);
         cJSON_Delete(cjson);
@@ -107,10 +153,15 @@ state send_cjson(int socket, cJSON* cjson)
     return 0;
 }
 
-cJSON* recv_cjson(int socket, char buff[], int* buff_remain)
+cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
 {
     /* the pos of spliter '\0' */
     int pos = 0, remain = buff_remain == NULL ? 0 : *buff_remain;
+    if(buff == NULL)
+    {
+        char temp[BUFF_SIZE];
+        buff = temp;
+    }
     while(pos < remain && buff[pos] != '\0') ++pos;
     if(pos == remain)
     {
@@ -139,36 +190,17 @@ cJSON* recv_cjson(int socket, char buff[], int* buff_remain)
     return cjson;
 }
 
-state send_file(int socket, char* file_path, void(*callback)(state))
+state send_file(int socket, const char* file_path, int size, void(*callback)(state))
 {
-    FILE* file = fopen(file_path, "r");
+    char buff[BUFF_SIZE];
+    get_path(buff, file_path);
+    FILE* file = fopen(buff, "r");
     if(file == NULL)
     {
         perror("can't open file");
         return ERROR;
     }
-    /* obtain file size */
-    struct stat stat_buf;
-    stat(file_path, &stat_buf);
-    int size = stat_buf.st_size, remain = size, progress = 0, new_progress = 0;
-    cJSON* cjson = cJSON_CreateObject();
-    cJSON_AddItemToObject(cjson, "type", cJSON_CreateNumber(SEND_FILE));
-    cJSON_AddItemToObject(cjson, "size", cJSON_CreateNumber(size));
-    /* obtain file name */
-    char *file_name = file_path, *temp = file_path;
-    while(*temp != '\0')
-    {
-        if(*temp == '/') file_name = temp;
-        ++temp;
-    }
-    cJSON_AddItemToObject(cjson, "name", cJSON_CreateString(++file_name));
-    send_cjson(socket, cjson);
-    cJSON_Delete(cjson);
-    /* get response */
-    char buff[BUFF_SIZE];
-    cjson = recv_cjson(socket, buff, NULL);
-    if(cjson == NULL) return FAILURE;
-    cJSON_Delete(cjson);
+    int remain = size, progress = 0, new_progress = 0;
     while(remain > 0)
     {
         int read_len = fread(buff, sizeof(char), BUFF_SIZE, file);
@@ -176,35 +208,16 @@ state send_file(int socket, char* file_path, void(*callback)(state))
         remain -= read_len, new_progress = (int)(100.0 * (size - remain) / size);
         if(callback != NULL && new_progress != progress) callback(progress = new_progress);
     }
-    cjson = recv_cjson(socket, buff, NULL);
-    if(cjson == NULL) 
-    {
-        if(callback != NULL) callback(FAILURE);
-        return FAILURE;
-    }
     if(callback != NULL) callback(SUCCESS);
-    cJSON_Delete(cjson), fclose(file);
+    fclose(file);
     return SUCCESS;
 }
 
-state recv_file(int socket, int size, const char* name)
+state recv_file(int socket, int size, const char* file_path)
 {
-    char* home = getenv("HOME"), buff[BUFF_SIZE];
-    int pos = 0;
-    printf("home %s", home);
-    while(home[pos] != '\0')
-    {
-        buff[pos++] = home[pos];
-    }
-    strcpy(buff + pos, "/linpop/");
-    /* if directory is not exist, create one */
-    if(access(buff, 0755) != 0)
-        mkdir(buff, 0755);
-    strcat(buff, "file/");
-    if(access(buff, 0755) != 0)
-        mkdir(buff, 0755);
-    strcat(buff, name);
-    FILE* file = fopen(buff, "w+");
+    char buff[BUFF_SIZE];
+    get_path(buff, file_path);
+    FILE* file = fopen(buff, "w");
     if(file == NULL)
     {
         perror("can't create file");
@@ -245,3 +258,26 @@ state recv_file(int socket, int size, const char* name)
 //     return -1;
 // }
 
+int get_ip(int socket)
+{
+    struct sockaddr_in addr;
+    socklen_t addrlen = sizeof(addr);
+    if(getpeername(socket, (struct sockaddr*)&addr, &addrlen) == -1)
+    {
+        perror("can't get socket ip");
+        return ERROR;
+    }
+    return addr.sin_addr.s_addr;
+}
+
+char* get_aip(int socket)
+{
+    struct sockaddr_in addr;
+    socklen_t addrlen = sizeof(addr);
+    if(getpeername(socket, (struct sockaddr*)&addr, &addrlen) == -1)
+    {
+        perror("can't get socket ip");
+        return ERROR;
+    }
+    return inet_ntoa(addr.sin_addr);
+}
