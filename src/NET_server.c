@@ -95,13 +95,44 @@ void handle_create_group_request(int client, cJSON* cjson)
     group.groupIcon = cJSON_GetObjectItem(cjson, "icon")->valuestring;
     int member_num = cJSON_GetObjectItem(cjson, "member_num")->valueint;
     cJSON* member_ids = cJSON_GetObjectItem(cjson, "member_ids");
+    cJSON* nick_names = cJSON_CreateArray();
+    cJSON* avatars = cJSON_CreateArray();
+    cJSON* ips = cJSON_CreateArray();
+    cJSON* states = cJSON_CreateArray();
+    cJSON* signatures = cJSON_CreateArray();
     //group.groupIp = -1;
     if((group_id = insertGroup(&group, conn)) != -1)
     {
         for(int i = 0; i < member_num; ++i)
         {
+            int id = cJSON_GetArrayItem(member_ids, i)->valueint;
+            insertGroupUser(group_id, id, conn);
+            User* user = getUserInfoById(id, conn);
+            cJSON_AddItemToArray(nick_names, cJSON_CreateString(user->userNickName));
+            cJSON_AddItemToArray(avatars, cJSON_CreateString(user->userAvatar));
+            cJSON_AddItemToArray(ips, cJSON_CreateString("127.0.0.1"));
+            cJSON_AddItemToArray(states, cJSON_CreateNumber(user->userStatus));
+            cJSON_AddItemToArray(signatures, cJSON_CreateString(user->userSignature));
+            freeUser(user);
             /* todo insert error handle */
-            insertGroupUser(group_id, cJSON_GetArrayItem(member_ids, i)->valueint, conn);
+        }
+        cJSON_AddItemToObject(cjson, "nick_names", nick_names);
+        cJSON_AddItemToObject(cjson, "avatars", avatars);
+        cJSON_AddItemToObject(cjson, "ips", ips);
+        cJSON_AddItemToObject(cjson, "states", states);
+        cJSON_AddItemToObject(cjson, "signatures", signatures);
+        for(int i = 0; i < member_num; ++i)
+        {
+            int id = cJSON_GetArrayItem(member_ids, i)->valueint;
+            User* user = getUserInfoById(id, conn);
+            if(user->userStatus == ONLINE)
+            {
+                int client_2 = conn_to(user->userIp, CLIENT_PORT);
+                send_cjson(client_2, cjson);
+                cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
+                if(cj_2 != NULL) cJSON_Delete(cj_2);
+            }
+            freeUser(user);
         }
         /* 创建response的cjson */
         cJSON* response = cJSON_CreateObject();
@@ -297,8 +328,28 @@ void handle_add_friend_request(int client, cJSON* cjson)
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     int friend_id = cJSON_GetObjectItem(cjson, "friend_id")->valueint;
     if(isFriends(id, friend_id, conn) == 1 || insertFriends(id, friend_id, conn) == 1)
+    {
+        User* user = getUserInfoById(id, conn);
+        User* fri = getUserInfoById(friend_id, conn);
+        cJSON* cjson_2 = cJSON_CreateObject();
+        cJSON_AddItemToObject(cjson_2, "type", cJSON_CreateNumber(ADD_FRIEND_REQUEST));
+        cJSON_AddItemToObject(cjson_2, "id", cJSON_CreateNumber(user->userId));
+        cJSON_AddItemToObject(cjson_2, "online", cJSON_CreateNumber(user->userStatus));
+        cJSON_AddItemToObject(cjson_2, "ip", cJSON_CreateString("127.0.0.1"));
+        cJSON_AddItemToObject(cjson_2, "nick_name", cJSON_CreateString(user->userNickName));
+        cJSON_AddItemToObject(cjson_2, "signature", cJSON_CreateString(user->userSignature));
+        cJSON_AddItemToObject(cjson_2, "avatar", cJSON_CreateString(user->userAvatar));
+        freeUser(user);
+        printf("target ip is :%d\n", fri->userIp);
+        int client_2 = conn_to(fri->userIp, CLIENT_PORT);
+        freeUser(fri);
+        send_cjson(client_2, cjson_2);
+        cJSON_Delete(cjson_2);
+        cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
+        close(client_2);
+        cJSON_Delete(cj_2);
         response_state(client, SUCCESS);
-    else response_state(client, FAILURE);
+    } else response_state(client, FAILURE);
 }
 
 void handle_msg_send(int client, cJSON* cjson)

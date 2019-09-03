@@ -154,7 +154,7 @@ state join_group(const int id);
 /*
   创建群聊，返回群聊id
 */
-state create_group(char* name, char* intro, char* avatar, int member_num, int *member_ids);
+state create_group(char* name, char* intro, char* icon, int member_num, int *member_ids);
 /*
   创建
   登出函数，当用户关闭主窗口时调用该函数，该函数用于向服务器更新

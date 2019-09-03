@@ -171,7 +171,7 @@ message* parse_msg(cJSON* cjson)
 {
     message* msg = malloc(sizeof(message));
     msg->last = msg->next = NULL;
-    msg->sender = copy(cJSON_GetObjectItem(cjson, "sender")->valuestring);
+    msg->sender = cJSON_GetObjectItem(cjson, "sender")->valueint;
     msg->checked = cJSON_GetObjectItem(cjson, "checked")->valueint;
     msg->date = copy(cJSON_GetObjectItem(cjson, "date")->valuestring);
     msg->content = copy(cJSON_GetObjectItem(cjson, "content"));
@@ -434,7 +434,7 @@ state request_my_info(int id)
     return s;
 }
 
-state create_group(char* name, char* intro, char* avatar, int member_num, int *member_ids)
+state create_group(char* name, char* intro, char* icon, int member_num, int *member_ids)
 {
     /* create cjson of create group request */
     cJSON* cjson = cJSON_CreateObject();
@@ -442,7 +442,7 @@ state create_group(char* name, char* intro, char* avatar, int member_num, int *m
     cJSON_AddItemToObject(cjson, "id", cJSON_CreateNumber(my_info.my_pro.id));
     cJSON_AddItemToObject(cjson, "name", cJSON_CreateString(name));
     cJSON_AddItemToObject(cjson, "intro", cJSON_CreateString(intro));
-    cJSON_AddItemToObject(cjson, "icon", cJSON_CreateString(avatar));
+    cJSON_AddItemToObject(cjson, "icon", cJSON_CreateString(icon));
     cJSON_AddItemToObject(cjson, "member_num", cJSON_CreateNumber(member_num));
     cJSON_AddItemToObject(cjson, "member_ids", cJSON_CreateIntArray(member_ids, member_num));
     /* send cjson */
@@ -492,7 +492,7 @@ state send_msg_to_friend(const int friend_id, const char* msg)
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
 }
 
-void handle_msg_recv(int client, cJSON* cjson)
+void handle_msg_recv(int socket, cJSON* cjson)
 {
     printf("before");
     message* msg = parse_msg(cjson);
@@ -507,14 +507,15 @@ void handle_msg_recv(int client, cJSON* cjson)
         group* gro = seek_gro(msg->sender);
         append_msg_to_gro(gro, msg);
     }
-
+    response_state(socket, SUCCESS);
     my_info.update_ui(SEND_MESSAGE, msg);
 }
 
-void handle_add_fri_request(int client, cJSON* cjson)
+void handle_add_fri_request(int socket, cJSON* cjson)
 {
     friend* fri = parse_fri(cjson);
     append_fri(fri);
+    response_state(socket, SUCCESS);
     my_info.update_ui(ADD_FRIEND_REQUEST, fri);
 }
 
@@ -609,10 +610,10 @@ int main(int argc, char* argv[])
     printf("login result: %d\n", login(id, "123456"));
     my_info.my_pro.id = id;
     int group_members[5] = { 10000, 10001, 10002, 10003, 10004 };
-    //printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
+    printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
     //printf("join group result: %d\n", join_group(1));
-    //printf("add friend result: %d\n", add_friend(10000));
-    printf("send message to friend result: %d\n", send_msg_to_friend(10000, "hello my friend"));
+    //printf("add friend result: %d\n", add_friend(10001));
+    //printf("send message to friend result: %d\n", send_msg_to_friend(10001, "hello my friend"));
     printf("logout result: %d\n", logout());
     //send_msg(server, "pengyao", "helloworld!");
 
