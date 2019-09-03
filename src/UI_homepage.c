@@ -15,60 +15,60 @@ enum
     N_COLUMNS
 };
 
-static void
-init_list(GtkWidget *list)
-{
-
-    GtkCellRenderer *renderer;
-    GtkTreeViewColumn *column;
-    GtkListStore *store;
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes("List Items",
-                                                      renderer, "text", LIST_ITEM, NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    store = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING);
-
-    gtk_tree_view_set_model(GTK_TREE_VIEW(list),
-                            GTK_TREE_MODEL(store));
-
-    g_object_unref(store);
-}
-
-static void add_to_list(GtkWidget *list, const GtkWidget *hbox)
-{
-    GtkListStore *store;
-    GtkTreeIter iter;
-
-    store = GTK_LIST_STORE(gtk_tree_view_get_model
-                                   (GTK_TREE_VIEW(list)));
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, LIST_ITEM, hbox, -1);
-}
-
-
-void  on_changed(GtkWidget *widget, gpointer label)
-{
-    GtkTreeIter iter;
-    GtkTreeModel *model;
-    char *value;
-
-
-    if (gtk_tree_selection_get_selected(
-            GTK_TREE_SELECTION(widget), &model, &iter)) {
-
-        gtk_tree_model_get(model, &iter, LIST_ITEM, &value,  -1);
-        gtk_label_set_text(GTK_LABEL(label), value);
-        g_free(value);
-    }
-
-}
+//static void
+//init_list(GtkWidget *list)
+//{
+//
+//    GtkCellRenderer *renderer;
+//    GtkTreeViewColumn *column;
+//    GtkListStore *store;
+//
+//    renderer = gtk_cell_renderer_text_new();
+//    column = gtk_tree_view_column_new_with_attributes("List Items",
+//                                                      renderer, "text", LIST_ITEM, NULL);
+//    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+//
+//    store = gtk_list_store_new(N_COLUMNS, G_TYPE_STRING);
+//
+//    gtk_tree_view_set_model(GTK_TREE_VIEW(list),
+//                            GTK_TREE_MODEL(store));
+//
+//    g_object_unref(store);
+//}
+//
+//static void add_to_list(GtkWidget *list, const GtkWidget *hbox)
+//{
+//    GtkListStore *store;
+//    GtkTreeIter iter;
+//
+//    store = GTK_LIST_STORE(gtk_tree_view_get_model
+//                                   (GTK_TREE_VIEW(list)));
+//
+//    gtk_list_store_append(store, &iter);
+//    gtk_list_store_set(store, &iter, LIST_ITEM, hbox, -1);
+//}
+//
+//
+//void  on_changed(GtkWidget *widget, gpointer label)
+//{
+//    GtkTreeIter iter;
+//    GtkTreeModel *model;
+//    char *value;
+//
+//
+//    if (gtk_tree_selection_get_selected(
+//            GTK_TREE_SELECTION(widget), &model, &iter)) {
+//
+//        gtk_tree_model_get(model, &iter, LIST_ITEM, &value,  -1);
+//        gtk_label_set_text(GTK_LABEL(label), value);
+//        g_free(value);
+//    }
+//
+//}
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gint state;
     g_print("delete event occured\n");
-    if(show_question(NULL,NULL,"do you really want to exit?") == GTK_RESPONSE_YES){
+    if(show_question(widget,NULL,"do you really want to exit?") == GTK_RESPONSE_YES){
 //        log_out(userID);
         gtk_main_quit();
         return FALSE;
@@ -81,8 +81,8 @@ void label_font(GtkWidget *lable, gchar* context, int fontSize, gchar *foreColor
     gtk_label_set_markup(GTK_LABEL(lable), g_strdup_printf("%s%s%s%s%s%s%s%d%s%s%s","<span foreground='",foreColor,"' underline='",underline,"' underline_color='",underlineColor,"' font_desc='",fontSize,"'>",context,"</span>"));
 }
 GtkWidget *user_profile(profile userInfoDisplay, int type, int avaterSize){
-    GtkWidget *hbox = gtk_hbox_new(FALSE,0);
-    GtkWidget *vbox = gtk_vbox_new(FALSE,0);
+    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
 
     GdkPixbuf *avaterRes = gdk_pixbuf_new_from_file_at_size(userInfoDisplay.avatar,avaterSize,avaterSize,NULL);
     GtkWidget *avaterImage = gtk_image_new_from_pixbuf(avaterRes);
@@ -152,6 +152,7 @@ void homepage_window(int userID){
     gtk_container_add(GTK_CONTAINER(homepageBox),addButtonBox);
     //添加好友按钮
     GtkWidget *addFriendButton = gtk_button_new_with_label("Add Friend");
+    gtk_button_set_always_show_image(GTK_BUTTON(addFriendButton),TRUE);
     imageRes = gdk_pixbuf_new_from_file_at_size("../res/icons_p.png",30,30,NULL);
     GtkWidget *addFriendImage = gtk_image_new_from_pixbuf(imageRes);
     gtk_button_set_image(GTK_BUTTON(addFriendButton),addFriendImage);
@@ -159,6 +160,7 @@ void homepage_window(int userID){
 
     //添加群聊按钮
     GtkWidget *addGroupChatButton = gtk_button_new_with_label("Add Group");
+    gtk_button_set_always_show_image(GTK_BUTTON(addGroupChatButton),TRUE);
     imageRes = gdk_pixbuf_new_from_file_at_size("../res/icon_c.png",30,30,NULL);
     GtkWidget *addGroupImage = gtk_image_new_from_pixbuf(imageRes);
     gtk_button_set_image(GTK_BUTTON(addGroupChatButton),addGroupImage);
@@ -168,13 +170,13 @@ void homepage_window(int userID){
 //    GtkWidget *homepagePaned = gtk_vpaned_new();
 //    gtk_widget_set_size_request(GTK_WIDGET(homepagePaned),360,600);
 //    gtk_box_pack_start(GTK_BOX(homepageBox),homepagePaned,FALSE,FALSE,5);
-    GtkWidget *homepagePaned = gtk_vbox_new(FALSE,0);
+    GtkWidget *homepagePaned = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
     gtk_widget_set_size_request(GTK_WIDGET(homepagePaned),360,600);
     gtk_box_pack_start(GTK_BOX(homepageBox),homepagePaned,FALSE,FALSE,5);
 
     //用户个人界面面板
     GtkWidget *userInfoPaned = gtk_frame_new("");
-    GtkWidget *sep = gtk_hseparator_new();
+    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_container_add(GTK_CONTAINER(userInfoPaned),user_profile(userInfo.my_profile,USER_SELF,64));
     gtk_container_add(GTK_CONTAINER(userInfoPaned),sep);
     gtk_box_pack_start(GTK_BOX(homepagePaned),userInfoPaned,FALSE,FALSE,5);
@@ -182,25 +184,30 @@ void homepage_window(int userID){
     //好友界面面板
     GtkWidget *friendListScrolledWindow = gtk_scrolled_window_new(NULL,NULL);
     gtk_box_pack_start(GTK_BOX(homepagePaned),friendListScrolledWindow,TRUE,TRUE,5);
-
-    GtkWidget *list;
-    GtkTreeSelection *selection;
-    GtkWidget *testbox = user_profile(userInfo.my_profile,FRIEND,30);
-    list = gtk_tree_view_new();
-
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW(friendListScrolledWindow),
                                     GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW(friendListScrolledWindow),
                                          GTK_SHADOW_ETCHED_IN);
-    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (list), FALSE);
-    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (list), FALSE);
 
-    gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),list);
-    init_list(list);
-    for (int i = 0; i < 30; ++i) {
-        add_to_list(list,testbox);
-    }
+    GtkWidget *testbox = user_profile(userInfo.my_profile,FRIEND,30);
+    GtkWidget *listbox = gtk_list_box_new();
+    gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),listbox);
+    gtk_list_box_prepend(GTK_LIST_BOX(listbox),testbox);
 
+
+    //    GtkWidget *list;
+//    GtkTreeSelection *selection;
+
+//    list = gtk_tree_view_new();
+//
+
+//    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (list), FALSE);
+//    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (list), FALSE);
+//
+//    init_list(list);
+//    for (int i = 0; i < 30; ++i) {
+//        add_to_list(list,testbox);
+//    }
 
     gtk_widget_show_all(homepageWindow);
     g_signal_connect(G_OBJECT(homepageWindow),"delete_event",G_CALLBACK(delete_event),NULL);
