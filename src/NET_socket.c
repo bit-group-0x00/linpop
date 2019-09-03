@@ -102,6 +102,8 @@ void* monitor_port(void* arg)
         perror("socket");
         return 1;
     }
+    unsigned value = 1;
+    setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
     bzero(&server_addr, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
@@ -148,7 +150,7 @@ state send_cjson(int socket, cJSON* cjson)
         return -1;
     }
     send(socket, s, len, 0);
-    printf("send: %s\n", s);
+    //printf("send: %s\n", s);
     free(s);
     return 0;
 }
@@ -156,16 +158,13 @@ state send_cjson(int socket, cJSON* cjson)
 cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
 {
     /* the pos of spliter '\0' */
-    printf("before send\n");
     int pos = 0, remain = buff_remain == NULL ? 0 : *buff_remain;
     if(buff == NULL)
     {
         char temp[BUFF_SIZE];
         buff = temp;
     }
-    printf("after send\n");
     while(pos < remain && buff[pos] != '\0') ++pos;
-    printf("after after\n");
     if(pos == remain)
     {
         int recv_len = recv(socket, buff + remain, BUFF_SIZE - remain, 0);
@@ -182,7 +181,7 @@ cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
         remain += recv_len;
         while(buff[pos] != '\0') ++pos;
     }
-    printf("recieved: %s\n", buff);
+    //printf("recieved: %s\n", buff);
     cJSON* cjson =  cJSON_Parse(buff);
     remain -= pos + 1;
     for(int i = 0; i < remain; ++i)
@@ -190,7 +189,6 @@ cJSON* recv_cjson(int socket, char* buff, int* buff_remain)
         buff[i] = buff[i + pos + 1];
     }
     if(buff_remain != NULL) *buff_remain = remain;
-    printf("out\n");
     return cjson;
 }
 

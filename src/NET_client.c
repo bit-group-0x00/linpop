@@ -50,8 +50,6 @@ message* parse_msg(cJSON* cjson);
 
 friend* parse_fri(cJSON* cjson);
 
-friend* seek_fri(int id);
-
 void append_fri(friend* fri);
 
 void append_msg_to_fri(friend* fri, message* msg);
@@ -182,7 +180,7 @@ message* parse_msg(cJSON* cjson)
     msg->sender = cJSON_GetObjectItem(cjson, "sender")->valueint;
     msg->checked = cJSON_GetObjectItem(cjson, "checked")->valueint;
     msg->date = copy(cJSON_GetObjectItem(cjson, "date")->valuestring);
-    msg->content = copy(cJSON_GetObjectItem(cjson, "content"));
+    msg->content = copy(cJSON_GetObjectItem(cjson, "content")->valuestring);
     return msg;
 }
 
@@ -208,14 +206,15 @@ char* copy(char* s)
     return res;
 }
 
-state regist(const char* nick_name, const char* passwd)
+state regist(const char* nick_name, const char* passwd, const char* signature, const char* avatar)
 {
     /* create cjson of regist request */
     cJSON* cjson = cJSON_CreateObject();
     cJSON_AddItemToObject(cjson, "type", cJSON_CreateNumber(REGIST));
     cJSON_AddItemToObject(cjson, "nick_name", cJSON_CreateString(nick_name));
     cJSON_AddItemToObject(cjson, "passwd", cJSON_CreateString(passwd));
-    cJSON_AddItemToObject(cjson, "avatar", cJSON_CreateString(passwd));
+    cJSON_AddItemToObject(cjson, "signature", cJSON_CreateString(signature));
+    cJSON_AddItemToObject(cjson, "avatar", cJSON_CreateString(avatar));
     /* send cjson */
     send_cjson(server, cjson);
     cJSON_Delete(cjson);
@@ -235,6 +234,7 @@ state regist(const char* nick_name, const char* passwd)
 
 state login(int id, const char* passwd)
 {
+    my_info.my_pro.id = id;
     /* create cjson of regist request */
     cJSON* cjson = cJSON_CreateObject();
     cJSON_AddItemToObject(cjson, "type", cJSON_CreateNumber(LOGIN));
@@ -243,18 +243,18 @@ state login(int id, const char* passwd)
     /* send cjson */
     send_cjson(server, cjson);
     cJSON_Delete(cjson);
-    cjson = recv_cjson(server, server_buff, &server_buff_remain);
-    state s = cJSON_GetObjectItem(cjson, "type")->valueint;
+    cJSON* cjson_2 = recv_cjson(server, server_buff, &server_buff_remain);
+    state s = cJSON_GetObjectItem(cjson_2, "type")->valueint;
     if(s == SUCCESS)
     {
-        my_info.my_pro.nick_name = copy(cJSON_GetObjectItem(cjson, "nick_name")->valuestring);
-        my_info.my_pro.avatar = copy(cJSON_GetObjectItem(cjson, "avatar")->valuestring);
-        my_info.my_pro.online = cJSON_GetObjectItem(cjson, "state")->valueint;
-        my_info.my_pro.ip = copy(cJSON_GetObjectItem(cjson, "ip")->valuestring);
-        my_info.my_pro.signature = copy(cJSON_GetObjectItem(cjson, "signature")->valuestring);
+        my_info.my_pro.nick_name = copy(cJSON_GetObjectItem(cjson_2, "nick_name")->valuestring);
+        my_info.my_pro.avatar = copy(cJSON_GetObjectItem(cjson_2, "avatar")->valuestring);
+        my_info.my_pro.online = cJSON_GetObjectItem(cjson_2, "state")->valueint;
+        my_info.my_pro.ip = copy(cJSON_GetObjectItem(cjson_2, "ip")->valuestring);
+        my_info.my_pro.signature = copy(cJSON_GetObjectItem(cjson_2, "signature")->valuestring);
         s = request_my_info(id);
     }
-    cJSON_Delete(cjson);
+    //cJSON_Delete(cjson_2);
     return s;
 }
 
@@ -496,15 +496,13 @@ state send_msg_to_friend(const int friend_id, const char* msg)
     /* send cjson */
     send_cjson(server, cjson);
     cJSON_Delete(cjson);
-    cjson = recv_cjson(server, server_buff, server_buff_remain);
+    cjson = recv_cjson(server, server_buff, &server_buff_remain);
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
 }
 
 void handle_msg_recv(int socket, cJSON* cjson)
 {
-    printf("before");
     message* msg = parse_msg(cjson);
-    printf("here");
     /* friend message */
     if(msg->sender >= 9999)
     {
@@ -532,12 +530,12 @@ void handle_join_gro_request(int client, cJSON* cjson)
     /* todo */
     group* gro = parse_gro(cjson);
     append_gro(gro);
+    response_state(client, SUCCESS);
     my_info.update_ui(CREATE_GROUP_REQUEST, gro);
 }
 
 void handle_cjson(int socket, cJSON* cjson)
 {
-    printf("here");
     cJSON* type = cJSON_GetObjectItem(cjson, "type");
     void (*handle)(int, cJSON*);
     switch(type->valueint)
@@ -568,6 +566,11 @@ state add_friend(const int id)
     cJSON_Delete(cjson);
     cjson = recv_cjson(server, server_buff, &server_buff_remain);
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
+    if(s == SUCCESS)
+    {
+        friend* fri = parse_fri(cjson);
+        append_fri(fri);
+    }
     cJSON_Delete(cjson);
     return s;
 }
@@ -611,20 +614,19 @@ int main(int argc, char* argv[])
         printf("cannot connect to server, try again later.\n");
         return -1;
     }
-    int id = 10000;
     my_info.update_ui = update_ui;
     /* test regist, login and send message */
-    //printf("regist result: %d\n", regist("helloworld", "123456"));
-    printf("login result: %d\n", login(id, "123456"));
-    my_info.my_pro.id = id;
+    printf("regist result: %d\n", regist("helloworld", "123456", "my signature", "avatar"));
+    printf("login result: %d\n", login(10000, "123456"));
+    //my_info.my_pro.id = id;
     int group_members[5] = { 10000, 10001, 10002, 10003, 10004 };
-    printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
-    //printf("join group result: %d\n", join_group(1));
+    //printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
+    //printf("join group result: %d\n", join_group(75));
     //printf("add friend result: %d\n", add_friend(10001));
-    //printf("send message to friend result: %d\n", send_msg_to_friend(10001, "hello my friend"));
+    //printf("send message to friend result: %d\n", send_msg_to_friend(10000, "hello my friend"));
     printf("logout result: %d\n", logout());
-    //send_msg(server, "pengyao", "helloworld!");
 
+    group* gro = seek_gro(51);
 
 
     //int socket = conn_to(SERVER_IP, SERVER_PORT);
