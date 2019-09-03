@@ -482,9 +482,9 @@ state send_msg_to_friend(const int friend_id, const char* msg)
     /* create cjson of send message */
     cJSON* cjson = cJSON_CreateObject();
     cJSON_AddItemToObject(cjson, "type", cJSON_CreateNumber(SEND_MESSAGE));
-    cJSON_AddItemToObject(cjson, "origin", cJSON_CreateNumber(my_info.my_pro.id));
+    cJSON_AddItemToObject(cjson, "sender", cJSON_CreateNumber(my_info.my_pro.id));
     cJSON_AddItemToObject(cjson, "target", cJSON_CreateNumber(friend_id));
-    cJSON_AddItemToObject(cjson, "message", cJSON_CreateString(msg));
+    cJSON_AddItemToObject(cjson, "content", cJSON_CreateString(msg));
     /* send cjson */
     send_cjson(server, cjson);
     cJSON_Delete(cjson);

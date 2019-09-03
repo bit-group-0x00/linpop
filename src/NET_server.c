@@ -320,7 +320,7 @@ void handle_msg_send(int client, cJSON* cjson)
     Message msg;
     msg.msgFromId = cJSON_GetObjectItem(cjson, "sender")->valueint;
     msg.msgToId = cJSON_GetObjectItem(cjson, "target")->valueint;
-    msg.msgContent = cJSON_GetObjectItem(cjson, "message")->valuestring;
+    msg.msgContent = cJSON_GetObjectItem(cjson, "content")->valuestring;
     msg.msgStatus = 0;
     User* user = getUserInfoById(msg.msgToId, conn);
     /* 如果对方在线 */
@@ -333,14 +333,14 @@ void handle_msg_send(int client, cJSON* cjson)
         cJSON_AddItemToObject(cjson_2, "checked", cJSON_CreateNumber(UNCHECKED));
         cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("2019/9/3"));
         cJSON_AddItemToObject(cjson_2, "contend", cJSON_CreateString(msg.msgContent));
-        send_cjson(client_2, cjson_2);
+        //send_cjson(client_2, cjson_2);
         cJSON_Delete(cjson_2);
-        cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
-        if(cj_2 != NULL)
-        {
-            msg.msgStatus = CHECKED;
-            cJSON_Delete(cj_2);
-        }
+        //cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
+        // if(cj_2 != NULL)
+        // {
+        //     msg.msgStatus = CHECKED;
+        //     cJSON_Delete(cj_2);
+        // }
     }
     insertMsg(&msg, conn);
     freeUser(user);
