@@ -9,18 +9,19 @@
 #include "NET_macro.h"
 #include "NET_socket.h"
 #include "UTIL_cJSON.h"
+#include "DATABASE_mysql.h"
+#include "DATABASE_user.h"
+#include "DATABASE_groupUser.h"
+#include "DATABASE_message.h"
+#include "DATABASE_groupMessage.h"
+#include "DATABASE_group.h"
+#include "DATABASE_friends.h"
 
-/* call after recieving regist request */
-void handle_regist_request(int client, cJSON* cjson);
-
-/* call after recieving login request */
-void handle_login_request(int client, cJSON* cjson);
-
-/* call after recieving message from client. resend it and write to datebase */
-void handle_msg(int client, cJSON* cjson);
-
-/* server side cjson handle function */
-void handle_cjson(int socket, cJSON* cjson);
+/* 
+  服务端的cjson解析函数，通过对cjson的类型（type）进行解析，
+  从而调用不同的handle。
+ */
+void handle_cjson(int client, cJSON* cjson);
 
 /* server entrance */
 int main(int argc, char* argv[]);
