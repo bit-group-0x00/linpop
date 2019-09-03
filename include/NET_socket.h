@@ -1,8 +1,8 @@
 /*
   File Name: NET_socket.h
   Model Name: NET
-  Create Date: 2019/8/29
-  Author: PengYao
+  Create 741 Date: 2019/8/29
+  Author: PenYao
   Abstract Description: my socket
 */
 
