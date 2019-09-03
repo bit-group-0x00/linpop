@@ -10,6 +10,13 @@ void freeGroupList(GroupList groupList) {
     }
 }
 
+void freeGroupUserList(GroupUserList groupUserList) {
+    if (groupUserList.userIds != NULL) {
+        free(groupUserList.userIds);
+        groupUserList.userIds = NULL;
+    }
+}
+
 Status insertGroupUser(int groupId, int groupUserId, MYSQL* connection)
 {
     if (connection == NULL) {
@@ -76,6 +83,7 @@ GroupList getGroupListByUserId(int userId, MYSQL *connection) {
         res = mysql_store_result(connection);
         if (res) {
             groupList.groupNum = mysql_num_rows(res);
+            groupList.groupIds = (int *) malloc(sizeof(int) * groupList.groupNum);
             row = mysql_fetch_row(res);
             int index = 0;
             while (row) {
@@ -88,4 +96,45 @@ GroupList getGroupListByUserId(int userId, MYSQL *connection) {
         }
     }
     return groupList;
+}
+
+GroupUserList getUserListByGroupId(int groupId, MYSQL* connection) {
+    GroupUserList groupUserList;
+    groupUserList.groupId = groupId;
+    groupUserList.userIds = NULL;
+    groupUserList.userNum = 0;
+
+    if (connection == NULL) {
+        perror("GET USERS ID IN GROUP: CONNECTION NULL ERROR");
+        return groupUserList;
+    }
+
+    mysql_query(connection,"SET NAMES utf8");
+    char querySql[SQL_LENGTH_MAX];
+    memset(querySql, 0, sizeof(querySql));
+    sprintf(querySql, "SELECT *\n"
+                      "FROM linpop.group_user\n"
+                      "WHERE guGroupId=%d;", groupId);
+
+    MYSQL_RES* res;
+    MYSQL_ROW row;
+    if (mysql_real_query(connection, querySql, strlen(querySql))) {
+        printf("GET USERS ID IN GROUP: QUERY ERROR\n");
+    } else {
+        res = mysql_store_result(connection);
+        if (res) {
+            groupUserList.userNum = mysql_num_rows(res);
+            groupUserList.userIds = (int *) malloc(sizeof(int) * groupUserList.userNum);
+            row = mysql_fetch_row(res);
+            int index = 0;
+            while (row) {
+                *(groupUserList.userIds + index) = atoi(row[1]);
+                index++;
+                row = mysql_fetch_row(res);
+            }
+        } else {
+            perror("GET USERS ID IN GROUP: RES NULL ERROR\n");
+        }
+    }
+    return groupUserList;
 }

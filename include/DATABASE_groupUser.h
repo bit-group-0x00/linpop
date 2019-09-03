@@ -18,11 +18,23 @@ typedef struct {
     int groupNum;
 } GroupList;
 
+typedef struct {
+    int groupId;
+    int *userIds;
+    int userNum;
+}GroupUserList;
+
 /**
  * free groupList.groupIds' memory
  * @param groupList
  */
 void freeGroupList(GroupList groupList);
+
+/**
+ * free groupUserList.userIds' memory
+ * @param groupUserList
+ */
+void freeGroupUserList(GroupUserList groupUserList);
 
 /**
  * 在创建群聊或添加新成员进入群聊时调用此函数
@@ -46,8 +58,18 @@ Status deleteGroupUser(int groupId, int groupUserId, MYSQL* connection);
  *
  * @param userId
  * @param connection
- * @return GroupList include the num of userId's group and their groupIds.
+ * @return GroupList include the num of user's groups and their groupIds.
  * @return when query error occur or user has no group: groupList.groupNum = 0, groupList.groupIds = NULL;
  */
 GroupList getGroupListByUserId(int userId, MYSQL* connection);
+
+/**
+ *
+ * @param groupId
+ * @param connection
+ * @return GroupUserList include the num of users int the specified group, and all user IDs.
+ * @return when query error occur or group has no users: groupUserList.UserNum = 0, groupUserList.userIds = NULL;
+ */
+GroupUserList getUserListByGroupId(int groupId, MYSQL* connection);
+
 #endif //LINPOP_DATABASE_GROUPUSER_H
