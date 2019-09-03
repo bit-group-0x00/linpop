@@ -24,6 +24,9 @@
 #define OFFLINE 0x300
 #define REQUEST_GROUP_LIST 0x400
 #define REQUEST_GROUP_MESSAGE_LIST 0x500
+#define REQUEST_GROUP_MEMBER_LIST 0x600
+#define CREATE_GROUP_REQUEST 0X700
+#define JOIN_GROUP_REQUEST 0x800
 
 typedef int state;
 //typedef unsigned long ip;

@@ -3,12 +3,6 @@
 //
 
 #include "../include/DATABASE_user.h"
-#include <mysql/mysql.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#define SQL_LENGTH_MAX 1000
-#define SQL_SELECT_LAST_ID "SELECT LAST_INSERT_ID();"
 
 void mallocUser(User *user) {
     if (user == NULL) {
@@ -41,7 +35,7 @@ void freeUser(User *user) {
 
 User *getUserInfoById(int userId, MYSQL *connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
+        perror("GET USER INFO BY ID: CONNECTION NULL ERROR\n");
         return NULL;
     }
     mysql_query(connection,"SET NAMES utf8");
@@ -54,13 +48,12 @@ User *getUserInfoById(int userId, MYSQL *connection) {
     MYSQL_ROW row;
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query user info failed\n");
+        perror("GET USER INFO BY ID: QUERY ERROR\n");
     } else {
         res = mysql_store_result(connection);
         if (res) {
             row = mysql_fetch_row(res);
             if (row) {
-                printf("query user info success\n");
                 User *user = (User *) malloc(sizeof(User));
                 mallocUser(user);
                 user->userId = userId;
@@ -73,7 +66,7 @@ User *getUserInfoById(int userId, MYSQL *connection) {
                 return user;
             }
         } else {
-            printf("query user info: res is NULL");
+            printf("GET USER INFO BY ID: RES NULL ERROR\n");
         }
     }
     return NULL;
@@ -81,7 +74,7 @@ User *getUserInfoById(int userId, MYSQL *connection) {
 
 Status isUserExist(int userId, MYSQL *connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
+        perror("IS USER EXIST: CONNECTION NULL ERROR\n");
         return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
@@ -96,17 +89,16 @@ Status isUserExist(int userId, MYSQL *connection) {
     MYSQL_ROW row;
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query user exist failed\n");
+        perror("IS USER EXIST: QUERY ERROR\n");
     } else {
         res = mysql_store_result(connection);
         if (res) {
             row = mysql_fetch_row(res);
             if (row) {
-                printf("query user exist success\n");
-                return row[0][0] - '0' == 0 ? false : true;
+                return row[0][0] - '0' == 0 ? 0 : 1;
             }
         } else {
-            printf("query user exist: res is NULL");
+            perror("IS USER EXIST: RES NULL ERROR\n");
         }
     }
     return -1;
@@ -115,7 +107,7 @@ Status isUserExist(int userId, MYSQL *connection) {
 int insertUser(User* user, MYSQL *connection) {
 
     if (connection == NULL) {
-        printf("connection is NULL");
+        perror("INSERT USER: CONNECTION NULL ERROR\n");
         return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
@@ -126,23 +118,25 @@ int insertUser(User* user, MYSQL *connection) {
                        "VALUES(\'%s\', \'%s\', \'%s\', \'%s\', %d);",
             user->userNickName, user->userPassword, user->userSignature, user->userAvatar, user->userIp);
     if (mysql_real_query(connection, insertSql, strlen(insertSql))) {
-        printf("insert user fail\n");
+        perror("INSERT USER: QUERY ERROR\n");
         return -1;
     } else {
-        printf("insert success\n");
         MYSQL_RES* res;
         MYSQL_ROW row;
         int lastId = 0;
 
         if (mysql_real_query(connection, SQL_SELECT_LAST_ID, strlen(SQL_SELECT_LAST_ID))) {
-            printf("select user last id fail\n");
+            perror("SELECT LAST ID AFTER INSERT USER: QUERY ERROR\n");
+            return -1;
         } else {
             res = mysql_store_result(connection);
             if (res) {
                 row = mysql_fetch_row(res);
                 lastId = atoi(row[0]);
+                user->userId = lastId;
             } else {
-                printf("res == null\n");
+                perror("SELECT LAST ID AFTER INSERT USER: RES NULL ERROR\n");
+                return -1;
             }
 
         }
@@ -153,8 +147,8 @@ int insertUser(User* user, MYSQL *connection) {
 
 Status updateUserString(int userId, char *string, MYSQL* connection, int type) {
     if (connection == NULL) {
-        printf("connection is NULL");
-        return false;
+        perror("UPDATE USER STRING: CONNECTION NULL ERROR\n");
+        return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
 
@@ -181,18 +175,17 @@ Status updateUserString(int userId, char *string, MYSQL* connection, int type) {
     }
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query update userString failed\n");
-        return false;
+        perror("UPDATE USER STRING: QUERY ERROR\n");
+        return -1;
     } else {
-        printf("query update userString success\n");
-        return true;
+        return 1;
     }
 }
 
 Status updateUserStatus(int userId, int status, MYSQL* connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
-        return false;
+        perror("UPDATE USER STATUS: CONNECTION NULL ERROR\n");
+        return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
 
@@ -203,18 +196,17 @@ Status updateUserStatus(int userId, int status, MYSQL* connection) {
                       "WHERE userId=%d;", status, userId);
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query update userStatus failed\n");
-        return false;
+        perror("UPDATE USER STATUS: QUERY ERROR\n");
+        return -1;
     } else {
-        printf("query update userStatus success\n");
-        return true;
+        return 1;
     }
 }
 
 Status updateUserIp(int userId, int ip, MYSQL* connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
-        return false;
+        perror("UPDATE USER IP: CONNECTION NULL ERROR\n");
+        return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
 
@@ -225,17 +217,16 @@ Status updateUserIp(int userId, int ip, MYSQL* connection) {
                       "WHERE userId=%d;", ip, userId);
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query update userIp failed\n");
-        return false;
+        perror("UPDATE USER IP: QUERY ERROR\n");
+        return -1;
     } else {
-        printf("query update userIp success\n");
-        return true;
+        return 1;
     }
 }
 
 Status checkUserPassword(int userId, char* password, MYSQL* connection) {
     if (connection == NULL) {
-        printf("connection is NULL");
+        perror("CHECK USER PASSWORD: CONNECTION NULL ERROR\n");
         return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
@@ -250,17 +241,16 @@ Status checkUserPassword(int userId, char* password, MYSQL* connection) {
     MYSQL_ROW row;
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query check password failed\n");
+        perror("CHECK USER PASSWORD: QUERY ERROR\n");
     } else {
         res = mysql_store_result(connection);
         if (res) {
             row = mysql_fetch_row(res);
             if (row) {
-                printf("query check password success\n");
-                return row[0][0] - '0' == 0 ? false : true;
+                return row[0][0] - '0' == 0 ? 0 : 1;
             }
         } else {
-            printf("query check password: res is NULL");
+            perror("CHECK USER PASSWORD: RES NULL ERROR\n");
         }
     }
     return -1;
@@ -268,8 +258,8 @@ Status checkUserPassword(int userId, char* password, MYSQL* connection) {
 
 Status updateUserFriendNum(int userId, MYSQL *connection, int type) {
     if (connection == NULL) {
-        printf("connection is NULL");
-        return false;
+        perror("UPDATE USER FRIEND NUM: CONNECTION NULL ERROR\n");
+        return -1;
     }
     mysql_query(connection,"SET NAMES utf8");
 
@@ -291,10 +281,10 @@ Status updateUserFriendNum(int userId, MYSQL *connection, int type) {
     }
 
     if (mysql_real_query(connection, querySql, strlen(querySql))) {
-        printf("query update userFriNum failed\n");
-        return false;
+        perror("UPDATE USER FRIEND NUM: QUERY ERROR\n");
+        return -1;
     } else {
-        printf("query update userFriNum success\n");
-        return true;
+        perror("query update userFriNum success\n");
+        return 1;
     }
 }

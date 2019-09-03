@@ -6,11 +6,21 @@
 #define LINPOP_DATABASE_MYSQL_H
 
 #include <mysql/mysql.h>
+#include <stdio.h>
+#include <string.h>
 
 #define HOST "127.0.0.1"
 #define USERNAME "linpop"
 #define PASSWORD "linpop"
-#define SELECT_LAST_ID "SELECT LAST_INSERT_ID();"
+#define DATABASE "linpop"
+#define PORT 3306
+
+#define INCREASE 1
+#define DECREASE -1
+#define MESSAGE_MAX_LENGTH 1000
+#define DATETIME_LENGTH 100
+#define SQL_SELECT_LAST_ID "SELECT LAST_INSERT_ID();"
+#define SQL_LENGTH_MAX 400
 typedef int Status;
 
 /**

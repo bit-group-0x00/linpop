@@ -53,10 +53,23 @@ void handle_friend_list_request(int client, cJSON* cjson);
 */
 void handle_msg_list_request(int client, cJSON* cjson);
 
+/* 
+同上，在接受到请求群组列表的时候会自动调用该函数
+*/
+void handle_group_list_request(int client, cJSON* cjson);
+
 /*
   同上，在接受到添加好友请求时自动调用该函数
 */
 void handle_add_friend_request(int client, cJSON* cjson);
+
+void handle_group_message_list_request(int client, cJSON* cjson);
+
+void handle_group_member_list_request(int client, cJSON* cjson);
+
+void handle_create_group_request(int client, cJSON* cjson);
+
+void handle_join_group_request(int client, cJSON* cjson);
 
 
 void response_state(int client, state type)
@@ -75,15 +88,50 @@ void handle_regist_request(int client, cJSON* cjson)
     user.userPassword = cJSON_GetObjectItem(cjson, "passwd")->valuestring;
     user.userAvatar = cJSON_GetObjectItem(cjson, "avatar")->valuestring;
     user.userSignature = "";
-    user.userIp = -1;
-    state type = FAILURE;
-    if((id = insertUser(&user, conn)) != -1) type = SUCCESS;
-    /* 创建response的cjson */
-    cJSON* response = cJSON_CreateObject();
-    cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(type));
-    cJSON_AddItemToObject(response, "id", cJSON_CreateNumber(id));
-    send_cjson(client, response);
-    cJSON_Delete(response);
+    //user.userIp = -1;
+    if((id = insertUser(&user, conn)) != -1)
+    {
+        /* 创建response的cjson */
+        cJSON* response = cJSON_CreateObject();
+        cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(SUCCESS));
+        cJSON_AddItemToObject(response, "id", cJSON_CreateNumber(id));
+        send_cjson(client, response);
+        cJSON_Delete(response);
+    } else response_state(client, FAILURE);
+}
+
+void handle_create_group_request(int client, cJSON* cjson)
+{
+    int group_id;
+    Group group;
+    group.groupName = cJSON_GetObjectItem(cjson, "name")->valuestring;
+    group.groupIntro = cJSON_GetObjectItem(cjson, "intro")->valuestring;
+    group.groupIcon = cJSON_GetObjectItem(cjson, "icon")->valuestring;
+    int member_num = cJSON_GetObjectItem(cjson, "member_num")->valueint;
+    cJSON* member_ids = cJSON_GetObjectItem(cjson, "member_ids");
+    //group.groupIp = -1;
+    if((group_id = insertGroup(&group, conn)) != -1)
+    {
+        for(int i = 0; i < member_num; ++i)
+        {
+            /* todo insert error handle */
+            insertGroupUser(group_id, cJSON_GetArrayItem(member_ids, i)->valueint, conn);
+        }
+        /* 创建response的cjson */
+        cJSON* response = cJSON_CreateObject();
+        cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(SUCCESS));
+        cJSON_AddItemToObject(response, "group_id", cJSON_CreateNumber(group_id));
+        send_cjson(client, response);
+        cJSON_Delete(response);
+    } else response_state(client, FAILURE);
+}
+
+void handle_join_group_request(int client, cJSON* cjson)
+{
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    int group_id = cJSON_GetObjectItem(cjson, "group_id")->valueint;
+    if(insertGroupUser(group_id, id, conn)) response_state(client, SUCCESS);
+    else response_state(client, FAILURE);
 }
 
 void handle_login_request(int client, cJSON* cjson)
@@ -131,12 +179,17 @@ void handle_friend_list_request(int client, cJSON* cjson)
         User* friend = getUserInfoById(friend_list.friId[i], conn);
         cJSON_AddItemToArray(nick_names, cJSON_CreateString(friend->userNickName));
         cJSON_AddItemToArray(avatars, cJSON_CreateString(friend->userAvatar));
-        cJSON_AddItemToArray(states, cJSON_CreateString(friend->userStatus));
-        cJSON_AddItemToArray(ips, cJSON_CreateString(friend->userIp));
+        cJSON_AddItemToArray(states, cJSON_CreateNumber(friend->userStatus));
+        cJSON_AddItemToArray(ips, cJSON_CreateString("127.0.0.1"));
         cJSON_AddItemToArray(signatures, cJSON_CreateString(friend->userSignature));
         freeUser(friend);
     }
     freeFriList(friend_list);
+    cJSON_AddItemToObject(friend_list_cjson, "nick_names", nick_names);
+    cJSON_AddItemToObject(friend_list_cjson, "avatars", avatars);
+    cJSON_AddItemToObject(friend_list_cjson, "states", states);
+    cJSON_AddItemToObject(friend_list_cjson, "ips", ips);
+    cJSON_AddItemToObject(friend_list_cjson, "signatures", signatures);
     send_cjson(client, friend_list_cjson);
     //printf("%s", cJSON_Print(friend_list_cjson));
     cJSON_Delete(friend_list_cjson);
@@ -159,13 +212,72 @@ void handle_msg_list_request(int client, cJSON* cjson)
         cJSON_AddItemToArray(dates, cJSON_CreateString(msg_list.msgs[i].msgDateTime));
         cJSON_AddItemToArray(states, cJSON_CreateNumber(msg_list.msgs[i].msgStatus));
     }
+    freeMsgList(msg_list);
     cJSON_AddItemToObject(msg_list_cjson, "senders", senders);
     cJSON_AddItemToObject(msg_list_cjson, "contents", contents);
     cJSON_AddItemToObject(msg_list_cjson, "dates", dates);
     cJSON_AddItemToObject(msg_list_cjson, "states", states);
-    freeMsgList(msg_list);
     send_cjson(client, msg_list_cjson);
     cJSON_Delete(msg_list_cjson);
+}
+
+void handle_group_list_request(int client, cJSON* cjson)
+{
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    GroupList group_list = getGroupListByUserId(id, conn);
+    cJSON* group_list_cjson = cJSON_CreateObject();
+    cJSON_AddItemToObject(group_list_cjson, "type", cJSON_CreateNumber(SUCCESS));
+    cJSON_AddItemToObject(group_list_cjson, "group_num", cJSON_CreateNumber(group_list.groupNum));
+    cJSON_AddItemToObject(group_list_cjson, "group_ids", cJSON_CreateIntArray(group_list.groupIds, group_list.groupNum));
+    cJSON* names = cJSON_CreateArray(), *intros = cJSON_CreateArray();
+    cJSON* icons = cJSON_CreateArray();
+    for(int i = 0; i < group_list.groupNum; ++i)
+    {
+        Group* group = getGroupInfoByGroupId(group_list.groupIds[i], conn);
+        cJSON_AddItemToArray(names, cJSON_CreateString(group->groupName));
+        cJSON_AddItemToArray(intros, cJSON_CreateString(group->groupIntro));
+        cJSON_AddItemToArray(icons, cJSON_CreateString(group->groupIcon));
+        freeGroup(group);
+    }
+    freeGroupList(group_list);
+    cJSON_AddItemToObject(group_list_cjson, "names", names);
+    cJSON_AddItemToObject(group_list_cjson, "intros", intros);
+    cJSON_AddItemToObject(group_list_cjson, "icons", icons);
+    send_cjson(client, group_list_cjson);
+    //printf("%s", cJSON_Print(group_list_cjson));
+    cJSON_Delete(group_list_cjson);
+}
+
+void handle_group_message_list_request(int client, cJSON* cjson)
+{
+    int id = cJSON_GetObjectItem(cjson, "id")->valueint;
+    int group_id = cJSON_GetObjectItem(cjson, "group_id")->valueint;
+    GroupMessageList group_msg_list = getGmMsgList(group_id, conn);
+    cJSON* group_msg_list_cjson = cJSON_CreateObject();
+    cJSON_AddItemToObject(group_msg_list_cjson, "type", cJSON_CreateNumber(SUCCESS));
+    cJSON_AddItemToObject(group_msg_list_cjson, "message_num", cJSON_CreateNumber(group_msg_list.gmNum));
+    cJSON* senders = cJSON_CreateArray(), *contents = cJSON_CreateArray();
+    cJSON* dates = cJSON_CreateArray(), *states = cJSON_CreateArray();
+    for(int i = 0; i < group_msg_list.gmNum; ++i)
+    {
+        cJSON_AddItemToArray(senders, cJSON_CreateNumber(group_msg_list.gmMsgs[i].gmFromId));
+        cJSON_AddItemToArray(contents, cJSON_CreateString(group_msg_list.gmMsgs[i].gmContent));
+        cJSON_AddItemToArray(dates, cJSON_CreateString(group_msg_list.gmMsgs[i].gmDateTime));
+        cJSON_AddItemToArray(states, cJSON_CreateNumber(/*group_msg_list.gmMsgs[i].gmStatus*/CHECKED));
+    }
+    freeGroupMessageList(group_msg_list);
+    cJSON_AddItemToObject(group_msg_list_cjson, "senders", senders);
+    cJSON_AddItemToObject(group_msg_list_cjson, "contents", contents);
+    cJSON_AddItemToObject(group_msg_list_cjson, "dates", dates);
+    cJSON_AddItemToObject(group_msg_list_cjson, "states", states);
+    send_cjson(client, group_msg_list_cjson);
+    cJSON_Delete(group_msg_list_cjson);
+}
+
+void handle_group_member_list_request(int client, cJSON* cjson)
+{
+    /* todo */
+
 }
 
 void handle_add_friend_request(int client, cJSON* cjson)
@@ -176,6 +288,7 @@ void handle_add_friend_request(int client, cJSON* cjson)
         response_state(client, SUCCESS);
     else response_state(client, FAILURE);
 }
+
 void handle_msg_send(int client, cJSON* cjson)
 {
     Message msg;
@@ -247,6 +360,11 @@ void handle_cjson(int client, cJSON* cjson)
         case REQUEST_FRIEND_LIST: handle = handle_friend_list_request; break;
         case REQUEST_MESSAGE_LIST: handle = handle_msg_list_request; break;
         case ADD_FRIEND_REQUEST: handle = handle_add_friend_request; break;
+        case REQUEST_GROUP_LIST: handle = handle_group_list_request; break;
+        case REQUEST_GROUP_MESSAGE_LIST: handle = handle_group_message_list_request; break;
+        case REQUEST_GROUP_MEMBER_LIST: handle = handle_group_member_list_request; break;
+        case CREATE_GROUP_REQUEST: handle = handle_create_group_request; break;
+        case JOIN_GROUP_REQUEST: handle = handle_join_group_request; break;
         default:
         {
             printf("recieved unknown type message:\n");

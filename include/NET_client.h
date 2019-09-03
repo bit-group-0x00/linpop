@@ -45,8 +45,8 @@ typedef struct group_profile
 {
   int id;
   char* name;
-  char* about;
-  char* avatar;
+  char* intro;
+  char* icon;
 } group_profile;
 /* 群聊结构体，包括群聊的基本信息和聊天消息 */
 typedef struct group
@@ -134,7 +134,17 @@ state send_file_to_group(const int group_id, const char* file_path, void(*callba
   通过id添加好友，返回添加结果
 */
 state add_friend(const int id);
+
 /*
+  通过群聊id添加群聊
+*/
+state join_group(const int id);
+/*
+  创建群聊，返回群聊id
+*/
+state create_group(char* name, char* intro, char* avatar, int member_num, int *member_ids);
+/*
+  创建
   登出函数，当用户关闭主窗口时调用该函数，该函数用于向服务器更新
   用户状态和释放各类资源，返回值SUCCESS（0）表示成功，FAILURE（0）表示失败
   ERROR（-1）表示出现错误。
