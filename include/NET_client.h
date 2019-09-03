@@ -36,10 +36,11 @@ typedef struct message
 /* 好友结构体，包含好友的简要信息和聊天消息 */
 typedef struct friend
 {
-  profile friend_profile;
-  message* msg;
+  profile fri_pro;
   message* first_msg;
   message* last_msg;
+  struct friend* last;
+  struct friend* next;
 } friend;
 typedef struct group_profile
 {
@@ -48,14 +49,24 @@ typedef struct group_profile
   char* intro;
   char* icon;
 } group_profile;
+
+typedef struct member
+{
+  profile mem_pro;
+  struct member* last;
+  struct member* next;
+} member;
+
 /* 群聊结构体，包括群聊的基本信息和聊天消息 */
 typedef struct group
 {
-  group_profile g_profile;
-  int member_num;
-  profile* members;
+  group_profile gro_pro;
+  member* first_mem;
+  member* last_mem;
   message* first_msg;
   message* last_msg;
+  struct group* last;
+  struct group* next;
 } group;
 
 /*
@@ -64,11 +75,12 @@ typedef struct group
 */
 typedef struct info
 {
-  profile my_profile;
-  int friend_num;
-  friend* friends;
-  int group_num;
-  group* groups;
+  profile my_pro;
+  friend* first_fri;
+  friend* last_fri;
+  group* first_gro;
+  group* last_gro;
+  void (*update_ui)(state type, void* origin)
 } info;
 
 extern info my_info;
