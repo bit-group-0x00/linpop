@@ -104,6 +104,12 @@ void handle_create_group_request(int client, cJSON* cjson)
     //group.groupIp = -1;
     if((group_id = insertGroup(&group, conn)) != -1)
     {
+        /* 创建response的cjson */
+        cJSON* response = cJSON_CreateObject();
+        cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(SUCCESS));
+        cJSON_AddItemToObject(response, "group_id", cJSON_CreateNumber(group_id));
+        send_cjson(client, response);
+        cJSON_Delete(response);
         for(int i = 0; i < member_num; ++i)
         {
             int id = cJSON_GetArrayItem(member_ids, i)->valueint;
@@ -137,12 +143,6 @@ void handle_create_group_request(int client, cJSON* cjson)
             }
             freeUser(user);
         }
-        /* 创建response的cjson */
-        cJSON* response = cJSON_CreateObject();
-        cJSON_AddItemToObject(response, "type", cJSON_CreateNumber(SUCCESS));
-        cJSON_AddItemToObject(response, "group_id", cJSON_CreateNumber(group_id));
-        send_cjson(client, response);
-        cJSON_Delete(response);
     } else response_state(client, FAILURE);
 }
 
@@ -213,7 +213,6 @@ void handle_friend_list_request(int client, cJSON* cjson)
     cJSON_AddItemToObject(friend_list_cjson, "ips", ips);
     cJSON_AddItemToObject(friend_list_cjson, "signatures", signatures);
     send_cjson(client, friend_list_cjson);
-    //printf("%s", cJSON_Print(friend_list_cjson));
     cJSON_Delete(friend_list_cjson);
 }
 
@@ -266,7 +265,6 @@ void handle_group_list_request(int client, cJSON* cjson)
     cJSON_AddItemToObject(group_list_cjson, "intros", intros);
     cJSON_AddItemToObject(group_list_cjson, "icons", icons);
     send_cjson(client, group_list_cjson);
-    //printf("%s", cJSON_Print(group_list_cjson));
     cJSON_Delete(group_list_cjson);
 }
 

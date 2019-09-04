@@ -11,7 +11,7 @@
 //char buffer[BUFF_SIZE];
 
 /* get path */
-void get_path(char buff[], char* name);
+void get_path(char buff[], const char* name);
 
 /* get file size */
 int get_file_size(char* file_path);
@@ -19,7 +19,7 @@ int get_file_size(char* file_path);
 /* get file name */
 char* get_file_name(char* file_path);
 
-void get_path(char buff[], char* name)
+void get_path(char buff[], const char* name)
 {
     if(name[0] == '/') strcpy(buff, name);
     else
@@ -89,6 +89,8 @@ void* monitor_socket(void* arg)
         handle(socket, cjson);
         cJSON_Delete(cjson);
     }
+    close(((struct args*)arg)->value);
+    free(arg);
 }
 
 void* monitor_port(void* arg)
@@ -96,11 +98,12 @@ void* monitor_port(void* arg)
     pthread_detach(pthread_self());
     int server, client, addr_len = sizeof(struct sockaddr_in);
     int port = ((struct args*)arg)->value;
+    void (*handle)(int, cJSON*) = ((struct args*)arg)->handle;
     struct sockaddr_in server_addr, client_addr;
     if((server = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         perror("socket");
-        return 1;
+        return NULL;
     }
     unsigned value = 1;
     setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
@@ -111,12 +114,12 @@ void* monitor_port(void* arg)
     if(bind(server, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
     {
         perror("connect");
-        return 1;
+        return NULL;
     }
     if(listen(server, 5) < 0)
     {
         perror("listen");
-        return 1;
+        return NULL;
     }
     printf("start listen message at port %d\n", port);
     while(1)
@@ -129,14 +132,17 @@ void* monitor_port(void* arg)
         }
         printf("%s:%d connected\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
         pthread_t thread;
-        ((struct args*)arg)->value = client;
-        if(pthread_create(&thread, NULL, monitor_socket, (void*)arg) != 0)
+        struct args* a = malloc(sizeof(struct args));
+        a->value = client, a->handle = handle;
+        if(pthread_create(&thread, NULL, monitor_socket, (void*)a) != 0)
         {
             perror("thread create failed");
             continue;
         }
     }
     close(server);
+    free(arg);
+    return NULL;
 }
 
 state send_cjson(int socket, cJSON* cjson)
@@ -279,7 +285,7 @@ char* get_aip(int socket)
     if(getpeername(socket, (struct sockaddr*)&addr, &addrlen) == -1)
     {
         perror("can't get socket ip");
-        return ERROR;
+        return NULL;
     }
     return inet_ntoa(addr.sin_addr);
 }
