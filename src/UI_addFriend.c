@@ -123,7 +123,7 @@ void join_group_window() {
 
     createWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_widget_get_screen(createWindow);
-    gtk_window_set_title(GTK_WINDOW(createWindow), "Registered for linpop");
+    gtk_window_set_title(GTK_WINDOW(createWindow), "Join Group");
     gtk_window_set_position(GTK_WINDOW(createWindow), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(createWindow), 400, 300);
     gtk_container_set_border_width(GTK_CONTAINER(createWindow), 20);
@@ -140,7 +140,7 @@ void join_group_window() {
     gtk_box_pack_start(GTK_BOX(infoBox), usernameBox, FALSE, FALSE, 0);
 
 
-    usernamelabel = gtk_label_new("Group name:");
+    usernamelabel = gtk_label_new("Group ID:");
     gtk_label_set_width_chars(usernamelabel, 20);
     gtk_box_pack_start(GTK_BOX(usernameBox), usernamelabel, FALSE, FALSE, 5);
     userIdText = gtk_entry_new();

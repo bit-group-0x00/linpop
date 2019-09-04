@@ -96,16 +96,16 @@ void update_message(state type, void *newIncome){
     gchar* message = "";
     int newID = 0;
     gchar* name = "";
-    friend *fri = (friend *)newIncome;
-    group *gro = (group *)newIncome;
-    if (type == FRIEND){
 
+
+    if (type == SEND_MESSAGE){
+        friend *fri = (friend *)newIncome;
         message = fri->last_msg;
         newID = fri->fri_pro.id;
         name = fri->fri_pro.nick_name;
     }
-    else if(type == GROUP){
-
+    else if(type == SEND_MESSAGE_TO_GROUP){
+        group *gro = (group *)newIncome;
         message = gro->last_msg;
         newID = gro->gro_pro.id;
         name = gro->gro_pro.name;
@@ -126,7 +126,7 @@ void update_message(state type, void *newIncome){
     gtk_widget_show_all(GTK_WIDGET(dialog));
     gtk_dialog_run(GTK_DIALOG(dialog));
     switch (type){
-        case FRIEND:
+        case SEND_MESSAGE:
             if(alreadyOpenFriendList[newID-10000]==TRUE){
                 friend_msg_listener(message);
             }
@@ -134,9 +134,9 @@ void update_message(state type, void *newIncome){
                 friend_chat_window(userID,newID);
             }
             break;
-        case GROUP:
+        case SEND_MESSAGE_TO_GROUP:
             if(alreadyOpenGroupList[newID]==TRUE){
-                update_group(newIncome);
+                update_group((group *)newIncome);
             }
             else{
                 group_chat_window(userID,newID);

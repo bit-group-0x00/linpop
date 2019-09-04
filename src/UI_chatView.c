@@ -32,10 +32,9 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gint state;
     g_print("delete event occured\n");
     gtk_main_quit();
-
     GtkTextIter start,end;
+    alreadyOpenFriendList[int_friend_ID-10000] = FALSE;
     gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(textBuffer),&start,&end);
-
     gtk_text_buffer_delete(GTK_TEXT_BUFFER(textBuffer),&start,&end);
     return FALSE;
 }

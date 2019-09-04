@@ -250,7 +250,7 @@ void homepage_window(const int userID){
     gtk_box_pack_end(GTK_BOX(addButtonBox),addGroupChatButton,FALSE,FALSE,5);
 
     //加入群聊按钮
-    GtkWidget *joinGroupButton = gtk_button_new_with_label("Add Group");
+    GtkWidget *joinGroupButton = gtk_button_new_with_label("Join Group");
     gtk_button_set_always_show_image(GTK_BUTTON(joinGroupButton),TRUE);
     imageRes = gdk_pixbuf_new_from_file_at_size("../res/icon_c.png",30,30,NULL);
     g_signal_connect(GTK_WIDGET(joinGroupButton),"clicked",G_CALLBACK(join_group_window), NULL);

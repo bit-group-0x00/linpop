@@ -2,15 +2,12 @@
 #define ADD_GROUP_MEMBER  0X402
 
 #define LOG_IN 0X411
-//#define REGIST 0X412
 #define REGIST_CANCEL 0X413
 #define REGIST_CONFIRM 0X414
 
 #define ADD_IMAGE 0X421
 #define ADD_GROUP 0X422
 
-#define FRIEND 0X431
-#define GROUP 0X432
 #define USER_SELF 0X433
 
 #define FONT_SIZE_BIG 36

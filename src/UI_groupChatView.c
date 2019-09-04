@@ -13,6 +13,7 @@ static GtkWidget *Box;
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gint state;
     g_print("delete event occured\n");
+    alreadyOpenGroupList[groupId] = FALSE;
     gtk_main_quit();
     return FALSE;
 }
@@ -268,7 +269,7 @@ void group_chat_window(int userId_N, int groupId_N)
     //sendButton
     sendButton = gtk_button_new_with_label("Send");
     gtk_box_pack_start(GTK_BOX(downBox),sendButton,FALSE,FALSE,0);
-    // g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
+     g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
 
 
 
