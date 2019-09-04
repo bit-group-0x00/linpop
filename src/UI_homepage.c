@@ -8,8 +8,7 @@
 GtkWidget *homepageWindow;
 static GdkPixbuf *imageRes;
 
-static int friendnum = 0;
-static int groupnum = 0;
+static info userinfo;
 
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gint state;
@@ -27,14 +26,14 @@ void label_font(GtkWidget *label, gchar* context, int fontSize, gchar *foreColor
     gtk_label_set_markup(GTK_LABEL(label), g_strdup_printf("%s%s%s%s%s%s%s%d%s%s%s","<span foreground='",foreColor,"' underline='",underline,"' underline_color='",underlineColor,"' font_desc='",fontSize,"'>",context,"</span>"));
     gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 }
-GtkWidget *create_userbox(profile my_infoDisplay, int type, int avaterSize){
+GtkWidget *create_userbox(profile userinfoDisplay, int type, int avaterSize){
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
 
-    GdkPixbuf *avaterRes = gdk_pixbuf_new_from_file_at_size(my_infoDisplay.avatar,avaterSize,avaterSize,NULL);
+    GdkPixbuf *avaterRes = gdk_pixbuf_new_from_file_at_size(userinfoDisplay.avatar,avaterSize,avaterSize,NULL);
     GtkWidget *avaterImage = gtk_image_new_from_pixbuf(avaterRes);
-    GtkWidget *nickname = gtk_label_new(my_infoDisplay.nick_name);
-    GtkWidget *signature = gtk_label_new(my_infoDisplay.signature);
+    GtkWidget *nickname = gtk_label_new(userinfoDisplay.nick_name);
+    GtkWidget *signature = gtk_label_new(userinfoDisplay.signature);
     gint expand,fill;
     expand = FALSE;
     fill = FALSE;
@@ -46,14 +45,14 @@ GtkWidget *create_userbox(profile my_infoDisplay, int type, int avaterSize){
 
 
     gtk_box_set_homogeneous (GTK_BOX(hbox),FALSE);
-    label_font(signature,my_infoDisplay.signature,FONT_SIZE_SMALL,"#35333C","none","blue");
+    label_font(signature,userinfoDisplay.signature,FONT_SIZE_SMALL,"#35333C","none","blue");
     gtk_box_pack_start(GTK_BOX(hbox),avaterImage,expand,fill,5);
     gtk_box_pack_start(GTK_BOX(hbox),vbox,TRUE,TRUE,5);
     gtk_box_pack_start(GTK_BOX(vbox),nicknamebox,expand,fill,5);
     gtk_box_pack_end(GTK_BOX(vbox),signaturebox,expand,fill,5);
     if(type == GROUP){
         //群聊
-        label_font(nickname,my_infoDisplay.nick_name,FONT_SIZE_MIDDLE,"black","none","blue");
+        label_font(nickname,userinfoDisplay.nick_name,FONT_SIZE_MIDDLE,"black","none","blue");
         gtk_widget_set_size_request(GTK_WIDGET(avaterImage),100,avaterSize);
     }
     else {
@@ -63,22 +62,22 @@ GtkWidget *create_userbox(profile my_infoDisplay, int type, int avaterSize){
         gtk_box_pack_start(GTK_BOX(ipbox),ip,expand,fill,5);
         GtkWidget *idbox= gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
         gtk_box_pack_start(GTK_BOX(idbox),ID,expand,fill,5);
-        label_font(ip,my_infoDisplay.ip,10,"#213174","single","black");
-        label_font(ID,g_strdup_printf("%d",my_infoDisplay.id),10,"#213174","none","black");
+        label_font(ip,userinfoDisplay.ip,10,"#213174","single","black");
+        label_font(ID,g_strdup_printf("%d",userinfoDisplay.id),10,"#213174","none","black");
         if(type == FRIEND){
             gtk_widget_set_size_request(GTK_WIDGET(avaterImage),100,avaterSize);
-            if(my_infoDisplay.online == ONLINE){
+            if(userinfoDisplay.online == ONLINE){
                 //在线好友
-                label_font(nickname,my_infoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C081AF","none","blue");
+                label_font(nickname,userinfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C081AF","none","blue");
             }
             else{
                 //不在线好友
-                label_font(nickname,my_infoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C8ADC4","none","black");
+                label_font(nickname,userinfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C8ADC4","none","black");
             }
         }
         else{
             //个人
-            label_font(nickname,my_infoDisplay.nick_name,FONT_SIZE_BIG,"#61649F","none","blue");
+            label_font(nickname,userinfoDisplay.nick_name,FONT_SIZE_BIG,"#61649F","none","blue");
             gtk_widget_set_size_request(GTK_WIDGET(avaterImage),100,avaterSize);
 
         }
@@ -92,111 +91,88 @@ GtkWidget *create_userbox(profile my_infoDisplay, int type, int avaterSize){
     gtk_box_pack_start(GTK_BOX(box),sep,expand,fill,0);
     return box;
 }
-GtkWidget *create_groupbox(group_profile my_infoDisplay, int type, int avaterSize){
-    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
-
-    GdkPixbuf *avaterRes = gdk_pixbuf_new_from_file_at_size(my_infoDisplay.icon,avaterSize,avaterSize,NULL);
-    GtkWidget *avaterImage = gtk_image_new_from_pixbuf(avaterRes);
-    GtkWidget *nickname = gtk_label_new(my_infoDisplay.name);
-    GtkWidget *signature = gtk_label_new(my_infoDisplay.intro);
-    gint expand,fill;
-    expand = FALSE;
-    fill = FALSE;
-
-    GtkWidget *nicknamebox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
-    gtk_box_pack_start(GTK_BOX(nicknamebox),nickname,expand,fill,5);
-    GtkWidget *signaturebox= gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
-    gtk_box_pack_start(GTK_BOX(signaturebox),signature,expand,fill,5);
-
-
-    gtk_box_set_homogeneous (GTK_BOX(hbox),FALSE);
-    label_font(signature,my_infoDisplay.intro,FONT_SIZE_SMALL,"#35333C","none","blue");
-    gtk_box_pack_start(GTK_BOX(hbox),avaterImage,expand,fill,5);
-    gtk_box_pack_start(GTK_BOX(hbox),vbox,TRUE,TRUE,5);
-    gtk_box_pack_start(GTK_BOX(vbox),nicknamebox,expand,fill,5);
-    gtk_box_pack_end(GTK_BOX(vbox),signaturebox,expand,fill,5);
-    if(type == GROUP){
-        //群聊
-        label_font(nickname,my_infoDisplay.name,FONT_SIZE_MIDDLE,"black","none","blue");
-        gtk_widget_set_size_request(GTK_WIDGET(avaterImage),100,avaterSize);
-    }
-    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
-    GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-    gtk_box_pack_start(GTK_BOX(box),hbox,expand,fill,0);
-    gtk_box_pack_start(GTK_BOX(box),sep,expand,fill,0);
-    return box;
-}
 void open_chat(GtkWidget *widget,gpointer data){
     g_print("ROW_SELECTED\n");
     GtkListBoxRow *select = gtk_list_box_get_selected_row(GTK_LIST_BOX(widget));
     int index = gtk_list_box_row_get_index(select);
-    int i;
-    if (index<=friendnum){
-        friend* p = my_info.first_fri;
-        for (i = 0; p != NULL && i < index; ++i) {
-            p = p->next;
-        }
-        alreadyOpenFriendList[p->fri_pro.id-100000] = TRUE;
-        friend_chat_window(my_info.my_pro.id,p->fri_pro.id);
+    friend* p = userinfo.first_fri;
+    for (int i = 0; p != NULL && i < index; ++i) {
+        p = p->next;
     }
-    else{
-        group* q = my_info.first_fri;
-        for (i = 0; q != NULL && i < index; ++i) {
-            q = q->next;
-        }
-        alreadyOpenGroupList[q->gro_pro.id] = TRUE;
-        group_chat_window(my_info.my_pro.id,q->gro_pro.id);
-    }
+    g_print("%d",index);
+    group_chat_window(userinfo.my_pro.id,3242342);
+//    friend_chat_window(userinfo.my_pro.id,432123);
+
 }
 
 void homepage_window(const int userID){
     //主窗口
     g_print("Succesful login\n");
     //主窗口初始化
-//    my_info.my_pro.id = userID;
-//    my_info.my_pro.nick_name = "penguin";
-//    my_info.my_pro.avatar = "../res/icon.png";
-//    my_info.my_pro.online = ONLINE;
-//    my_info.my_pro.id = 12345;
-//    my_info.my_pro.ip="123.123";
-//    my_info.my_pro.signature="Hello world";
-//
-//    info friendInfo1;
-//    friendInfo1.my_pro.id = userID;
-//    friendInfo1.my_pro.nick_name = "FRIEND_ONLINE";
-//    friendInfo1.my_pro.avatar = "../res/avatar_xmas.png";
-//    friendInfo1.my_pro.online = ONLINE;
-//    friendInfo1.my_pro.id = 12345;
-//    friendInfo1.my_pro.ip="123.123";
-//    friendInfo1.my_pro.signature="Hello world";
-//
-//    info friendInfo2;
-//    friendInfo2.my_pro.id = userID;
-//    friendInfo2.my_pro.nick_name = "FREIEND_NOT_ONLINE";
-//    friendInfo2.my_pro.avatar = "../res/avatar_penguin.png";
-//    friendInfo2.my_pro.online = OFFLINE;
-//    friendInfo2.my_pro.id = 12345;
-//    friendInfo2.my_pro.ip="123.1231231212312312312313131313121313";
-//    friendInfo2.my_pro.signature="Hello world";
-//
-//    info friendInfo3;
-//    friendInfo3.my_pro.id = userID;
-//    friendInfo3.my_pro.nick_name = "GROUP";
-//    friendInfo3.my_pro.avatar = "../res/icon_color.png";
-//    friendInfo3.my_pro.online = ONLINE;
-//    friendInfo3.my_pro.id = 12345;
-//    friendInfo3.my_pro.ip="123.1231212312312312313131313121313";
-//    friendInfo3.my_pro.signature="Hello world";
-//
-//    GtkWidget *testbox1 = create_userbox(my_info.my_pro,USER_SELF,40);
-//    GtkWidget *testbox2 = create_userbox(friendInfo1.my_pro,FRIEND,40);
-//    GtkWidget *testbox3 = create_userbox(friendInfo2.my_pro,FRIEND,40);
-//    GtkWidget *testbox4 = create_userbox(friendInfo3.my_pro,GROUP,40);
+    userinfo.my_pro.id = userID;
+    userinfo.my_pro.nick_name = "penguin";
+    userinfo.my_pro.avatar = "../res/icon.png";
+    userinfo.my_pro.online = ONLINE;
+    userinfo.my_pro.id = 12345;
+    userinfo.my_pro.ip="123.123";
+    userinfo.my_pro.signature="Hello world";
 
+    info friendInfo1;
+    friendInfo1.my_pro.id = userID;
+    friendInfo1.my_pro.nick_name = "penguin1";
+    friendInfo1.my_pro.avatar = "../res/avatar_xmas.png";
+    friendInfo1.my_pro.online = ONLINE;
+    friendInfo1.my_pro.id = 12346;
+    friendInfo1.my_pro.ip="123.123.433";
+    friendInfo1.my_pro.signature="I am penguin1";
+
+    info friendInfo2;
+    friendInfo2.my_pro.id = userID;
+    friendInfo2.my_pro.nick_name = "penguin2";
+    friendInfo2.my_pro.avatar = "../res/avatar_penguin.png";
+    friendInfo2.my_pro.online = OFFLINE;
+    friendInfo2.my_pro.id = 12347;
+    friendInfo2.my_pro.ip="123.123.312";
+    friendInfo2.my_pro.signature="I am penguin2";
+
+    info friendInfo3;
+    friendInfo3.my_pro.id = userID;
+    friendInfo3.my_pro.nick_name = "penguin3";
+    friendInfo3.my_pro.avatar = "../res/icon_color.png";
+    friendInfo3.my_pro.online = ONLINE;
+    friendInfo3.my_pro.id = 12348;
+    friendInfo3.my_pro.ip="123.312.413";
+    friendInfo3.my_pro.signature="I am penguin3";
+
+//    info friendInfo4;
+//    friendInfo3.my_pro.id = userID;
+//    friendInfo3.my_pro.nick_name = "penguin_family";
+//    friendInfo3.my_pro.avatar = "../res/icon_people.png";
+//    friendInfo3.my_pro.online = ONLINE;
+//    friendInfo3.my_pro.id = 123;
+//    friendInfo3.my_pro.ip="123.123";
+//    friendInfo3.my_pro.signature="This is penguin family";
+//
+//    info friendInfo5;
+//    friendInfo5.my_pro.id = userID;
+//    friendInfo5.my_pro.nick_name = "penguin4";
+//    friendInfo5.my_pro.avatar = "../res/icons_more_info.png";
+//    friendInfo5.my_pro.online = ONLINE;
+//    friendInfo5.my_pro.id = 12345;
+//    friendInfo5.my_pro.ip="123.21313";
+//    friendInfo5.my_pro.signature="I am penguin4";
+//
+//    info friendInfo6;
+//    friendInfo6.my_pro.id = userID;
+//    friendInfo6.my_pro.nick_name = "penguin5";
+//    friendInfo6.my_pro.avatar = "../res/icons8_error.png";
+//    friendInfo6.my_pro.online = ONLINE;
+//    friendInfo6.my_pro.id = 12345;
+//    friendInfo6.my_pro.ip="123.113131313";
+//    friendInfo6.my_pro.signature="I am penguin5";
 
     homepageWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(homepageWindow),my_info.my_pro.nick_name);
+    gtk_window_set_title(GTK_WINDOW(homepageWindow),userinfo.my_pro.nick_name);
     gtk_window_set_position(GTK_WINDOW(homepageWindow),GTK_WIN_POS_CENTER);
     gtk_widget_get_screen(homepageWindow);
     gtk_window_set_default_size(GTK_WINDOW(homepageWindow),360,640);
@@ -238,11 +214,11 @@ void homepage_window(const int userID){
     gtk_box_pack_start(GTK_BOX(homepageBox),homepagePaned,FALSE,FALSE,5);
 
     //用户个人界面面板
-    GtkWidget *my_infoPaned = gtk_frame_new("");
+    GtkWidget *userinfoPaned = gtk_frame_new("");
     GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-    gtk_container_add(GTK_CONTAINER(my_infoPaned),create_userbox(my_info.my_pro,USER_SELF,64));
-    gtk_container_add(GTK_CONTAINER(my_infoPaned),sep);
-    gtk_box_pack_start(GTK_BOX(homepagePaned),my_infoPaned,FALSE,FALSE,5);
+    gtk_container_add(GTK_CONTAINER(userinfoPaned),create_userbox(userinfo.my_pro,USER_SELF,64));
+    gtk_container_add(GTK_CONTAINER(userinfoPaned),sep);
+    gtk_box_pack_start(GTK_BOX(homepagePaned),userinfoPaned,FALSE,FALSE,5);
 
     //好友界面面板
     GtkWidget *friendListScrolledWindow = gtk_scrolled_window_new(NULL,NULL);
@@ -255,18 +231,21 @@ void homepage_window(const int userID){
     GtkWidget *listbox = gtk_list_box_new();
     gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),listbox);
 
-    friend* p = my_info.first_fri;
-    for (int i = 0; p != NULL; ++i,friendnum++) {
-        GtkWidget *testBox = create_userbox(p->fri_pro,FRIEND,40);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
-        p = p->next;
+    for (int i = 0; i < 50; i+=6) {
+        GtkWidget *testbox2 = create_userbox(friendInfo1.my_pro,FRIEND,40);
+        GtkWidget *testbox3 = create_userbox(friendInfo2.my_pro,FRIEND,40);
+        GtkWidget *testbox4 = create_userbox(friendInfo3.my_pro,GROUP,40);
+//        GtkWidget *testbox5 = create_userbox(friendInfo4.my_pro,FRIEND,40);
+//        GtkWidget *testbox6 = create_userbox(friendInfo5.my_pro,FRIEND,40);
+//        GtkWidget *testbox7 = create_userbox(friendInfo6.my_pro,GROUP,40);
+        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox2,i);
+        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox3,1+i);
+        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox4,2+i);
+//        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox5,i+3);
+//        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox6,4+i);
+//        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox7,5+i);
     }
-    group* q = my_info.first_fri;
-    for (int i = 0; q != NULL; ++i,groupnum++) {
-        GtkWidget *testBox = create_groupbox(q->gro_pro,FRIEND,40);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
-        q = q->next;
-    }
+
     g_signal_connect(G_OBJECT(listbox),"row_activated",G_CALLBACK(open_chat), userID);
     gtk_list_box_set_activate_on_single_click(GTK_LIST_BOX(listbox), FALSE);
 

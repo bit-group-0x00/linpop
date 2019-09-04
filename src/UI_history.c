@@ -53,7 +53,7 @@ void history_msg_window (int argc, char *argv[])
     gtk_window_set_title(GTK_WINDOW(historyWindow), "History messages with someone");
     gtk_window_set_position(GTK_WINDOW(historyWindow), GTK_WIN_POS_CENTER);
     gtk_widget_get_screen(historyWindow);
-    gtk_window_set_default_size(GTK_WINDOW(historyWindow), 1000, 1000);
+    gtk_window_set_default_size(GTK_WINDOW(historyWindow), 360, 640);
     gtk_container_set_border_width(GTK_CONTAINER(historyWindow), 20);
     gtk_widget_set_opacity(GTK_WIDGET(historyWindow), 0.95);
 
