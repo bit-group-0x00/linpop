@@ -299,7 +299,7 @@ void group_chat_window(int userId_N, int groupId_N)
 
 
     GtkWidget *downFrameRight = gtk_frame_new("Group Member :");
-
+    gtk_paned_pack2(GTK_PANED(vPanedRight),downFrameRight,TRUE,TRUE);
 
     //groupMemberList
     /*
