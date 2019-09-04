@@ -109,5 +109,15 @@ void label_font(GtkWidget *lable,
  */
 void history_msg_window(int id);
 
+gchar* judge_null(gchar* a){
+    if(a == NULL){
+        return "";
+    }
+    else{
+        return a;
+    }
+
+}
+
 
 #endif
