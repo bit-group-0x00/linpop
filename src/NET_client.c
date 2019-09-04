@@ -101,7 +101,7 @@ group* parse_gro(cJSON* cjson)
     cJSON* signatures = cJSON_GetObjectItem(cjson, "signatures");
     for(int i = 0; i < member_num; ++i)
     {
-        member* mem = malloc(sizeof(profile));
+        member* mem = malloc(sizeof(member));
         mem->mem_pro.id = cJSON_GetArrayItem(ids, i)->valueint;
         friend* fri = seek_fri(mem->mem_pro.id);
         /* if user's profie already exist */
@@ -334,6 +334,7 @@ state join_group(int group_id)
         group* gro = parse_gro(cjson);
         append_gro(gro);
     }
+    printf("%s\n", cJSON_Print(cjson));
     cJSON_Delete(cjson);
     return s;
 }
