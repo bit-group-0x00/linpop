@@ -84,7 +84,6 @@ void history_msg_window (int argc, char *argv[])
     /*
      * --- Make the main historyWindow visible
      */
-
     gtk_container_add(GTK_CONTAINER(scrolledWindow), msgListBox);
     gtk_container_add (GTK_CONTAINER (historyWindow), scrolledWindow);
     gtk_widget_show_all (historyWindow);
