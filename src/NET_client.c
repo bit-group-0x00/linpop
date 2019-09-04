@@ -329,6 +329,12 @@ state join_group(int group_id)
     cJSON_Delete(cjson);
     cjson = recv_cjson(server, server_buff, &server_buff_remain);
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
+    if(s == SUCCESS)
+    {
+        group* gro = parse_gro(cjson);
+        append_gro(gro);
+    }
+    cJSON_Delete(cjson);
     return s;
 }
 

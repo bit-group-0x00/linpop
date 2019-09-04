@@ -150,7 +150,46 @@ void handle_join_group_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     int group_id = cJSON_GetObjectItem(cjson, "group_id")->valueint;
-    if(insertGroupUser(group_id, id, conn) == 1) response_state(client, SUCCESS);
+    if(insertGroupUser(group_id, id, conn) == 1)
+    {
+        cJSON* response_cjson = cJSON_CreateObject();
+        Group* group = getGroupInfoByGroupId(group_id, conn);
+        cJSON_AddItemToObject(response_cjson, "group_id", group->groupId);
+        cJSON_AddItemToObject(response_cjson, "name", group->groupName);
+        cJSON_AddItemToObject(response_cjson, "intro", group->groupIntro);
+        cJSON_AddItemToObject(response_cjson, "icon", group->groupIcon);
+        GroupUserList group_user_list =  getUserListByGroupId(group_id, conn);
+        cJSON_AddItemToObject(response_cjson, "member_num", group_user_list.userNum);
+        cJSON_AddItemToObject(response_cjson, "member_ids", cJSON_CreateIntArray(group_user_list.userIds, group_user_list.userNum));
+
+        cJSON* nick_names = cJSON_CreateArray();
+        cJSON* avatars = cJSON_CreateArray();
+        cJSON* ips = cJSON_CreateArray();
+        cJSON* states = cJSON_CreateArray();
+        cJSON* signatures = cJSON_CreateArray();
+
+        for(int i = 0; i < group_user_list.userNum; ++i)
+        {
+            int id = group_user_list.userIds[i];
+            User* user = getUserInfoById(id, conn);
+            cJSON_AddItemToArray(nick_names, cJSON_CreateString(user->userNickName));
+            cJSON_AddItemToArray(avatars, cJSON_CreateString(user->userAvatar));
+            cJSON_AddItemToArray(ips, cJSON_CreateString(get_aip_2(user->userIp)));
+            cJSON_AddItemToArray(states, cJSON_CreateNumber(user->userStatus));
+            cJSON_AddItemToArray(signatures, cJSON_CreateString(user->userSignature));
+            freeUser(user);
+        }
+
+        cJSON_AddItemToObject(response_cjson, "nick_names", nick_names);
+        cJSON_AddItemToObject(response_cjson, "avatars", avatars);
+        cJSON_AddItemToObject(response_cjson, "ips", ips);
+        cJSON_AddItemToObject(response_cjson, "states", states);
+        cJSON_AddItemToObject(response_cjson, "signatures", signatures);
+        freeGroup(group);
+        freeGroupUserList(group_user_list);
+        send_cjson(client, response_cjson);
+        cJSON_Delete(response_cjson);
+    }
     else response_state(client, FAILURE);
 }
 
