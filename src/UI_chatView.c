@@ -41,10 +41,9 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
 
 void handle_data(){
     friend *pfriend;
-    friend *pself;
 
     pfriend=seek_fri(int_friend_ID);
-    pself=seek_fri(int_user_ID);
+    selfNickname=my_info.my_pro.nick_name;
 
     friendIP=pfriend->fri_pro.ip;
     friendSignature=pfriend->fri_pro.signature;
