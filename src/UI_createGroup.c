@@ -11,7 +11,7 @@ static GtkWidget *groupMemberText = NULL;//
 
 static GdkPixbuf *iconImageRes;
 static GtkWidget *avaterImage;
-static gchar* avaterFilename;
+static gchar* avaterFilename = "";
 static int memberNum;
 static int memberId[100];
 
@@ -25,13 +25,14 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data)
 void read_friend_list(){
     const gchar *frindList = gtk_entry_get_text(GTK_ENTRY(groupMemberText));
     char p[10];
-    int memnum = 0;
+    int memnum = 1;
     memset(p,0, sizeof(p));
     p[0] = frindList[0];
     g_print("LENGTH:%d\n",g_utf8_strlen(frindList,-1));
     if (g_utf8_strlen(frindList,-1)==0){
         return;
     }
+    memberId[0] = my_info.my_pro.id;
     for (int i = 1; i < g_utf8_strlen(frindList,-1); ++i) {
         if(frindList[i]==';'){
             g_print("P:%s\n",p);
@@ -46,6 +47,7 @@ void read_friend_list(){
         }
     }
     memberId[memnum] = strtol(p,NULL,10);
+    memberNum = memnum;
 }
 
 static void file_chooser_dialog(GtkWidget *createWindow) {
@@ -79,7 +81,7 @@ static void on_confirm_button_clicked(GtkWidget *button, gpointer data) {
     gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     g_print("CONFIRM_BUTTON_CLICKED");
-//    create_group(groupName,avaterFilename,avaterFilename,memberNum,memberId);
+    create_group(groupName,avaterFilename,avaterFilename,memberNum,memberId);
     gtk_widget_destroy(createWindow);
 }
 

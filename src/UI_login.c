@@ -15,7 +15,7 @@ static GtkWidget *passwordText2 = NULL;//确认密码
 
 static GdkPixbuf *iconImageRes;
 static GtkWidget *avaterImage;
-static char *filename;
+static char *filename = "";
 static char *signature;
 static state userID;
 GtkWidget *create_image(gchar *filename,gint size){

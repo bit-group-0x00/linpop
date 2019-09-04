@@ -88,7 +88,7 @@ void on_click_emojiBtn(GtkButton *button,gpointer data){
 void on_click_sendFileBtn(GtkButton *button,gpointer data){
     GtkWidget *fileChooserDialog;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
-    const char *filename;
+    const char *filename = "";
     gint res;
     fileChooserDialog = gtk_file_chooser_dialog_new("Choose a photo",
                                                     NULL,

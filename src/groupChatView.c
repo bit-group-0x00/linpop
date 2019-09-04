@@ -6,7 +6,7 @@
 
 static int userId;
 static int groupId;
-static gchar* filename;
+static gchar* filename = "";
 static GtkWidget *Box;
 
 
@@ -91,7 +91,7 @@ GtkWidget *new_Box(gchar*messageSenderIcon,int senderId,gchar*messageSenderName,
     gtk_text_buffer_create_tag(textBuffer, "gray_bg","background", "gray", NULL);
     gtk_box_pack_start(GTK_BOX(messageInfoBox),text,FALSE,FALSE,0);
 
-    gtk_box_pack_start(GTK_BOX(messageInfoBox),messageInfoBox,FALSE,FALSE,5);
+    gtk_box_pack_start(GTK_BOX(messageBox),messageInfoBox,FALSE,FALSE,5);
 
     return  messageBox;
 }
@@ -104,6 +104,7 @@ void send_button_callback(GtkWidget *button,gpointer buffer){
     g_print("%s",message);
     GtkWidget* messageBox = new_Box("../res/icon.png",1223333,"yuanyuanyuan",message,"18:20");
     gtk_box_pack_start(GTK_BOX(Box),messageBox,FALSE,FALSE,0);
+    send_msg_to_group(groupId,message,)
     gtk_text_buffer_delete(buffer,&start,&end);
 }
 void update_group(group*group_p)
