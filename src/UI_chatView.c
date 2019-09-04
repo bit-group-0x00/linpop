@@ -1,4 +1,5 @@
 #include "../include/UI_chatView.h"
+#include "../include/NET_client.h"
 
 #define CHAT_WINDOW_WIDTH 800
 #define CHAT_WINDOW_HEIGHT 560

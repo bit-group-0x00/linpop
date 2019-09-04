@@ -165,4 +165,11 @@ friend* seek_fri(int id);
 
 /* 根据id获取群聊指针 */
 group* seek_gro(int id);
-n
+
+void update_message(state type, void *newIncome);
+/**
+ * 接受新消息
+ * @param type 消息类型
+ * @param newIncome 群聊/用户
+ *
+ */

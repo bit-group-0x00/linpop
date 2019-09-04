@@ -7,7 +7,7 @@
 static int userId;
 static int groupId;
 static gchar* filename;
-static GtkWidget* listBox;
+GtkWidget* listBox;
 
 
 
@@ -199,9 +199,9 @@ void group_chat_window(int userId_N, int groupId_N)
     //window
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window),"Group Chat Room");
-    gtk_widget_set_size_request(GTK_WIDGET(window),1092,744);
+    gtk_widget_set_size_request(GTK_WIDGET(window),800,560);
     g_signal_connect(GTK_WINDOW(window),"delete_event",gtk_main_quit,NULL);
-
+    gtk_window_set_position(GTK_WIDGET(window),GTK_WIN_POS_CENTER);
     //bigBox
     bigBox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
     gtk_container_add(GTK_CONTAINER(window),bigBox);
@@ -224,13 +224,13 @@ void group_chat_window(int userId_N, int groupId_N)
 
     //hPaned
     hPaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-    gtk_widget_set_size_request(hPaned,1000,744);
+    gtk_widget_set_size_request(hPaned,800,-1);
     gtk_container_add(GTK_CONTAINER(bigBox),hPaned);
 
     //leftFrame
     leftFrame = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME(leftFrame),GTK_SHADOW_IN);
-    gtk_widget_set_size_request(leftFrame,822,-1);
+    gtk_widget_set_size_request(leftFrame,800,-1);
     gtk_paned_pack1(GTK_PANED(hPaned),leftFrame,TRUE,TRUE);
 
 
@@ -248,7 +248,6 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_container_add(GTK_CONTAINER(upFrame),scrolledMessageList);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledMessageList),GTK_POLICY_NEVER,GTK_POLICY_AUTOMATIC);
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledMessageList),GTK_SHADOW_IN);
-
     listBox = gtk_list_box_new();
     gtk_container_add(GTK_CONTAINER(scrolledMessageList),listBox);
 
@@ -302,6 +301,8 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_box_pack_start(GTK_BOX(downBox),sendButton,FALSE,FALSE,0);
     g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
 
+
+
     //rightFrame
     rightFrame = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME(rightFrame),GTK_SHADOW_IN);
@@ -309,7 +310,7 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_paned_pack2(GTK_PANED(hPaned),rightFrame,TRUE,FALSE);
     gtk_widget_show(listBox);
     gtk_widget_show_all(window);
-
+    gtk_main();
 
 }
 

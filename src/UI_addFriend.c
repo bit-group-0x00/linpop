@@ -16,7 +16,6 @@ gint callback_result = -2;
 static int newId;
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-    add_friend();
     gtk_main_quit();
     return FALSE;
 }
@@ -37,14 +36,14 @@ void enter_callback(GtkWidget *widget,GtkWidget *entry)
      */
    // GtkWidget *image = gtk_image_new_from_file("../res/icon.png");
     //gtk_image_set_from_image(GTK_IMAGE(SearchResultImg),GTK_IMAGE(image),NULL);
-    
+
     if (seek_fri(newId)==NULL){
         callback_result = 0;
     }
     else{
         callback_result = 1;
     }
-    
+
     if(callback_result == -1)
     {
         gtk_widget_hide(SearchResultNickname);
@@ -98,7 +97,7 @@ void enter_callback(GtkWidget *widget,GtkWidget *entry)
 
         }
     }
-    
+
     printf("Entry content: %s \n",entry_text);
 
 }
@@ -173,7 +172,7 @@ void add_friend_window(int argc, char *argv[])
     CancelButton = gtk_button_new_with_label("CancelButton");
     gtk_box_pack_start(GTK_BOX(OptionBox),CancelButton,FALSE,FALSE,0);
     g_signal_connect(G_OBJECT(CancelButton),"clicked",G_CALLBACK(delete_event),NULL);
-    
+
     gtk_widget_show(window);
     gtk_widget_show_all(window);
 

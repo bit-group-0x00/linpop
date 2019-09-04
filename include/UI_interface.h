@@ -62,14 +62,7 @@ void upload_file(int userID, int otherID, int type, int progress);
  * @param progress 聊天进度
  */
 
-
-void update_message(state type, void *newIncome);
-/**
- * 接受新消息
- * @param type 消息类型
- * @param newIncome 群聊/用户
- *
- */
+void friend_msg_listener(gchar* message);
 
 
 void show_error(GtkWidget *widget, gpointer window, gchar* message);

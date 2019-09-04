@@ -79,7 +79,7 @@ static void on_confirm_button_clicked(GtkWidget *button, gpointer data) {
     gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     g_print("CONFIRM_BUTTON_CLICKED");
-    create_group(groupName,avaterFilename,avaterFilename,memberNum,memberId);
+//    create_group(groupName,avaterFilename,avaterFilename,memberNum,memberId);
     gtk_widget_destroy(createWindow);
 }
 
