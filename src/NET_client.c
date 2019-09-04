@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
     login_window();
     chat_View();
 
-    int socket = conn_to(SERVER_IP, SERVER_PORT);
+//    int socket = conn_to(SERVER_IP, SERVER_PORT);
     /* test send file */
     send_file(socket, "/home/onlyrobot/t/test.txt", NULL);
     close(server), close(socket);

@@ -7,6 +7,7 @@
 #define REGIST_CONFIRM 0X414
 
 #define ADD_IMAGE 0X421
+#define ADD_GROUP 0X422
 
 #define FRIEND 0X431
 #define GROUP 0X432
@@ -20,3 +21,4 @@
 #define FONT_SIZE_SMALL 12
 #define FONT_SIZE_SMALLER 10
 
+#define ICON_SIZE 80

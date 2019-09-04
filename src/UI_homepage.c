@@ -5,14 +5,9 @@
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
 
-static GtkWidget *homepageWindow;
-static GdkPixbuf *imageRes;
+GtkWidget *homepageWindow;
+GdkPixbuf *imageRes;
 
-enum
-{
-    LIST_ITEM = 0,
-    N_COLUMNS
-};
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gint state;
     g_print("delete event occured\n");
@@ -29,7 +24,6 @@ void label_font(GtkWidget *label, gchar* context, int fontSize, gchar *foreColor
     gtk_label_set_markup(GTK_LABEL(label), g_strdup_printf("%s%s%s%s%s%s%s%d%s%s%s","<span foreground='",foreColor,"' underline='",underline,"' underline_color='",underlineColor,"' font_desc='",fontSize,"'>",context,"</span>"));
     gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
 }
-
 GtkWidget *create_userbox(profile userInfoDisplay, int type, int avaterSize){
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
@@ -41,14 +35,19 @@ GtkWidget *create_userbox(profile userInfoDisplay, int type, int avaterSize){
     gint expand,fill;
     expand = FALSE;
     fill = FALSE;
-//    gtk_label_set_width_chars(GTK15);
+
+    GtkWidget *nicknamebox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+    gtk_box_pack_start(GTK_BOX(nicknamebox),nickname,expand,fill,5);
+    GtkWidget *signaturebox= gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+    gtk_box_pack_start(GTK_BOX(signaturebox),signature,expand,fill,5);
+
 
     gtk_box_set_homogeneous (GTK_BOX(hbox),FALSE);
-    label_font(signature,userInfoDisplay.signature,FONT_SIZE_SMALL,"#35333C","low","blue");
+    label_font(signature,userInfoDisplay.signature,FONT_SIZE_SMALL,"#35333C","none","blue");
     gtk_box_pack_start(GTK_BOX(hbox),avaterImage,expand,fill,5);
-    gtk_box_pack_start(GTK_BOX(hbox),vbox,expand,fill,5);
-    gtk_box_pack_start(GTK_BOX(vbox),nickname,TRUE,TRUE,5);
-    gtk_box_pack_end(GTK_BOX(vbox),signature,expand,fill,5);
+    gtk_box_pack_start(GTK_BOX(hbox),vbox,TRUE,TRUE,5);
+    gtk_box_pack_start(GTK_BOX(vbox),nicknamebox,expand,fill,5);
+    gtk_box_pack_end(GTK_BOX(vbox),signaturebox,expand,fill,5);
     if(type == GROUP){
         //群聊
         label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"black","none","blue");
@@ -57,17 +56,21 @@ GtkWidget *create_userbox(profile userInfoDisplay, int type, int avaterSize){
     else {
         GtkWidget *ip = gtk_label_new(NULL);
         GtkWidget *ID = gtk_label_new(NULL);
+        GtkWidget *ipbox= gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+        gtk_box_pack_start(GTK_BOX(ipbox),ip,expand,fill,5);
+        GtkWidget *idbox= gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+        gtk_box_pack_start(GTK_BOX(idbox),ID,expand,fill,5);
         label_font(ip,userInfoDisplay.ip,10,"#213174","single","black");
-        label_font(ID,g_strdup_printf("%d",userInfoDisplay.id),10,"#213174","single","black");
+        label_font(ID,g_strdup_printf("%d",userInfoDisplay.id),10,"#213174","none","black");
         if(type == FRIEND){
             gtk_widget_set_size_request(GTK_WIDGET(avaterImage),100,avaterSize);
             if(userInfoDisplay.online == ONLINE){
                 //在线好友
-                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C081AF","double","blue");
+                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C081AF","none","blue");
             }
             else{
                 //不在线好友
-                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C8ADC4","single","black");
+                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C8ADC4","none","black");
             }
         }
         else{
@@ -76,10 +79,10 @@ GtkWidget *create_userbox(profile userInfoDisplay, int type, int avaterSize){
             gtk_widget_set_size_request(GTK_WIDGET(avaterImage),100,avaterSize);
 
         }
-        gtk_box_pack_start(GTK_BOX(vbox),ip,expand,fill,0);
-        gtk_box_pack_start(GTK_BOX(vbox),ID,expand,fill,0);
+        gtk_box_pack_start(GTK_BOX(vbox),idbox,expand,fill,0);
+        gtk_box_pack_start(GTK_BOX(vbox),ipbox,expand,fill,0);
+
     }
-    gtk_widget_set_hexpand(GTK_BOX(vbox),TRUE);
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
     GtkWidget *sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_box_pack_start(GTK_BOX(box),hbox,expand,fill,0);
@@ -93,7 +96,7 @@ void open_chat(GtkWidget *widget,gpointer data){
 
 }
 
-void homepage_window(int userID){
+void homepage_window(const int userID){
     //主窗口
     g_print("Succesful login\n");
     //主窗口初始化
@@ -159,6 +162,7 @@ void homepage_window(int userID){
     GtkWidget *addFriendButton = gtk_button_new_with_label("Add Friend");
     gtk_button_set_always_show_image(GTK_BUTTON(addFriendButton),TRUE);
     imageRes = gdk_pixbuf_new_from_file_at_size("../res/icons_p.png",30,30,NULL);
+    g_signal_connect(GTK_WIDGET(addFriendButton),"clicked",G_CALLBACK(add_friend_window),NULL);
     GtkWidget *addFriendImage = gtk_image_new_from_pixbuf(imageRes);
     gtk_button_set_image(GTK_BUTTON(addFriendButton),addFriendImage);
     gtk_box_pack_start(GTK_BOX(addButtonBox),addFriendButton,FALSE,FALSE,5);
@@ -167,6 +171,7 @@ void homepage_window(int userID){
     GtkWidget *addGroupChatButton = gtk_button_new_with_label("Add Group");
     gtk_button_set_always_show_image(GTK_BUTTON(addGroupChatButton),TRUE);
     imageRes = gdk_pixbuf_new_from_file_at_size("../res/icon_c.png",30,30,NULL);
+    g_signal_connect(GTK_WIDGET(addGroupChatButton),"clicked",G_CALLBACK(create_group_window), NULL);
     GtkWidget *addGroupImage = gtk_image_new_from_pixbuf(imageRes);
     gtk_button_set_image(GTK_BUTTON(addGroupChatButton),addGroupImage);
     gtk_box_pack_end(GTK_BOX(addButtonBox),addGroupChatButton,FALSE,FALSE,5);
@@ -206,8 +211,6 @@ void homepage_window(int userID){
         gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox3,1+i);
         gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox4,2+i);
     }
-
-
 
 
     g_signal_connect(G_OBJECT(listbox),"row_activated",G_CALLBACK(open_chat), listbox);
