@@ -25,12 +25,12 @@ void freeGroupMessageList(GroupMessageList groupMessageList) {
     }
 }
 
-void mallocGroupMessage(GroupMessage *groupMessage) {
-
-    groupMessage = (GroupMessage *) malloc(sizeof(GroupMessage));
-    groupMessage->gmContent = (char *) malloc(sizeof(char) * MESSAGE_MAX_LENGTH);
-    groupMessage->gmDateTime = (char *) malloc(sizeof(char) * DATETIME_LENGTH);
-}
+//void mallocGroupMessage(GroupMessage *groupMessage) {
+//
+//    groupMessage = (GroupMessage *) malloc(sizeof(GroupMessage));
+//    groupMessage->gmContent = (char *) malloc(sizeof(char) * MESSAGE_MAX_LENGTH);
+//    groupMessage->gmDateTime = (char *) malloc(sizeof(char) * DATETIME_LENGTH);
+//}
 
 int insertGmMsg(GroupMessage *msg, MYSQL* connection)
 {
@@ -104,14 +104,16 @@ GroupMessageList getGmMsgList(int groupId, MYSQL* connection)
             int index = 0;
             while(row)
             {
-                mallocGroupMessage(groupMessageList.gmMsgs + index);
-                GroupMessage *p = groupMessageList.gmMsgs + index;
+                (groupMessageList.gmMsgs + index)->gmContent = (char *) malloc(sizeof(char) * 300);
+                memset((groupMessageList.gmMsgs + index)->gmContent, 0, 300);
+                (groupMessageList.gmMsgs + index)->gmDateTime = (char *) malloc(sizeof(char) * 50);
+                memset((groupMessageList.gmMsgs + index)->gmDateTime, 0, 50);
 
-                p->gmId = atoi(row[0]);
-                p->gmGroupId = atoi(row[1]);
-                strcpy(p->gmContent, row[2]);
-                p->gmFromId = atoi(row[3]);
-                strcpy(p->gmDateTime, row[4]);
+                (groupMessageList.gmMsgs + index)->gmId = atoi(row[0]);
+                (groupMessageList.gmMsgs + index)->gmGroupId = atoi(row[1]);
+                strcpy((groupMessageList.gmMsgs + index)->gmContent, row[2]);
+                (groupMessageList.gmMsgs + index)->gmFromId = atoi(row[3]);
+                strcpy((groupMessageList.gmMsgs + index)->gmDateTime, row[4]);
                 index++;
                 row = mysql_fetch_row(res);
             }

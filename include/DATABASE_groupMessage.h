@@ -34,11 +34,11 @@ void freeGroupMessage(GroupMessage *groupMessage);
  * @param groupMessageList
  */
 void freeGroupMessageList(GroupMessageList groupMessageList);
-
-/**
- * @param a GroupMessage pointer need to be allocated memory to
- */
-void mallocGroupMessage(GroupMessage *groupMessage);
+//
+///**
+// * @param a GroupMessage pointer need to be allocated memory to
+// */
+//void mallocGroupMessage(GroupMessage *groupMessage);
 
 /**
  * 在发送数据时调用此函数. 向数据库中插入这条消息.
