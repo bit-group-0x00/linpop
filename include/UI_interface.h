@@ -33,7 +33,7 @@ void friend_chat_window(int userID, int friendID);
  *
  *
  */
-void group_chat_window(int userID, int groupID);
+void group_chat_window();
 /**
  * 群聊界面
  *
@@ -62,7 +62,7 @@ void upload_file(int userID, int otherID, int type, int progress);
  * @param progress 聊天进度
  */
 
-void friend_msg_listener(gchar* message);
+void friend_msg_listener(const gchar* message);
 
 
 void show_error(GtkWidget *widget, gpointer window, gchar* message);
