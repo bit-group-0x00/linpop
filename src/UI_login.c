@@ -96,35 +96,23 @@ void update_message(state type, void *newIncome){
     gchar* message = "";
     int newID = 0;
     gchar* name = "";
-
-
-    if (type == SEND_MESSAGE){
+    if (type == SEND_MESSAGE || type == ADD_FRIEND_REQUEST){
         friend *fri = (friend *)newIncome;
         message = fri->last_msg;
         newID = fri->fri_pro.id;
         name = fri->fri_pro.nick_name;
     }
-    else if(type == SEND_MESSAGE_TO_GROUP){
+    else if ( type == SEND_MESSAGE_TO_GROUP || type == CREATE_GROUP_REQUEST){
         group *gro = (group *)newIncome;
         message = gro->last_msg;
         newID = gro->gro_pro.id;
         name = gro->gro_pro.name;
     }
-    GtkWidget *dialog;
-    GtkWidget *image = create_image("../res/icons_info.png",36);
-    GtkWidget *label = gtk_label_new(message);
+//    GtkWidget *dialog;
+//    GtkWidget *image = create_image("../res/icons_info.png",36);
+//    GtkWidget *label = gtk_label_new(message);
     message = g_strdup_printf("你有一条来自%s的新消息：%s",name,message);
-    label_font(label,message,20,DARK_PURPLE,"none",DARK_PURPLE);
-    GtkWidget *content_area;
-    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_NONE,NULL);
-    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
-    gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
-    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
-    gtk_container_add(GTK_CONTAINER(content_area),image);
-    gtk_container_add(GTK_CONTAINER(content_area),label);
-    gtk_widget_show_all(GTK_WIDGET(dialog));
-    gtk_dialog_run(GTK_DIALOG(dialog));
+    show_info(NULL,NULL,message);
     switch (type){
         case SEND_MESSAGE:
             if(alreadyOpenFriendList[newID-10000]==TRUE){
@@ -143,10 +131,15 @@ void update_message(state type, void *newIncome){
             }
             group_chat_window(userID,newID);
             break;
+        case ADD_FRIEND_REQUEST:
+            show_info(NULL,NULL,g_strdup_printf("%d请求添加你的好友：%s",newID,name));
+            break;
+        case CREATE_GROUP_REQUEST:
+            show_info(NULL,NULL,g_strdup_printf("%d请求把你加入群组：%s",newID,name));
+            break;
         default:
             break;
     }
-    gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
 static void file_chooser_dialog() {
