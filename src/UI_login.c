@@ -158,7 +158,6 @@ void update_message(state type, void *newIncome){
     }
 }
 
-
 static void file_chooser_dialog() {
     GtkWidget *fileChooserDialog;
     gchar *filename;
@@ -186,8 +185,8 @@ static void file_chooser_dialog() {
 void on_button_clicked(GtkWidget *button, gpointer data) {
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
-    const gchar *password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
-    const gchar *signature = gtk_entry_get_text(GTK_ENTRY(signatureText));
+    const gchar *password2;
+    const gchar *signature;
     gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     switch ((int) data) {
@@ -222,6 +221,8 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
             break;
         case REGIST_CONFIRM:
             //确认注册
+            password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
+            signature = gtk_entry_get_text(GTK_ENTRY(signatureText));
             result = show_question(NULL, NULL, "Is every information is right?");
 //            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
             if (result == GTK_RESPONSE_YES) {
@@ -245,7 +246,6 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                             g_print("USERID: %d\nUSERINFO：\n%s\n", userID, infoTitle);
                             gchar *passwordFuck = "";
                             passwordFuck = g_strdup_printf("%s", password);
-                            passwordFuck = judge_null(passwordFuck);
                             infoTitle = g_strdup_printf("%s%d", infoTitle, userID);
                             show_info(NULL, NULL, infoTitle);
                             gtk_widget_destroy(registWindow);
