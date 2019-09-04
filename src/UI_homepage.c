@@ -19,7 +19,7 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gint state;
     g_print("delete event occured\n");
     if(show_question(widget,NULL,"do you really want to exit?") == GTK_RESPONSE_YES){
-//        log_out(userID);
+        logout();
         gtk_main_quit();
         return FALSE;
     }

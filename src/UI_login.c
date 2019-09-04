@@ -33,6 +33,25 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
     gtk_main_quit();
     return TRUE;
 }
+void show_progressbar(gchar *message) {
+    //提示信息对话框
+    GtkWidget *dialog;
+    GtkWidget *image = create_image("../res/icons_info.png",36);
+    GtkWidget *label = gtk_label_new(message);
+    gtk_label_set_line_wrap(GTK_LABEL(label),TRUE);
+    label_font(label,message,20,DARK_PURPLE,"none",DARK_PURPLE);
+    GtkWidget *content_area;
+    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_NONE,NULL);
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+    gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
+    gtk_container_add(GTK_CONTAINER(content_area),image);
+    gtk_container_add(GTK_CONTAINER(content_area),label);
+    gtk_widget_show_all(GTK_WIDGET(dialog));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+}
 
 void show_error(GtkWidget *widget, gpointer window, gchar *message) {
     //错误信息提示对话框
@@ -41,6 +60,7 @@ void show_error(GtkWidget *widget, gpointer window, gchar *message) {
     GtkWidget *label = gtk_label_new(message);
     label_font(label,message,20,DARK_PURPLE,"low",DARK_PURPLE);
     GtkWidget *content_area;
+    gtk_label_set_line_wrap(GTK_LABEL(label),TRUE);
     dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_YES,NULL);
     gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
     gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
@@ -58,6 +78,7 @@ gint show_question(GtkWidget *widget, gpointer window, gchar *message) {
     GtkWidget *dialog;
     GtkWidget *image = create_image("../res/icons_question.png",36);
     GtkWidget *label = gtk_label_new(message);
+    gtk_label_set_line_wrap(GTK_LABEL(label),TRUE);
     label_font(label,message,16,DARK_PURPLE,"low",DARK_PURPLE);
     GtkWidget *content_area;
     dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"NO",GTK_RESPONSE_NO,"YES",GTK_RESPONSE_YES,NULL);
@@ -78,6 +99,7 @@ void show_info(GtkWidget *widget, gpointer window, gchar *message) {
     GtkWidget *dialog;
     GtkWidget *image = create_image("../res/icons_info.png",36);
     GtkWidget *label = gtk_label_new(message);
+    gtk_label_set_line_wrap(GTK_LABEL(label),TRUE);
     label_font(label,message,20,DARK_PURPLE,"none",DARK_PURPLE);
     GtkWidget *content_area;
     dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_NONE,NULL);
@@ -138,6 +160,7 @@ void update_message(state type, void *newIncome){
     }
 }
 
+
 static void file_chooser_dialog() {
     GtkWidget *fileChooserDialog;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
@@ -180,11 +203,11 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                     homepage_window(userID);
                     break;
                 case FAILURE:
-                    show_error(NULL, NULL, "Your ID is not existing");
+                    show_error(NULL, NULL, "账号已被人登陆或密码输入错误");
                     login_window();
                     break;
                 case ERROR:
-                    show_error(NULL, NULL, "Bad network, please try again");
+                    show_error(NULL, NULL, "网络连接错误");
                     login_window();
                     break;
             }
@@ -210,12 +233,12 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                     switch (userID) {
                         case FAILURE:
                             g_print("Registered process failed：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
-                            show_error(NULL, NULL, "Registered process failed");
+                            show_error(NULL, NULL, "账号已被人登陆或密码输入错误");
                             regist_window();
                             break;
                         case ERROR:
                             g_print("Registered process Errored：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
-                            show_error(NULL, NULL, "Registered process Errored");
+                            show_error(NULL, NULL, "注册失败，网络连接错误");
                             regist_window();
                             break;
                         default:

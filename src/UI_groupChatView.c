@@ -269,7 +269,7 @@ void group_chat_window(int userId_N, int groupId_N)
     //sendButton
     sendButton = gtk_button_new_with_label("Send");
     gtk_box_pack_start(GTK_BOX(downBox),sendButton,FALSE,FALSE,0);
-     g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
+    g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
 
 
 
@@ -294,11 +294,12 @@ void group_chat_window(int userId_N, int groupId_N)
     gchar *groupInfoTextString = "introduction....";
 
     GtkTextBuffer *groupInfoBuffer = gtk_text_buffer_new(NULL);
-    gtk_text_buffer_set_text(textBuffer,groupInfoTextString,-1);
+    gtk_text_buffer_set_text(groupInfoBuffer,groupInfoTextString,-1);
     gtk_text_view_set_buffer(GTK_TEXT_VIEW(groupInfoText),groupInfoBuffer);
 
-
+    //dowframeright
     GtkWidget *downFrameRight = gtk_frame_new("Group Member :");
+    gtk_widget_set_size_request(upFrameRight,-1,500);
     gtk_paned_pack2(GTK_PANED(vPanedRight),downFrameRight,TRUE,TRUE);
 
     //groupMemberList

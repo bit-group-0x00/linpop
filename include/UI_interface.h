@@ -14,6 +14,8 @@ extern GtkWidget *mainListbox;
 void homepage_add_friend(GtkWidget *listbox);
 void homepage_add_group(GtkWidget *listbox);
 void join_group_window();
+void show_progressbar(gchar *message);
+
 void login_window();
 /**
  * 登陆界面
