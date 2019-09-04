@@ -4,29 +4,27 @@
 #define CHAT_WINDOW_HEIGHT 560
 #define CHAT_BORDER_WIDTH 5
 
-BufferDeliver BD;
+static BufferDeliver BD;
 
-GtkWidget *chatWindow;
-gchar *selfNickname="HolyGodMT";
-gchar *friendNickname="Ironman";
-gchar *friendID="4354363452";
-gchar *friendIP="192.158.0.1";
-gchar *friendSignature="I'm Ironman\nI killed Thanos";
-gchar *friendMsg="I'm good. And you ?";
-GtkWidget *fileChooser;
-GdkPixbuf *avatarSrc;
+static GtkWidget *chatWindow;
 
-GtkTextBuffer *textBuffer;
-GtkTextBuffer *msgBuffer;
+//
+static gint int_user_ID=0;
+static gint int_friend_ID=0;
 
-void homepage_chatview_data_deliver(personInfo selfInfo,personInfo friendInfo){
-    selfNickname=selfInfo.nickname;
-    friendNickname=friendInfo.nickname;
-    friendID=friendInfo.ID;
-    friendIP=friendInfo.IP;
-    friendSignature=friendInfo.signature;
-    avatarSrc=friendInfo.avatar;
-}
+static gchar *selfID="";
+static gchar *friendID="";
+static gchar *selfNickname="HolyGodMT";
+static gchar *friendNickname="Ironman";
+static gchar *friendIP="192.158.0.1";
+static gchar *friendSignature="I'm Ironman\nI killed Thanos";
+static gchar *friendMsg="I'm good. And you ?";
+static GtkWidget *fileChooser;
+static GdkPixbuf *avatarSrc;
+
+static GtkTextBuffer *textBuffer;
+static GtkTextBuffer *msgBuffer;
+
 void friend_msg_listener(const gchar *msg){
 
     //用来保存当前msgbuffer的末尾
@@ -104,7 +102,7 @@ void on_click_sendFileBtn(GtkButton *button,gpointer data){
 }
 
 void on_click_viewHisMsgBtn(GtkButton *button,gpointer data){
-
+    history_msg_window();
 }
 
 //infobox是一个10行40列的Box
@@ -388,11 +386,9 @@ void window_Layout(GtkWindow* window){
 }
 
 /*绘制出基本的窗口并做出分区划片*/
-void chat_View(int argc, char *argv[]){
-
+void chat_View(){
 
     //初始化
-    gtk_init(&argc,&argv);
 
     //新建一个窗口
     chatWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -419,8 +415,15 @@ void chat_View(int argc, char *argv[]){
 
     gtk_widget_show_all(chatWindow);
 
-    gtk_main();
+}
 
+void friend_chat_window(int userID,int friend_ID){
+    chat_View();
+    int_user_ID=userID;
+    int_friend_ID=friend_ID;
+
+    selfID=g_strdup_printf("%d",int_user_ID);
+    friendID=g_strdup_printf("%d",int_friend_ID);
 }
 
 void individual_Chat(){
