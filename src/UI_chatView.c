@@ -8,17 +8,18 @@ static BufferDeliver BD;
 
 static GtkWidget *chatWindow;
 
+
 //
 static gint int_user_ID=0;
 static gint int_friend_ID=0;
 
 static gchar *selfID="";
 static gchar *friendID="";
-static gchar *selfNickname="HolyGodMT";
-static gchar *friendNickname="Ironman";
-static gchar *friendIP="192.158.0.1";
-static gchar *friendSignature="I'm Ironman\nI killed Thanos";
-static gchar *friendMsg="I'm good. And you ?";
+static gchar *selfNickname="";
+static gchar *friendNickname="";
+static gchar *friendIP="";
+static gchar *friendSignature="";
+static gchar *friendMsg="";
 static GtkWidget *fileChooser;
 static GdkPixbuf *avatarSrc;
 
@@ -26,24 +27,64 @@ static GtkTextBuffer *textBuffer;
 static GtkTextBuffer *msgBuffer;
 
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
+//    alreadyOpenList[friend_ID-10000]=FALSE;
     gint state;
     g_print("delete event occured\n");
     gtk_main_quit();
+
+    GtkTextIter start,end;
+    gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(textBuffer),&start,&end);
+
+    gtk_text_buffer_delete(GTK_TEXT_BUFFER(textBuffer),&start,&end);
     return FALSE;
 }
+
+void handle_data(){
+    friend *pfriend;
+    friend *pself;
+
+    pfriend=seek_fri(int_friend_ID);
+    pself=seek_fri(int_user_ID);
+
+    friendIP=pfriend->fri_pro.ip;
+    friendSignature=pfriend->fri_pro.signature;
+    friendNickname=pfriend->fri_pro.nick_name;
+
+    gchar *filename;
+
+    filename=pfriend->fri_pro.avatar;
+    avatarSrc=gdk_pixbuf_new_from_file(filename,NULL);
+}
+
 void friend_msg_listener(const gchar *msg){
 
-    //�������浱ǰmsgbuffer��ĩβ
     GtkTextIter end;
 
     gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(msgBuffer),&end);
 
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,friendNickname,-1);
+
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,": ",-1);
+
     gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,msg,-1);
 
     gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,"\n",-1);
+
+
+}
+void friend_msg_show( ){
+
+    GtkTextIter end;
+
+    gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(msgBuffer),&end);
+
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,friendMsg,-1);
+
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,"\n",-1);
+
+
 }
 
-// ���·��Ͱ�ťʱ�����ı�������������Ϣ��,��ɾ���ı��༭��������
 void on_click_sendMsgBtn(GtkButton *button,gpointer data ){
 
     //��ʱ�ַ������������ı����е���Ϣ
@@ -74,7 +115,9 @@ void on_click_sendMsgBtn(GtkButton *button,gpointer data ){
 
     gtk_text_buffer_insert(msgBuffer,&destinationEnd,"\n",-1);
 
+    send_msg_to_friend(int_friend_ID,tmpBuffer);
 
+    free(tmpBuffer);
     //ɾ���ı��༭���ڵ�����
     gtk_text_buffer_delete(GTK_TEXT_BUFFER(textBuffer),&srcStart,&srcEnd);
 
@@ -429,6 +472,7 @@ void friend_chat_window(int userID,int friend_ID){
     int_friend_ID=friend_ID;
     selfID=g_strdup_printf("%d",int_user_ID);
     friendID=g_strdup_printf("%d",int_friend_ID);
+    handle_data();
     chat_View();
 }
 
