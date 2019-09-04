@@ -4,7 +4,6 @@
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
 
-#define ICON_SIZE 80
 
 static GtkWidget *loginWindow;//登陆窗口
 static GtkWidget *registWindow;//注册窗口
@@ -23,11 +22,16 @@ GtkWidget *create_image(gchar *filename,gint size){
     image = gtk_image_new_from_pixbuf(res);
     return image;
 }
+static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    g_print("delete event occured\n");
+    gtk_main_quit();
+    return TRUE;
+}
 
 void show_error(GtkWidget *widget, gpointer window, gchar *message) {
     //错误信息提示对话框
     GtkWidget *dialog;
-    GtkWidget *image = create_image("../res/icons_error.png",36);
+    GtkWidget *image = create_image("../res/icons8_error.png",36);
     GtkWidget *label = gtk_label_new(message);
     GtkWidget *content_area;
     dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_YES,NULL);
@@ -36,6 +40,7 @@ void show_error(GtkWidget *widget, gpointer window, gchar *message) {
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     gtk_container_add(GTK_CONTAINER(content_area),image);
     gtk_container_add(GTK_CONTAINER(content_area),label);
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
     gtk_widget_show_all(GTK_WIDGET(dialog));
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -55,6 +60,7 @@ gint show_question(GtkWidget *widget, gpointer window, gchar *message) {
     gtk_container_add(GTK_CONTAINER(content_area),label);
     gtk_widget_show_all(GTK_WIDGET(dialog));
     gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
     gtk_widget_destroy(GTK_WIDGET(dialog));
     return result;
 }
@@ -69,6 +75,7 @@ void show_info(GtkWidget *widget, gpointer window, gchar *message) {
     gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
     gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
     gtk_container_add(GTK_CONTAINER(content_area),image);
     gtk_container_add(GTK_CONTAINER(content_area),label);
     gtk_widget_show_all(GTK_WIDGET(dialog));
@@ -76,7 +83,7 @@ void show_info(GtkWidget *widget, gpointer window, gchar *message) {
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
-void file_chooser_dialog() {
+static void file_chooser_dialog() {
     GtkWidget *fileChooserDialog;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
     const char *filename;
@@ -133,7 +140,7 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
             break;
         case REGIST_CANCEL:
             //取消注册
-            gtk_widget_destroy(registWindow);
+            gtk_widget_hide(registWindow);
             login_window();
             break;
         case REGIST_CONFIRM:
@@ -162,6 +169,7 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                             infoTitle = g_strdup_printf("%s%d", infoTitle, userID);
                             show_info(NULL, NULL, infoTitle);
                             gtk_widget_destroy(registWindow);
+                            gtk_widget_destroy(loginWindow);
                             //头像传输bug
                             login(userID, password);
                             homepage_window(userID);
@@ -187,11 +195,6 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
     }
 }
 
-static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
-    g_print("delete event occured\n");
-    gtk_main_quit();
-    return FALSE;
-}
 
 void regist_window() {
     GtkWidget *box;
@@ -217,7 +220,7 @@ void regist_window() {
     gtk_window_set_position(GTK_WINDOW(registWindow), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(registWindow), 400, 300);
     gtk_container_set_border_width(GTK_CONTAINER(registWindow), 20);
-
+    gtk_window_set_opacity(GTK_WINDOW(registWindow),0.7);
     //Big box
     box = gtk_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(registWindow), box);
@@ -273,22 +276,22 @@ void regist_window() {
     gtk_box_pack_start(GTK_BOX(imageBox), addImageButton, FALSE, FALSE, 5);
     g_signal_connect(G_OBJECT(addImageButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) ADD_IMAGE);
 
-    sep = gtk_hseparator_new();
+    sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_box_pack_start(GTK_BOX(infoBox), sep, FALSE, FALSE, 5);
 
     //button box
-    optionBox = gtk_hbutton_box_new();
+    optionBox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_box_pack_start(GTK_BOX(box), optionBox, FALSE, FALSE, 5);
 
     cancelButton = gtk_button_new_with_label("Cancel");
 
     g_signal_connect(G_OBJECT(cancelButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) REGIST_CANCEL);
-    g_signal_connect_swapped(G_OBJECT(cancelButton), "clicked", G_CALLBACK(gtk_widget_destroy), registWindow);
+    g_signal_connect_swapped(G_OBJECT(cancelButton), "clicked", G_CALLBACK(gtk_widget_hide), registWindow);
     gtk_container_add(GTK_CONTAINER(optionBox), cancelButton);
 
     confirmButton = gtk_button_new_with_label("Confirm");
     g_signal_connect(G_OBJECT(confirmButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) REGIST_CONFIRM);
-    g_signal_connect_swapped(G_OBJECT(confirmButton), "clicked", G_CALLBACK(gtk_widget_destroy), registWindow);
+//    g_signal_connect_swapped(G_OBJECT(confirmButton), "clicked", G_CALLBACK(gtk_widget_destroy), registWindow);
 
     g_signal_connect(G_OBJECT(registWindow), "delete_event", G_CALLBACK(delete_event), NULL);
 
@@ -319,7 +322,7 @@ void login_window(int argc, char *argv[]) {
     gtk_window_set_position(GTK_WINDOW(loginWindow), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(loginWindow), 400, 300);
     gtk_container_set_border_width(GTK_CONTAINER(loginWindow), 20);
-    gtk_window_set_opacity(GTK_WINDOW(loginWindow), 0.92);
+    gtk_widget_set_opacity(GTK_WIDGET(loginWindow), 0.7);
 
     //Big box：最外层box
     box = gtk_vbox_new(FALSE, 0);
@@ -377,7 +380,7 @@ void login_window(int argc, char *argv[]) {
 
     logButton = gtk_button_new_with_label("Log in");
     g_signal_connect(G_OBJECT(logButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) LOG_IN);
-    g_signal_connect_swapped(G_OBJECT(logButton), "clicked", G_CALLBACK(gtk_widget_destroy), loginWindow);
+//    g_signal_connect_swapped(G_OBJECT(logButton), "clicked", G_CALLBACK(gtk_widget_destroy), loginWindow);
     gtk_container_add(GTK_CONTAINER(optionBox), logButton);
 
     g_signal_connect(G_OBJECT(loginWindow), "delete_event", G_CALLBACK(delete_event), NULL);

@@ -24,14 +24,14 @@ GtkWidget *user_profile_test(profile userInfoDisplay, int type, int avaterSize){
         label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"black","none","blue");
     }
     else {
-        GtkWidget *ip = gtk_label_new(NULL);
+        GtkWidget *IPaddress = gtk_label_new(NULL);
         GtkWidget *ID = gtk_label_new(NULL);
-        label_font(ip,userInfoDisplay.ip,10,"#213174","single","black");
+        label_font(IPaddress,userInfoDisplay.ip,10,"#213174","single","black");
         label_font(ID,g_strdup_printf("%d",userInfoDisplay.id),10,"#213174","single","black");
         if(type == FRIEND){
             if(userInfoDisplay.online == ONLINE){
                 //在线好友
-                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"red","double","blue");
+                label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_MIDDLE,"#C8ADC4","double","blue");
             }
             else{
                 //不在线好友
@@ -42,7 +42,7 @@ GtkWidget *user_profile_test(profile userInfoDisplay, int type, int avaterSize){
             //个人
             label_font(nickname,userInfoDisplay.nick_name,FONT_SIZE_BIG,"#61649F","none","blue");
         }
-        gtk_box_pack_start(GTK_BOX(vbox),ip,TRUE,TRUE,0);
+        gtk_box_pack_start(GTK_BOX(vbox),IPaddress,TRUE,TRUE,0);
         gtk_box_pack_start(GTK_BOX(vbox),ID,TRUE,TRUE,0);
     }
     return hbox;
@@ -59,7 +59,6 @@ state login(const int id, const char* passwd)
 }
 
 int main(){
-    //login_window();
+    login_window();
 //    homepage_window(1234);
-    group_chat_window();
 }
