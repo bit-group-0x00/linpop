@@ -62,6 +62,8 @@ void upload_file(int userID, int otherID, int type, int progress);
  * @param progress 聊天进度
  */
 
+void friend_msg_listener(gchar* message);
+
 
 void show_error(GtkWidget *widget, gpointer window, gchar* message);
 /**
