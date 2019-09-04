@@ -49,7 +49,7 @@ GtkWidget *create_userbox(profile my_infoDisplay, int type, int avaterSize){
 
 
     gtk_box_set_homogeneous (GTK_BOX(hbox),FALSE);
-    label_font(signature,my_infoDisplay.signature,FONT_SIZE_SMALL,"#35333C","none","blue");
+    label_font(signature,g_strdup_printf("早上好!%s",my_infoDisplay.nick_name),FONT_SIZE_SMALL,"#35333C","none","blue");
     gtk_box_pack_start(GTK_BOX(hbox),avaterImage,expand,fill,5);
     gtk_box_pack_start(GTK_BOX(hbox),vbox,TRUE,TRUE,5);
     gtk_box_pack_start(GTK_BOX(vbox),nicknamebox,expand,fill,5);
@@ -100,7 +100,7 @@ GtkWidget *create_groupbox(group_profile my_infoDisplay, int type, int avaterSiz
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
 
-    GdkPixbuf *avaterRes = gdk_pixbuf_new_from_file_at_size(my_infoDisplay.icon,avaterSize,avaterSize,NULL);
+    GdkPixbuf *avaterRes = gdk_pixbuf_new_from_file_at_size("../res/icon_color.png",avaterSize,avaterSize,NULL);
     GtkWidget *avaterImage = gtk_image_new_from_pixbuf(avaterRes);
     GtkWidget *nickname = gtk_label_new(my_infoDisplay.name);
     GtkWidget *signature = gtk_label_new(my_infoDisplay.intro);
@@ -115,7 +115,7 @@ GtkWidget *create_groupbox(group_profile my_infoDisplay, int type, int avaterSiz
 
 
     gtk_box_set_homogeneous (GTK_BOX(hbox),FALSE);
-    label_font(signature,my_infoDisplay.intro,FONT_SIZE_SMALL,"#35333C","none","blue");
+    label_font(signature,"This is a group",FONT_SIZE_SMALL,"#35333C","none","blue");
     gtk_box_pack_start(GTK_BOX(hbox),avaterImage,expand,fill,5);
     gtk_box_pack_start(GTK_BOX(hbox),vbox,TRUE,TRUE,5);
     gtk_box_pack_start(GTK_BOX(vbox),nicknamebox,expand,fill,5);
