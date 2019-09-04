@@ -135,20 +135,26 @@ void open_chat(GtkWidget *widget,gpointer data){
     GtkListBoxRow *select = gtk_list_box_get_selected_row(GTK_LIST_BOX(widget));
     int index = gtk_list_box_row_get_index(select);
     int i;
-    if (index<=friendnum){
+    if (index+1<=friendnum){
         friend* p = my_info.first_fri, *pre = NULL;
         for (i = 0; p != NULL && i < index; ++i) {
             pre = p;
             p = p->next;
         }
-        p = pre;
+        if (index != 0) {
+            p = pre;
+        }
         alreadyOpenFriendList[p->fri_pro.id-10000] = TRUE;
         friend_chat_window(my_info.my_pro.id,p->fri_pro.id);
     }
     else{
-        group* q = my_info.first_fri;
-        for (i = 0; q != NULL && i < index; ++i) {
+        group* q = my_info.first_gro, *pre_2 = NULL;
+        for (i = friendnum; q != NULL && i < index; ++i) {
+            pre_2 = q;
             q = q->next;
+        }
+        if (index != friendnum) {
+            q = pre_2;
         }
         alreadyOpenGroupList[q->gro_pro.id] = TRUE;
         group_chat_window(my_info.my_pro.id,q->gro_pro.id);
@@ -263,13 +269,13 @@ void homepage_window(const int userID){
     friend* p = my_info.first_fri;
     for (int i = 0; p != NULL; ++i,friendnum++) {
         GtkWidget *testBox = create_userbox(p->fri_pro,FRIEND,40);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
+        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,-1);
         p = p->next;
     }
     group* q = my_info.first_gro;
-    for (int i = 0; q != NULL; ++i,groupnum++) {
+    for (int i = friendnum; q != NULL; ++i,groupnum++) {
         GtkWidget *testBox = create_groupbox(q->gro_pro,FRIEND,40);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
+        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,-1);
         q = q->next;
     }
     g_signal_connect(G_OBJECT(listbox),"row_activated",G_CALLBACK(open_chat), userID);
