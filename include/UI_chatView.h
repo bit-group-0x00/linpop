@@ -6,6 +6,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include "../include/UI_interface.h"
+#include "../include/NET_client.h"
 
 //�����ڻص������д��εĽṹ��
 typedef struct data{
