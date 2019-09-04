@@ -95,12 +95,21 @@ void open_chat(GtkWidget *widget,gpointer data){
     g_print("ROW_SELECTED\n");
     GtkListBoxRow *select = gtk_list_box_get_selected_row(GTK_LIST_BOX(widget));
     int index = gtk_list_box_row_get_index(select);
+    int i;
     friend* p = userinfo.first_fri;
-    for (int i = 0; p != NULL && i < index; ++i) {
+    for (i = 0; p != NULL && i < index; ++i) {
         p = p->next;
     }
-    g_print("%d",index);
-//    friend_chat_window(userinfo.my_pro.id,p->fri_pro.id);
+    if(i<index){
+        group* q = userinfo.first_fri;
+        for (int j = 0; q != NULL && j < index; ++j) {
+            q = q->next;
+        }
+        group_chat_window(userinfo.my_pro.id,q->gro_pro.id);
+    }
+    else{
+        friend_chat_window(userinfo.my_pro.id,p->fri_pro.id);
+    }
     friend_chat_window(userinfo.my_pro.id,432123);
 
 }
@@ -109,45 +118,45 @@ void homepage_window(const int userID){
     //主窗口
     g_print("Succesful login\n");
     //主窗口初始化
-    userinfo.my_pro.id = userID;
-    userinfo.my_pro.nick_name = "penguin";
-    userinfo.my_pro.avatar = "../res/icon.png";
-    userinfo.my_pro.online = ONLINE;
-    userinfo.my_pro.id = 12345;
-    userinfo.my_pro.ip="123.123";
-    userinfo.my_pro.signature="Hello world";
-
-    info friendInfo1;
-    friendInfo1.my_pro.id = userID;
-    friendInfo1.my_pro.nick_name = "FRIEND_ONLINE";
-    friendInfo1.my_pro.avatar = "../res/avatar_xmas.png";
-    friendInfo1.my_pro.online = ONLINE;
-    friendInfo1.my_pro.id = 12345;
-    friendInfo1.my_pro.ip="123.123";
-    friendInfo1.my_pro.signature="Hello world";
-
-    info friendInfo2;
-    friendInfo2.my_pro.id = userID;
-    friendInfo2.my_pro.nick_name = "FREIEND_NOT_ONLINE";
-    friendInfo2.my_pro.avatar = "../res/avatar_penguin.png";
-    friendInfo2.my_pro.online = OFFLINE;
-    friendInfo2.my_pro.id = 12345;
-    friendInfo2.my_pro.ip="123.1231231212312312312313131313121313";
-    friendInfo2.my_pro.signature="Hello world";
-
-    info friendInfo3;
-    friendInfo3.my_pro.id = userID;
-    friendInfo3.my_pro.nick_name = "GROUP";
-    friendInfo3.my_pro.avatar = "../res/icon_color.png";
-    friendInfo3.my_pro.online = ONLINE;
-    friendInfo3.my_pro.id = 12345;
-    friendInfo3.my_pro.ip="123.1231212312312312313131313121313";
-    friendInfo3.my_pro.signature="Hello world";
-
-    GtkWidget *testbox1 = create_userbox(userinfo.my_pro,USER_SELF,40);
-    GtkWidget *testbox2 = create_userbox(friendInfo1.my_pro,FRIEND,40);
-    GtkWidget *testbox3 = create_userbox(friendInfo2.my_pro,FRIEND,40);
-    GtkWidget *testbox4 = create_userbox(friendInfo3.my_pro,GROUP,40);
+//    userinfo.my_pro.id = userID;
+//    userinfo.my_pro.nick_name = "penguin";
+//    userinfo.my_pro.avatar = "../res/icon.png";
+//    userinfo.my_pro.online = ONLINE;
+//    userinfo.my_pro.id = 12345;
+//    userinfo.my_pro.ip="123.123";
+//    userinfo.my_pro.signature="Hello world";
+//
+//    info friendInfo1;
+//    friendInfo1.my_pro.id = userID;
+//    friendInfo1.my_pro.nick_name = "FRIEND_ONLINE";
+//    friendInfo1.my_pro.avatar = "../res/avatar_xmas.png";
+//    friendInfo1.my_pro.online = ONLINE;
+//    friendInfo1.my_pro.id = 12345;
+//    friendInfo1.my_pro.ip="123.123";
+//    friendInfo1.my_pro.signature="Hello world";
+//
+//    info friendInfo2;
+//    friendInfo2.my_pro.id = userID;
+//    friendInfo2.my_pro.nick_name = "FREIEND_NOT_ONLINE";
+//    friendInfo2.my_pro.avatar = "../res/avatar_penguin.png";
+//    friendInfo2.my_pro.online = OFFLINE;
+//    friendInfo2.my_pro.id = 12345;
+//    friendInfo2.my_pro.ip="123.1231231212312312312313131313121313";
+//    friendInfo2.my_pro.signature="Hello world";
+//
+//    info friendInfo3;
+//    friendInfo3.my_pro.id = userID;
+//    friendInfo3.my_pro.nick_name = "GROUP";
+//    friendInfo3.my_pro.avatar = "../res/icon_color.png";
+//    friendInfo3.my_pro.online = ONLINE;
+//    friendInfo3.my_pro.id = 12345;
+//    friendInfo3.my_pro.ip="123.1231212312312312313131313121313";
+//    friendInfo3.my_pro.signature="Hello world";
+//
+//    GtkWidget *testbox1 = create_userbox(userinfo.my_pro,USER_SELF,40);
+//    GtkWidget *testbox2 = create_userbox(friendInfo1.my_pro,FRIEND,40);
+//    GtkWidget *testbox3 = create_userbox(friendInfo2.my_pro,FRIEND,40);
+//    GtkWidget *testbox4 = create_userbox(friendInfo3.my_pro,GROUP,40);
 
 
     homepageWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -211,12 +220,12 @@ void homepage_window(const int userID){
     gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),listbox);
 
     for (int i = 0; i < 50; i+=3) {
-        GtkWidget *testbox2 = create_userbox(friendInfo1.my_pro,FRIEND,40);
-        GtkWidget *testbox3 = create_userbox(friendInfo2.my_pro,FRIEND,40);
-        GtkWidget *testbox4 = create_userbox(friendInfo3.my_pro,GROUP,40);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox2,i);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox3,1+i);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox4,2+i);
+//        GtkWidget *testbox2 = create_userbox(friendInfo1.my_pro,FRIEND,40);
+//        GtkWidget *testbox3 = create_userbox(friendInfo2.my_pro,FRIEND,40);
+//        GtkWidget *testbox4 = create_userbox(friendInfo3.my_pro,GROUP,40);
+//        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox2,i);
+//        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox3,1+i);
+//        gtk_list_box_insert(GTK_LIST_BOX(listbox),testbox4,2+i);
     }
 
 
