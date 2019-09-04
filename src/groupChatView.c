@@ -302,8 +302,6 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_box_pack_start(GTK_BOX(downBox),sendButton,FALSE,FALSE,0);
     g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
 
-
-
     //rightFrame
     rightFrame = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME(rightFrame),GTK_SHADOW_IN);
@@ -311,7 +309,7 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_paned_pack2(GTK_PANED(hPaned),rightFrame,TRUE,FALSE);
     gtk_widget_show(listBox);
     gtk_widget_show_all(window);
-    gtk_main();
+
 
 }
 

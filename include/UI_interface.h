@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include "UI_macro.h"
 
+extern int alreadyOpenFriendList[10000];
+extern int alreadyOpenGroupList[10000];
 
 void login_window();
 /**
@@ -60,12 +62,12 @@ void upload_file(int userID, int otherID, int type, int progress);
  * @param progress 聊天进度
  */
 
-void update_message(int userID, int otherID, int type);
+
+void update_message(state type, void *newIncome);
 /**
- * 界面更新
- * @param userID 上传文件用户ID
- * @param userID 接受文件用户ID
- * @param type 群聊/用户
+ * 接受新消息
+ * @param type 消息类型
+ * @param newIncome 群聊/用户
  *
  */
 

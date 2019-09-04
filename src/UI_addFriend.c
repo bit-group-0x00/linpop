@@ -13,15 +13,21 @@ GtkWidget *SearchResultLabel;
 GtkWidget *AddButton;
 
 gint callback_result = -2;
-gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data)
+static int newId;
+static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+    add_friend();
     gtk_main_quit();
     return FALSE;
+}
+void addFriend(GtkWidget *widget,GtkWidget *entry){
+    add_friend(newId);
 }
 void enter_callback(GtkWidget *widget,GtkWidget *entry)
 {
     const gchar *entry_text;//好友ID
     entry_text = gtk_entry_get_text(GTK_ENTRY(entry));
+    newId = strtol(entry_text,NULL,10);
     /*ifExisted   not --retrun -1 不存在该用户
      *
      */
@@ -31,28 +37,14 @@ void enter_callback(GtkWidget *widget,GtkWidget *entry)
      */
    // GtkWidget *image = gtk_image_new_from_file("../res/icon.png");
     //gtk_image_set_from_image(GTK_IMAGE(SearchResultImg),GTK_IMAGE(image),NULL);
-
-    callback_result = 1;
-    const gchar *Image_address = "../res/icon.png";
-    const gchar *ID_char = "ID： 1111111";
-    const gchar *Nickname_char = "NickName: yuanyuanyuan";
-    GdkPixbuf *Image_buf = gdk_pixbuf_new_from_file(Image_address,NULL);
-
-
-
-    SearchResultImg = gtk_image_new_from_file("../res/icon.png");
-    gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultImg,FALSE,FALSE,10);
-
-
-    SearchResultID = gtk_label_new("ID: 1111111111");
-    gtk_label_set_width_chars(GTK_LABEL(SearchResultID),0);
-    gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultLabel,FALSE,FALSE,10);
-
-    SearchResultNickname = gtk_label_new("NickName: yuanyuanyuan");
-    gtk_label_set_width_chars(GTK_LABEL(SearchResultNickname),0);
-    gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultNickname,FALSE,FALSE,10);
-
-
+    
+    if (seek_fri(newId)==NULL){
+        callback_result = 0;
+    }
+    else{
+        callback_result = 1;
+    }
+    
     if(callback_result == -1)
     {
         gtk_widget_hide(SearchResultNickname);
@@ -62,33 +54,51 @@ void enter_callback(GtkWidget *widget,GtkWidget *entry)
         gtk_label_set_text(SearchResultLabel,"User not Exist");
         gtk_widget_show(SearchResultLabel);
     }
-    else if(callback_result == 0)
-    {
-        gtk_label_set_text(SearchResultLabel,"Already your Friend");
-        gtk_widget_show(SearchResultLabel);
-        gtk_image_set_from_pixbuf(GTK_IMAGE(SearchResultImg),Image_buf);
-        gtk_widget_show(SearchResultImg);
-        gtk_label_set_text(SearchResultID,ID_char);
-        gtk_widget_show(SearchResultID);
-        gtk_label_set_text(SearchResultNickname,Nickname_char);
-        gtk_widget_show(SearchResultNickname);
+    else {
+        friend *newFriendPro = seek_fri(newId);
+        const gchar *Image_address = newFriendPro->fri_pro.avatar;
+        const gchar *ID_char = g_strdup_printf("ID:%d",newFriendPro->fri_pro.id);
+        const gchar *Nickname_char = g_strdup_printf("NickName: %s",newFriendPro->fri_pro.nick_name);
+        GdkPixbuf *Image_buf = gdk_pixbuf_new_from_file(Image_address,NULL);
 
+        SearchResultImg = gtk_image_new_from_file(Image_address);
+        gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultImg,FALSE,FALSE,10);
+
+
+        SearchResultID = gtk_label_new(ID_char);
+        gtk_label_set_width_chars(GTK_LABEL(SearchResultID),0);
+        gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultLabel,FALSE,FALSE,10);
+
+        SearchResultNickname = gtk_label_new(Nickname_char);
+        gtk_label_set_width_chars(GTK_LABEL(SearchResultNickname),0);
+        gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultNickname,FALSE,FALSE,10);
+        if(callback_result == 0)
+        {
+            gtk_label_set_text(SearchResultLabel,"Already your Friend");
+            gtk_widget_show(SearchResultLabel);
+            gtk_image_set_from_pixbuf(GTK_IMAGE(SearchResultImg),Image_buf);
+            gtk_widget_show(SearchResultImg);
+            gtk_label_set_text(SearchResultID,ID_char);
+            gtk_widget_show(SearchResultID);
+            gtk_label_set_text(SearchResultNickname,Nickname_char);
+            gtk_widget_show(SearchResultNickname);
+
+        }
+        else if(callback_result == 1)
+        {
+            gtk_widget_hide(SearchResultLabel);
+            gtk_image_set_from_pixbuf(GTK_IMAGE(SearchResultImg),Image_buf);
+            gtk_widget_show(SearchResultImg);
+            gtk_label_set_text(SearchResultID,ID_char);
+            gtk_widget_show(SearchResultID);
+            gtk_label_set_text(SearchResultNickname,Nickname_char);
+            gtk_widget_show(SearchResultNickname);
+
+            gtk_widget_set_sensitive(AddButton,TRUE);
+
+        }
     }
-    else if(callback_result == 1)
-    {
-        gtk_widget_hide(SearchResultLabel);
-        gtk_image_set_from_pixbuf(GTK_IMAGE(SearchResultImg),Image_buf);
-        gtk_widget_show(SearchResultImg);
-        gtk_label_set_text(SearchResultID,ID_char);
-        gtk_widget_show(SearchResultID);
-        gtk_label_set_text(SearchResultNickname,Nickname_char);
-        gtk_widget_show(SearchResultNickname);
-
-        gtk_widget_set_sensitive(AddButton,TRUE);
-
-    }
-
-
+    
     printf("Entry content: %s \n",entry_text);
 
 }
@@ -150,10 +160,6 @@ void add_friend_window(int argc, char *argv[])
     SearchResultLabel = gtk_label_new("Click Search Button ");
     gtk_box_pack_start(GTK_BOX(SearchResultBox),SearchResultLabel,FALSE,FALSE,0);
 
-
-
-    //
-
 //optionBox
     OptionBox = gtk_hbox_new(TRUE,0);
     gtk_box_pack_end(GTK_BOX(vBox),OptionBox,FALSE,FALSE,10);
@@ -162,21 +168,14 @@ void add_friend_window(int argc, char *argv[])
     gtk_box_pack_start(GTK_BOX(OptionBox),AddButton,FALSE,FALSE,0);
     gtk_widget_set_sensitive(AddButton,FALSE);
    // g_signal_connect(G_OBJECT(AddButton),"clicked",)
-    //g_signal_connect(G_OBJECT(AddButton),"clicked",G_CALLBACK())
+    g_signal_connect(G_OBJECT(AddButton),"clicked",G_CALLBACK(addFriend),NULL);
     //CancelButton
     CancelButton = gtk_button_new_with_label("CancelButton");
     gtk_box_pack_start(GTK_BOX(OptionBox),CancelButton,FALSE,FALSE,0);
     g_signal_connect(G_OBJECT(CancelButton),"clicked",G_CALLBACK(delete_event),NULL);
-
-
-
-
+    
     gtk_widget_show(window);
-
-
     gtk_widget_show_all(window);
-    gtk_main();
-
 
 }
 

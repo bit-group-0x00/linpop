@@ -165,3 +165,4 @@ friend* seek_fri(int id);
 
 /* 根据id获取群聊指针 */
 group* seek_gro(int id);
+n

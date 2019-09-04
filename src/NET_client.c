@@ -7,6 +7,7 @@
 */
 
 #include "../include/NET_client.h"
+#include "../include/UI_interface.h"
 
 /* 全局变量my_info */
 info my_info;
@@ -638,5 +639,6 @@ int main(int argc, char* argv[])
     printf("send message to friend result: %d\n", send_msg_to_friend(10000, "hello my friend"));
     printf("logout result: %d\n", logout());
     while(1);
+    login_window();
     return 0;
 }

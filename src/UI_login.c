@@ -88,6 +88,61 @@ void show_info(GtkWidget *widget, gpointer window, gchar *message) {
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
+void update_message(state type, void *newIncome){
+    //提示信息对话框
+    gchar* message = "";
+    int newID = 0;
+    gchar* name = "";
+    if (type == FRIEND){
+        friend *fri = (friend *)newIncome;
+        message = fri->last_msg;
+        newID = fri->fri_pro.id;
+        name = fri->fri_pro.nick_name;
+    }
+    else if(type == GROUP){
+        group *gro = (group *)newIncome;
+        message = gro->last_msg;
+        newID = gro->gro_pro.id;
+        name = gro->gro_pro.name;
+    }
+    GtkWidget *dialog;
+    GtkWidget *image = create_image("../res/icons_info.png",36);
+    GtkWidget *label = gtk_label_new(message);
+    message = g_strdup_printf("你有一条来自%s的新消息：%s",name,message);
+    label_font(label,message,20,DARK_PURPLE,"none",DARK_PURPLE);
+    GtkWidget *content_area;
+    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_NONE,NULL);
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+    gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
+    gtk_container_add(GTK_CONTAINER(content_area),image);
+    gtk_container_add(GTK_CONTAINER(content_area),label);
+    gtk_widget_show_all(GTK_WIDGET(dialog));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    switch (type){
+        case FRIEND:
+            if(alreadyOpenFriendList[newID-10000]==TRUE){
+                friend_msg_listener(message);
+            }
+            else{
+                friend_chat_window(userID,newID);
+            }
+            break;
+        case GROUP:
+            if(alreadyOpenGroupList[newID-10000]==TRUE){
+                friend_msg_listener(message);
+            }
+            else{
+                friend_chat_window(userID,newID);
+            }
+            group_chat_window(userID,newID);
+            break;
+        default:
+            break;
+    }
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+}
 
 static void file_chooser_dialog() {
     GtkWidget *fileChooserDialog;
