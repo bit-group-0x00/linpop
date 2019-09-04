@@ -129,7 +129,6 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                 case SUCCESS:
                     gtk_widget_destroy(loginWindow);
                     homepage_window(userID);
-
                     break;
                 case FAILURE:
                     show_error(NULL, NULL, "Your ID is not existing");

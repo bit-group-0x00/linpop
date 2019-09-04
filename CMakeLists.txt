@@ -34,6 +34,7 @@ add_executable(linpop_UItest
         src/UI_addFriend.c
         src/UI_chatView.c
         src/UI_history.c
+        src/groupChatView.c
         )
 
 find_package(Threads REQUIRED)
