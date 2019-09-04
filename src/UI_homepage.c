@@ -161,7 +161,7 @@ void homepage_window(const int userID){
     //添加好友按钮
     GtkWidget *addFriendButton = gtk_button_new_with_label("Add Friend");
     gtk_button_set_always_show_image(GTK_BUTTON(addFriendButton),TRUE);
-    imageRes = gdk_pixbuf_new_from_file_at_size("../res/icons_p.png",30,30,NULL);
+    imageRes = gdk_pixbuf_new_from_file_at_size("../res/icons8-add-user-group-man-man-64.png",30,30,NULL);
     g_signal_connect(GTK_WIDGET(addFriendButton),"clicked",G_CALLBACK(add_friend_window),NULL);
     GtkWidget *addFriendImage = gtk_image_new_from_pixbuf(imageRes);
     gtk_button_set_image(GTK_BUTTON(addFriendButton),addFriendImage);
@@ -170,7 +170,7 @@ void homepage_window(const int userID){
     //添加群聊按钮
     GtkWidget *addGroupChatButton = gtk_button_new_with_label("Add Group");
     gtk_button_set_always_show_image(GTK_BUTTON(addGroupChatButton),TRUE);
-    imageRes = gdk_pixbuf_new_from_file_at_size("../res/icon_c.png",30,30,NULL);
+    imageRes = gdk_pixbuf_new_from_file_at_size("../res/icons8_people.png",30,30,NULL);
     g_signal_connect(GTK_WIDGET(addGroupChatButton),"clicked",G_CALLBACK(create_group_window), NULL);
     GtkWidget *addGroupImage = gtk_image_new_from_pixbuf(imageRes);
     gtk_button_set_image(GTK_BUTTON(addGroupChatButton),addGroupImage);
@@ -203,7 +203,6 @@ void homepage_window(const int userID){
     gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),listbox);
 
     for (int i = 0; i < 50; i+=3) {
-        GtkWidget *testbox1 = create_userbox(userInfo.my_pro,USER_SELF,40);
         GtkWidget *testbox2 = create_userbox(friendInfo1.my_pro,FRIEND,40);
         GtkWidget *testbox3 = create_userbox(friendInfo2.my_pro,FRIEND,40);
         GtkWidget *testbox4 = create_userbox(friendInfo3.my_pro,GROUP,40);

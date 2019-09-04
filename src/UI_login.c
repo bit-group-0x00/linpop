@@ -31,7 +31,7 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
 void show_error(GtkWidget *widget, gpointer window, gchar *message) {
     //错误信息提示对话框
     GtkWidget *dialog;
-    GtkWidget *image = create_image("../res/icons_error.png",36);
+    GtkWidget *image = create_image("../res/icons8_error.png",36);
     GtkWidget *label = gtk_label_new(message);
     GtkWidget *content_area;
     dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_YES,NULL);

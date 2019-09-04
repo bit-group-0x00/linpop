@@ -112,7 +112,7 @@ void create_group_window() {
     box = gtk_vbox_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(createWindow), box);
 
-
+    iconImageRes = gdk_pixbuf_new_from_file_at_size("../res/icons8_people.png",ICON_SIZE,ICON_SIZE,NULL);
     avaterImage = gtk_image_new_from_pixbuf(iconImageRes);
     gtk_box_pack_start(GTK_BOX(box), avaterImage, FALSE, FALSE, 5);
 
@@ -145,7 +145,6 @@ void create_group_window() {
     gtk_box_pack_start(GTK_BOX(passwordBox), groupInfoLabel, FALSE, FALSE, 5);
 
     groupInfoText = gtk_entry_new();
-    gtk_entry_set_visibility(GTK_ENTRY(groupInfoText), FALSE);
     gtk_entry_set_max_length(groupInfoText, 20);
     gtk_box_pack_start(GTK_BOX(passwordBox), groupInfoText, FALSE, FALSE, 5);
 
