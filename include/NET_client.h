@@ -42,6 +42,7 @@ typedef struct friend
   struct friend* last;
   struct friend* next;
 } friend;
+/* 群聊简要信息结构体 */
 typedef struct group_profile
 {
   int id;
@@ -49,7 +50,7 @@ typedef struct group_profile
   char* intro;
   char* icon;
 } group_profile;
-
+/* 群聊成员结构体 */
 typedef struct member
 {
   profile mem_pro;
@@ -80,29 +81,25 @@ typedef struct info
   friend* last_fri;
   group* first_gro;
   group* last_gro;
-  void (*update_ui)(state type, void* origin)
+  void (*update_ui)(state type, void* origin);
 } info;
 
 extern info my_info;
 
 /* 
-  client regist fuction
   传入用户注册的昵称和密码，如果注册成功返回注册成功后的账号id
   如果注册失败返回FAILURE（1），如果注册过错产生错误返回ERROR（-1）
   注：-1，0，1都是系统保留值，不能作为账号
 */
-state regist(const char* nick_name, const char* passwd);
+state regist(const char* nick_name, const char* passwd, const char* signature, const char* avatar);
 
-/* 
-  client login function
-  传入用户的账号和密码，如果登陆成功返回SUCCESS（0），如果失败
-  返回FAILURE（1），如果登陆过程中发生了错误返回ERROR（-1）
+/*
+  params 账号id和密码
+  return 登陆是否成功
 */
 state login(const int id, const char* passwd);
 
 /*
-  send message to friend
-
   更新：取消回调函数
 
   实现发送消息至某个好友，传入好友账号、要发送的消息和回调函数。
@@ -118,8 +115,8 @@ state login(const int id, const char* passwd);
 */
 state send_msg_to_friend(const int friend_id, const char* msg);
 
-/* 
-  send message to a group 
+/*
+  send message to a group
   向群聊发送消息，传入群聊ID，要发送的消息和回调函数。
   这里的回调函数作用和上面的函数一致，具体的行为不同。
   这个函数先检查是否满足向群聊发送消息的条件，如果不
@@ -152,9 +149,9 @@ state add_friend(const int id);
 */
 state join_group(const int id);
 /*
-  创建群聊，返回群聊id
+  通过群聊的名称、信息、图标、成员数、所有成员的id创建群聊，返回群聊id
 */
-state create_group(char* name, char* intro, char* avatar, int member_num, int *member_ids);
+state create_group(char* name, char* intro, char* icon, int member_num, int *member_ids);
 /*
   创建
   登出函数，当用户关闭主窗口时调用该函数，该函数用于向服务器更新
@@ -162,3 +159,9 @@ state create_group(char* name, char* intro, char* avatar, int member_num, int *m
   ERROR（-1）表示出现错误。
 */
 state logout();
+
+/* 根据id获取好友指针 */
+friend* seek_fri(int id);
+
+/* 根据id获取群聊指针 */
+group* seek_gro(int id);
