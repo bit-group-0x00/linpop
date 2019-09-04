@@ -1,4 +1,5 @@
 #include "../include/UI_chatView.h"
+#include "../include/NET_client.h"
 
 /*
  * close_history_window
@@ -36,21 +37,34 @@ GtkWidget *getMsgBox(char *fromUserName, char* time, char* content) {
 /*
  * main
  */
-void history_msg_window (int argc, char *argv[])
+void history_msg_window (int id)
 {
+    friend *fri = NULL;
+    group *gro = NULL;
+    gchar *name = "";
+
+    /* --- find specified id --- */
+    if (id >= 10000) {
+        fri = seek_fri(id);
+        name = g_strdup_printf("history messages with %s", fri->fri_pro.nick_name);
+    } else {
+        gro = seek_gro(id);
+        name = g_strdup_printf("history messages with %s", gro->gro_pro.name);
+    }
+
+
+
     GtkWidget *historyWindow;
     GtkWidget *msgListBox;
     GtkWidget *scrolledWindow;
 
-    /* --- GTK initialization --- */
-    gtk_init (&argc, &argv);
 
     /* --- Create the top level historyWindow --- */
     historyWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     /* --- Set Window Attributions ---*/
-    // TODO change 'someone' to specified nickname
-    gtk_window_set_title(GTK_WINDOW(historyWindow), "History messages with someone");
+
+    gtk_window_set_title(GTK_WINDOW(historyWindow), name);
     gtk_window_set_position(GTK_WINDOW(historyWindow), GTK_WIN_POS_CENTER);
     gtk_widget_get_screen(historyWindow);
     gtk_window_set_default_size(GTK_WINDOW(historyWindow), 1000, 1000);
@@ -75,12 +89,49 @@ void history_msg_window (int argc, char *argv[])
     /* --- Set msgListBox style. --- */
     gtk_list_box_set_selection_mode(GTK_LIST_BOX(msgListBox), GTK_SELECTION_NONE);
 
-    /* --- Add items into the msgListBox --- */
-    GtkWidget *child = getMsgBox("userName", "2019-09-04 12:09", "this is a message");
-    gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
 
-    child = getMsgBox("userName2", "2019-09-04 12:19", "this is another message this is another message this is another message this is another message this is another message this is another message this is another message this is another message this is another message  ");
-    gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
+    /* --- Add items into the msgListBox --- */
+
+    GtkWidget *child;
+    gchar *senderName = "";
+    //this is a friend
+    if (id >= 10000) {
+        if (fri->first_msg == NULL && fri->first_msg == fri->last_msg) {        //no message
+
+        } else if (fri->first_msg == fri->last_msg && fri->first_msg != NULL) { //only one message
+            child = getMsgBox(fri->fri_pro.nick_name, fri->first_msg->date, fri->first_msg->content);
+            gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
+        } else {
+            message *p = fri->first_msg;
+            while (p != fri->last_msg) {
+                child = getMsgBox(fri->fri_pro.nick_name, p->date, p->content);
+                gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
+                p = p->next;
+            }
+            child = getMsgBox(fri->fri_pro.nick_name, p->date, p->content);
+            gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
+        }
+    } else {
+        if (gro->first_msg == NULL && gro->first_msg == gro->last_msg) {        //no message
+
+        } else if (gro->first_msg == gro->last_msg && gro->first_msg != NULL) { //only one message
+            senderName = g_strdup_printf("%d", gro->first_msg->sender);
+            child = getMsgBox(senderName, gro->first_msg->date, gro->first_msg->content);
+            gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
+        } else {
+            message *p = gro->first_msg;
+            while (p != gro->last_msg) {
+                senderName = g_strdup_printf("%d", p->sender);
+
+                child = getMsgBox(senderName, p->date, p->content);
+                gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
+                p = p->next;
+            }
+            senderName = g_strdup_printf("%d", p->sender);
+            child = getMsgBox(senderName, p->date, p->content);
+            gtk_list_box_prepend(GTK_LIST_BOX(msgListBox), child);
+        }
+    }
 
     /*
      * --- Make the main historyWindow visible
