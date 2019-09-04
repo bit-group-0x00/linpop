@@ -1,20 +1,43 @@
 #include "../include/UI_chatView.h"
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 560
-#define BORDER_WIDTH 5
+
+#define CHAT_WINDOW_WIDTH 800
+#define CHAT_WINDOW_HEIGHT 560
+#define CHAT_BORDER_WIDTH 5
 
 BufferDeliver BD;
 
+GtkWidget *chatWindow;
 gchar *selfNickname="HolyGodMT";
 gchar *friendNickname="Ironman";
 gchar *friendID="4354363452";
 gchar *friendIP="192.158.0.1";
 gchar *friendSignature="I'm Ironman\nI killed Thanos";
 gchar *friendMsg="I'm good. And you ?";
+GtkWidget *fileChooser;
 GdkPixbuf *avatarSrc;
+
 GtkTextBuffer *textBuffer;
 GtkTextBuffer *msgBuffer;
 
+void homepage_chatview_data_deliver(personInfo selfInfo,personInfo friendInfo){
+    selfNickname=selfInfo.nickname;
+    friendNickname=friendInfo.nickname;
+    friendID=friendInfo.ID;
+    friendIP=friendInfo.IP;
+    friendSignature=friendInfo.signature;
+    avatarSrc=friendInfo.avatar;
+}
+void friend_msg_listener(const gchar *msg){
+
+    //用来保存当前msgbuffer的末尾
+    GtkTextIter end;
+
+    gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(msgBuffer),&end);
+
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,msg,-1);
+
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&end,"\n",-1);
+}
 
 // 按下发送按钮时发送文本框的内容至消息框,并删除文本编辑框的内容
 void on_click_sendMsgBtn(GtkButton *button,gpointer data ){
@@ -58,7 +81,26 @@ void on_click_emojiBtn(GtkButton *button,gpointer data){
 }
 
 void on_click_sendFileBtn(GtkButton *button,gpointer data){
+    GtkWidget *fileChooserDialog;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    const char *filename;
+    gint res;
+    fileChooserDialog = gtk_file_chooser_dialog_new("Choose a photo",
+                                                    NULL,
+                                                    action,
+                                                    "CANCEL",
+                                                    GTK_RESPONSE_CANCEL,
+                                                    "OPEN",
+                                                    GTK_RESPONSE_ACCEPT,
+                                                    NULL);
+    res = gtk_dialog_run(GTK_DIALOG(fileChooserDialog));
+    if(res == GTK_RESPONSE_ACCEPT){
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER(fileChooserDialog);
+        filename = gtk_file_chooser_get_filename(chooser);
 
+
+    }
+    gtk_widget_destroy(fileChooserDialog);
 }
 
 void on_click_viewHisMsgBtn(GtkButton *button,gpointer data){
@@ -238,7 +280,7 @@ void connect_chatView_textInput(GtkTable *msgBox,GtkTable *inputBox){
 
     gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(msgBuffer),&msgIterStart,&msgIterEnd);
 
-    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&msgIterEnd,"                                                       Hello, life is beautiful! Let's start chatting!\n",-1);
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER(msgBuffer),&msgIterEnd,"                                                                                      Hello, life is beautiful! Let's start chatting!\n",-1);
 
 
     gtk_table_attach_defaults(GTK_TABLE(inputBox),text,0,20,1,8);
@@ -248,56 +290,56 @@ void connect_chatView_textInput(GtkTable *msgBox,GtkTable *inputBox){
 
 }
 
-void test(int argc,char argv[]){
-
-    GtkWidget *window;
-    GtkWidget *ok;
-    GtkWidget *close;
-    GtkWidget *vbox;
-    GtkWidget *hbox;
-    GtkWidget *halign;
-    GtkWidget *valign;
-
-    gtk_init(&argc,&argv);
-
-    window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-    gtk_widget_set_size_request(GTK_WINDOW(window),WINDOW_WIDTH,WINDOW_HEIGHT);
-
-    //居中显示
-    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
-
-    //设置窗口可伸缩
-    gtk_window_set_resizable(GTK_WINDOW(window),TRUE);
-    vbox = gtk_vbox_new(FALSE,5);
-
-    valign = gtk_alignment_new(0,0,0,0);
-    gtk_container_add(GTK_CONTAINER(vbox),valign);
-    gtk_container_add(GTK_CONTAINER(window),vbox);
-
-    hbox = gtk_hbox_new(TRUE,30);
-
-
-    //设定OK和close的大小并丢到hbox里
-    ok = gtk_button_new_with_label("OK");
-    gtk_widget_set_size_request(ok,70,30);
-    gtk_container_add(GTK_CONTAINER(hbox),ok);
-    close = gtk_button_new_with_label("Close");
-    gtk_container_add(GTK_CONTAINER(hbox),close);
-
-    halign = gtk_alignment_new(1,0,0,1);
-    gtk_container_add(GTK_CONTAINER(halign),hbox);
-
-    gtk_box_pack_end(GTK_BOX(vbox),halign,FALSE,FALSE,10);
-
-    g_signal_connect(window,"destroy",G_CALLBACK(gtk_main_quit),NULL);
-
-    gtk_widget_show_all(window);
-
-    gtk_main();
-
-
-}
+//void test(int argc,char argv[]){
+//
+//    GtkWidget *window;
+//    GtkWidget *ok;
+//    GtkWidget *close;
+//    GtkWidget *vbox;
+//    GtkWidget *hbox;
+//    GtkWidget *halign;
+//    GtkWidget *valign;
+//
+//    gtk_init(&argc,&argv);
+//
+//    window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//
+//    gtk_widget_set_size_request(GTK_WINDOW(window),WINDOW_WIDTH,WINDOW_HEIGHT);
+//
+//    //居中显示
+//    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
+//
+//    //设置窗口可伸缩
+//    gtk_window_set_resizable(GTK_WINDOW(window),TRUE);
+//    vbox = gtk_vbox_new(FALSE,5);
+//
+//    valign = gtk_alignment_new(0,0,0,0);
+//    gtk_container_add(GTK_CONTAINER(vbox),valign);
+//    gtk_container_add(GTK_CONTAINER(window),vbox);
+//
+//    hbox = gtk_hbox_new(TRUE,30);
+//
+//
+//    //设定OK和close的大小并丢到hbox里
+//    ok = gtk_button_new_with_label("OK");
+//    gtk_widget_set_size_request(ok,70,30);
+//    gtk_container_add(GTK_CONTAINER(hbox),ok);
+//    close = gtk_button_new_with_label("Close");
+//    gtk_container_add(GTK_CONTAINER(hbox),close);
+//
+//    halign = gtk_alignment_new(1,0,0,1);
+//    gtk_container_add(GTK_CONTAINER(halign),hbox);
+//
+//    gtk_box_pack_end(GTK_BOX(vbox),halign,FALSE,FALSE,10);
+//
+//    g_signal_connect(window,"destroy",G_CALLBACK(gtk_main_quit),NULL);
+//
+//    gtk_widget_show_all(window);
+//
+//    gtk_main();
+//
+//
+//}
 
 void window_Layout(GtkWindow* window){
 
@@ -305,6 +347,7 @@ void window_Layout(GtkWindow* window){
     GtkWidget *mainTable;
 
     mainTable=gtk_table_new(10,10,TRUE);
+
 
     gtk_container_add(GTK_CONTAINER(window),mainTable);
 
@@ -348,35 +391,33 @@ void window_Layout(GtkWindow* window){
 void chat_View(int argc, char *argv[]){
 
 
-    GtkWidget *window;
-
     //初始化
     gtk_init(&argc,&argv);
 
     //新建一个窗口
-    window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    chatWindow=gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     //设置窗口标题
-    gtk_window_set_title(GTK_WINDOW(window),"chatView");
+    gtk_window_set_title(GTK_WINDOW(chatWindow),"chatView");
 
     //设置窗口大小
-    gtk_widget_set_size_request(window,WINDOW_WIDTH,WINDOW_HEIGHT);
+    gtk_widget_set_size_request(chatWindow,CHAT_WINDOW_WIDTH,CHAT_WINDOW_HEIGHT);
 
     //设置距离周围的宽度
-    gtk_container_set_border_width(GTK_CONTAINER(window),BORDER_WIDTH);
+    gtk_container_set_border_width(GTK_CONTAINER(chatWindow),CHAT_BORDER_WIDTH);
 
     //居中显示
-    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
+    gtk_window_set_position(GTK_WINDOW(chatWindow),GTK_WIN_POS_CENTER);
 
     //设置窗口可伸缩
-    gtk_window_set_resizable(GTK_WINDOW(window),TRUE);
+    gtk_window_set_resizable(GTK_WINDOW(chatWindow),TRUE);
 
     //对窗口进行布局
-    window_Layout(GTK_WINDOW(window));
+    window_Layout(GTK_WINDOW(chatWindow));
 
-    g_signal_connect(window,"destroy",G_CALLBACK(gtk_main_quit),NULL);
+    g_signal_connect(chatWindow,"destroy",G_CALLBACK(gtk_main_quit),NULL);
 
-    gtk_widget_show_all(window);
+    gtk_widget_show_all(chatWindow);
 
     gtk_main();
 

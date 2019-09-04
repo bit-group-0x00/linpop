@@ -1,6 +1,3 @@
-//
-// Created by Anne Wu on 2019-08-30.
-//
 #ifndef LINPOP_UI_LOGIN_H
 #define LINPOP_UI_LOGIN_H
 
@@ -22,8 +19,6 @@ void regist_window();
  *
  *
  */
-void add_friend_window();
-void group_chat_window();
 void homepage_window(const int userID);
 /**
  * 主界面

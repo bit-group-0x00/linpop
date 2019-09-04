@@ -8,7 +8,6 @@
 
 #include "../include/NET_client.h"
 #include "../include/UI_interface.h"
-#include "../include/UI_chatView.h"
 
 int my_id = -1;
 
@@ -95,21 +94,21 @@ void handle_cjson(int socket, cJSON* cjson)
 int main(int argc, char* argv[])
 {
     /* connect to server */
-    if((server = conn_to(SERVER_IP, SERVER_PORT)) == -1)
-    {
-        printf("cannot connect to server, try again later.\n");
-        return -1;
-    }
-    /* test regist, login and send message */
-//    regist("pengyao", "123456");
-//    login(11111111, "123456");
-    //send_msg(server, "pengyao", "helloworld!");
-    login_window();
+//    if((server = conn_to(SERVER_IP, SERVER_PORT)) == -1)
+//    {
+//        printf("cannot connect to server, try again later.\n");
+//        return -1;
+//    }
+//    /* test regist, login and send message */
+////    regist("pengyao", "123456");
+////    login(11111111, "123456");
+//    //send_msg(server, "pengyao", "helloworld!");
+//    login_window();
     chat_View();
 
-    int socket = conn_to(SERVER_IP, SERVER_PORT);
-    /* test send file */
-    send_file(socket, "/home/onlyrobot/t/test.txt", NULL);
-    close(server), close(socket);
+//    int socket = conn_to(SERVER_IP, SERVER_PORT);
+//    /* test send file */
+//    send_file(socket, "/home/onlyrobot/t/test.txt", NULL);
+//    close(server), close(socket);
     return 0;
 }
