@@ -681,8 +681,8 @@ state logout()
 
 int main(int argc, char* argv[])
 {
-    login_window();
     my_info.update_ui = update_message;
+    login_window();
 //    my_info.update_ui = update_ui;
 //    /* test regist, login and send message */
 //    //printf("regist result: %d\n", regist("helloworld", "123456", "my signature", "avatar"));
