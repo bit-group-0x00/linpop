@@ -152,7 +152,7 @@ void on_click_sendFileBtn(GtkButton *button,gpointer data){
 }
 
 void on_click_viewHisMsgBtn(GtkButton *button,gpointer data){
-    history_msg_window();
+    history_msg_window(int_friend_ID);
 }
 
 //infobox��һ��10��40�е�Box

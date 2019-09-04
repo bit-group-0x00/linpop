@@ -112,13 +112,11 @@ GroupUserList getUserListByGroupId(int groupId, MYSQL* connection) {
     mysql_query(connection,"SET NAMES utf8");
     char querySql[SQL_LENGTH_MAX];
     memset(querySql, 0, sizeof(querySql));
-    sprintf(querySql, "SELECT *\n"
-                      "FROM linpop.group_user\n"
-                      "WHERE guGroupId=%d;", groupId);
+    sprintf(querySql, "select * from linpop.group_user where guGroupId=%d;", groupId);
 
     MYSQL_RES* res;
     MYSQL_ROW row;
-    if (mysql_real_query(connection, querySql, strlen(querySql))) {
+    if (mysql_query(connection, querySql)) {
         printf("GET USERS ID IN GROUP: QUERY ERROR\n");
     } else {
         res = mysql_store_result(connection);

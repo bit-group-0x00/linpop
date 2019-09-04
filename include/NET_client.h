@@ -9,6 +9,7 @@
 #include "NET_macro.h"
 #include "NET_socket.h"
 #include "UTIL_cJSON.h"
+#include "UI_interface.h"
 
 /*
   存放用户简要信息的结构体，用于向其他用户展示
@@ -16,58 +17,58 @@
 */
 typedef struct profile
 {
-  int id;
-  state online;
-  char* ip;
-  char* nick_name;
-  char* signature;
-  char* avatar;
+    int id;
+    state online;
+    char* ip;
+    char* nick_name;
+    char* signature;
+    char* avatar;
 } profile;
 /* 消息结构体，用双向链表表示消息队列 */
 typedef struct message
 {
-  int sender;
-  char* date;
-  state checked;
-  char* content;
-  struct message* last;
-  struct message* next;
+    int sender;
+    char* date;
+    state checked;
+    char* content;
+    struct message* last;
+    struct message* next;
 } message;
 /* 好友结构体，包含好友的简要信息和聊天消息 */
 typedef struct friend
 {
-  profile fri_pro;
-  message* first_msg;
-  message* last_msg;
-  struct friend* last;
-  struct friend* next;
+    profile fri_pro;
+    message* first_msg;
+    message* last_msg;
+    struct friend* last;
+    struct friend* next;
 } friend;
 /* 群聊简要信息结构体 */
 typedef struct group_profile
 {
-  int id;
-  char* name;
-  char* intro;
-  char* icon;
+    int id;
+    char* name;
+    char* intro;
+    char* icon;
 } group_profile;
 /* 群聊成员结构体 */
 typedef struct member
 {
-  profile mem_pro;
-  struct member* last;
-  struct member* next;
+    profile mem_pro;
+    struct member* last;
+    struct member* next;
 } member;
 
 /* 群聊结构体，包括群聊的基本信息和聊天消息 */
 typedef struct group
 {
-  group_profile gro_pro;
-  member* first_mem;
-  member* last_mem;
-  message* first_msg;
-  message* last_msg;
-  struct group* last;
-  struct group* next;
+    group_profile gro_pro;
+    member* first_mem;
+    member* last_mem;
+    message* first_msg;
+    message* last_msg;
+    struct group* last;
+    struct group* next;
 } group;
 
 /*
@@ -76,17 +77,17 @@ typedef struct group
 */
 typedef struct info
 {
-  profile my_pro;
-  friend* first_fri;
-  friend* last_fri;
-  group* first_gro;
-  group* last_gro;
-  void (*update_ui)(state type, void* origin);
+    profile my_pro;
+    friend* first_fri;
+    friend* last_fri;
+    group* first_gro;
+    group* last_gro;
+    void (*update_ui)(state type, void* origin);
 } info;
 
 extern info my_info;
 
-/* 
+/*
   传入用户注册的昵称和密码，如果注册成功返回注册成功后的账号id
   如果注册失败返回FAILURE（1），如果注册过错产生错误返回ERROR（-1）
   注：-1，0，1都是系统保留值，不能作为账号
@@ -125,7 +126,7 @@ state send_msg_to_friend(const int friend_id, const char* msg);
   发送结果，SUCCESS（0）表示发送成功，FAILURE（1）表示
   发送失败，ERROR（-1）表示发送过程中出现了错误。
 */
-state send_msg_to_group(const int group_id, const char* msg, void(*callback)(state));
+state send_msg_to_group(const int group_id, const char* msg);
 
 /*
   向朋友发送文件，功能类似于向朋友发送消息，这里把文件的路径
@@ -139,7 +140,7 @@ state send_file_to_friend(const int friend_id, const char* file_path, void(*call
 */
 state send_file_to_group(const int group_id, const char* file_path, void(*callback)(state));
 
-/* 
+/*
   通过id添加好友，返回添加结果
 */
 state add_friend(const int id);
@@ -167,9 +168,3 @@ friend* seek_fri(int id);
 group* seek_gro(int id);
 
 void update_message(state type, void *newIncome);
-/**
- * 接受新消息
- * @param type 消息类型
- * @param newIncome 群聊/用户
- *
- */

@@ -13,7 +13,5 @@ typedef struct data{
     GtkTextBuffer* destination_buffer;
 }BufferDeliver;
 
-void test();
-void history_msg_window();
 
 #endif //LINPOP_UI_CHATVIEW_H

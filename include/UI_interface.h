@@ -13,6 +13,7 @@ extern GtkWidget *mainListbox;
 
 void homepage_add_friend(GtkWidget *listbox);
 void homepage_add_group(GtkWidget *listbox);
+void join_group_window();
 void login_window();
 /**
  * 登陆界面
@@ -104,6 +105,7 @@ void label_font(GtkWidget *lable,
  * label_font(passwordLabel,"Password",FONT_SIZE_MIDDLE,"black","double","blue");
  *  none/single/double/low/error
  */
+void history_msg_window(int id);
 
 
 #endif

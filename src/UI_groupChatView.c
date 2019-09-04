@@ -16,6 +16,7 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gtk_main_quit();
     return FALSE;
 }
+
 GtkToolItem* new_tool_item(gchar *icon,gchar *label)
 {
     GdkPixbuf *src = gdk_pixbuf_new_from_file(icon, NULL);;
@@ -50,7 +51,8 @@ void icon_button_callback(){
     g_print("1\n");
 }
 void history_button_callback(){
-    g_print("3\n");
+    g_print("history\n");
+    history_msg_window(groupId);
 }
 void exit_button_callback(){
     g_print("4\n");
@@ -59,7 +61,6 @@ void invite_button_callback(){
     g_print("5\n");
 }
 GtkWidget *new_Box(gchar*messageSenderIcon,int senderId,gchar*messageSenderName,gchar*message,gchar*messageDate){
-    g_print("TEST\n");
     GtkWidget *messageBox;
     GtkWidget *senderIcon;
     GdkPixbuf *src;
@@ -102,6 +103,17 @@ void send_button_callback(GtkWidget *button,gpointer buffer){
     gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(buffer),&start,&end);
     message = gtk_text_buffer_get_text(buffer,&start,&end,FALSE);
     g_print("%s",message);
+    int state;
+    state = send_msg_to_group(groupId, message);
+    if(state  == FAILURE)
+    {
+        g_print("FAILURE\n");
+    }
+    else if(state == SUCCESS)
+    {
+        g_print("SUCCEED\n");
+    }
+    else g_print("ERROR\n");
     GtkWidget* messageBox = new_Box("../res/icon.png",1223333,"yuanyuanyuan",message,"18:20");
     gtk_box_pack_start(GTK_BOX(Box),messageBox,FALSE,FALSE,0);
     gtk_text_buffer_delete(buffer,&start,&end);
@@ -121,10 +133,10 @@ void update_group(group*group_p)
 
 void group_chat_window(int userId_N, int groupId_N)
 {
-    GtkWidget *window;
     userId = userId_N;
     groupId = groupId_N;
-    // group *groupInfo = seek_gro(groupId);
+    group *groupInfo = seek_gro(groupId);
+    GtkWidget *window;
     GtkWidget *bigBox;
 
     GtkWidget *groupInfoBox;
@@ -147,11 +159,6 @@ void group_chat_window(int userId_N, int groupId_N)
     GtkWidget *toolBar;
     GtkWidget *textView;
     GtkWidget *sendButton;
-    GtkWidget *cancelButton;
-    //rightFrame
-    GtkWidget *vRightBox;
-    GtkWidget *groupIntroTextView;
-    GtkWidget *rightSeparator;
     GtkWidget *scrolledMemberList;
 
     //gtk_init(&argc,&argv);
@@ -160,7 +167,7 @@ void group_chat_window(int userId_N, int groupId_N)
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window),"Group Chat Room");
     gtk_widget_set_size_request(GTK_WIDGET(window),1092,744);
-    g_signal_connect(GTK_WINDOW(window),"delete_event",G_CALLBACK(delete_event),NULL);
+    g_signal_connect(GTK_WINDOW(window),"delete_event",gtk_main_quit,NULL);
 
     //bigBox
     bigBox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
@@ -181,7 +188,7 @@ void group_chat_window(int userId_N, int groupId_N)
     //separtor
     separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_box_pack_start(GTK_BOX(bigBox),separator,FALSE,FALSE,0);
-    g_print("TEST\n");
+
     //hPaned
     hPaned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_widget_set_size_request(hPaned,1000,744);
@@ -261,7 +268,7 @@ void group_chat_window(int userId_N, int groupId_N)
     //sendButton
     sendButton = gtk_button_new_with_label("Send");
     gtk_box_pack_start(GTK_BOX(downBox),sendButton,FALSE,FALSE,0);
-    g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
+    // g_signal_connect(G_OBJECT(sendButton),"clicked",G_CALLBACK(send_button_callback),textBuffer);
 
 
 
@@ -276,7 +283,7 @@ void group_chat_window(int userId_N, int groupId_N)
     //upFrameRight
     GtkWidget *upFrameRight = gtk_frame_new("Group Info :");
     gtk_frame_set_shadow_type(GTK_FRAME(upFrameRight),GTK_SHADOW_IN);
-    gtk_widget_set_size_request(upFrameRight,-1,140);
+    gtk_widget_set_size_request(upFrameRight,-1,280);
     gtk_paned_pack1(GTK_PANED(vPanedRight),upFrameRight,TRUE,TRUE);
     //text groupInfo
     GtkWidget *groupInfoText = gtk_text_view_new();
@@ -287,13 +294,10 @@ void group_chat_window(int userId_N, int groupId_N)
 
     GtkTextBuffer *groupInfoBuffer = gtk_text_buffer_new(NULL);
     gtk_text_buffer_set_text(textBuffer,groupInfoTextString,-1);
-    gtk_text_view_set_buffer(GTK_TEXT_VIEW(groupInfoText),groupInfoBuffer);
+    gtk_text_view_set_buffer(GTK_TEXT_VIEW(groupInfoText),textBuffer);
 
 
     GtkWidget *downFrameRight = gtk_frame_new("Group Member :");
-    gtk_paned_add2(GTK_PANED(vPanedRight),downFrameRight);
-    g_print("TEST\n");
-
 
 
     //groupMemberList
@@ -309,33 +313,16 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolledMemberList),GTK_SHADOW_IN);
     GtkWidget* memberList = gtk_list_box_new();
     gtk_container_add(GTK_CONTAINER(scrolledMemberList),memberList);
-//    for(member *member_p = groupInfo->first_mem; member_p != groupInfo->last_mem->next ; member_p = member_p->next)
-//    {
-//        GtkWidget *memberInfo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
-//
-//        GdkPixbuf *src = gdk_pixbuf_new_from_file(member_p->mem_pro.avatar, NULL);
-//        GdkPixbuf *dst = gdk_pixbuf_scale_simple(src, 20, 20, GDK_INTERP_BILINEAR);
-//        g_object_unref(src);
-//        g_object_unref(dst);
-//        GtkWidget *memberImg = gtk_image_new_from_pixbuf(dst);
-//        GtkWidget *memberlabel = gtk_label_new(member_p->mem_pro.nick_name);
-//
-//        gtk_box_pack_start(GTK_BOX(memberInfo),memberImg,FALSE,FALSE,0);
-//        gtk_box_pack_start(GTK_BOX(memberInfo),memberlabel,FALSE,FALSE,0);
-//
-//        gtk_list_box_insert(GTK_LIST_BOX(memberList),memberInfo,-1);
-//        gtk_widget_show(GTK_WIDGET(memberInfo));
-//    }
-    for(int i = 0;i<10; i++)
+    for(member *member_p = groupInfo->first_mem; member_p != groupInfo->last_mem->next ; member_p = member_p->next)
     {
         GtkWidget *memberInfo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
-        GdkPixbuf *src = gdk_pixbuf_new_from_file("../res/icon.png", NULL);
-        GdkPixbuf *dst = gdk_pixbuf_scale_simple(src, 20, 20, GDK_INTERP_BILINEAR);
 
-        GtkWidget *memberImg = gtk_image_new_from_pixbuf(dst);
-        GtkWidget *memberlabel = gtk_label_new("yuanyuanyuan8");
+        GdkPixbuf *src = gdk_pixbuf_new_from_file(member_p->mem_pro.avatar, NULL);
+        GdkPixbuf *dst = gdk_pixbuf_scale_simple(src, 20, 20, GDK_INTERP_BILINEAR);
         g_object_unref(src);
         g_object_unref(dst);
+        GtkWidget *memberImg = gtk_image_new_from_pixbuf(dst);
+        GtkWidget *memberlabel = gtk_label_new(member_p->mem_pro.nick_name);
 
         gtk_box_pack_start(GTK_BOX(memberInfo),memberImg,FALSE,FALSE,0);
         gtk_box_pack_start(GTK_BOX(memberInfo),memberlabel,FALSE,FALSE,0);
@@ -343,9 +330,9 @@ void group_chat_window(int userId_N, int groupId_N)
         gtk_list_box_insert(GTK_LIST_BOX(memberList),memberInfo,-1);
         gtk_widget_show(GTK_WIDGET(memberInfo));
     }
-    g_print("TEST\n");
+
+
     gtk_widget_show_all(window);
     gtk_main();
-
 
 }

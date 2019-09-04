@@ -215,7 +215,7 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                 //用户确定创建账户
                 if (strcmp(password, password2) == 0 && g_utf8_strlen(password,-1)!=0) {
                     //两次输入的密码一样
-                    userID = regist(username, password,filename,signature);
+                    userID = regist(username, password,signature,"");
                     switch (userID) {
                         case FAILURE:
                             g_print("Registered process failed：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
@@ -230,12 +230,14 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                         default:
                             g_print("创建成功：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
                             g_print("USERID: %d\nUSERINFO：\n%s\n", userID, infoTitle);
+                            gchar *passwordFuck = "";
+                            passwordFuck = g_strdup_printf("%s", password);
                             infoTitle = g_strdup_printf("%s%d", infoTitle, userID);
                             show_info(NULL, NULL, infoTitle);
                             gtk_widget_destroy(registWindow);
                             gtk_widget_destroy(loginWindow);
                             //头像传输bug
-                            login(userID, password);
+                            login(userID, passwordFuck);
                             homepage_window(userID);
                             break;
                     }
@@ -431,7 +433,7 @@ void login_window(int argc, char *argv[]) {
     gtk_box_pack_start(GTK_BOX(usernameBox), usernamelabel, FALSE, FALSE, 5);
     usernameText = gtk_entry_new();
     gtk_entry_set_max_length(usernameText, 20);
-    gtk_entry_set_text(GTK_ENTRY(usernameText), "12345");
+    gtk_entry_set_text(GTK_ENTRY(usernameText), "10223");
     gtk_box_pack_start(GTK_BOX(usernameBox), usernameText, FALSE, FALSE, 5);
 
     passwordlabel = gtk_label_new("Password:");
@@ -441,7 +443,7 @@ void login_window(int argc, char *argv[]) {
 
     passwordText = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(passwordText), FALSE);
-    gtk_entry_set_text(GTK_ENTRY(passwordText), "wqxpassword");
+    gtk_entry_set_text(GTK_ENTRY(passwordText), "123456");
     gtk_entry_set_max_length(passwordText, 20);
     gtk_box_pack_start(GTK_BOX(passwordBox), passwordText, FALSE, FALSE, 5);
 
