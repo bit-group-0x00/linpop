@@ -336,56 +336,6 @@ void connect_chatView_textInput(GtkTable *msgBox,GtkTable *inputBox){
 
 }
 
-//void test(int argc,char argv[]){
-//
-//    GtkWidget *window;
-//    GtkWidget *ok;
-//    GtkWidget *close;
-//    GtkWidget *vbox;
-//    GtkWidget *hbox;
-//    GtkWidget *halign;
-//    GtkWidget *valign;
-//
-//    gtk_init(&argc,&argv);
-//
-//    window=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-//
-//    gtk_widget_set_size_request(GTK_WINDOW(window),WINDOW_WIDTH,WINDOW_HEIGHT);
-//
-//    //������ʾ
-//    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
-//
-//    //���ô��ڿ�����
-//    gtk_window_set_resizable(GTK_WINDOW(window),TRUE);
-//    vbox = gtk_vbox_new(FALSE,5);
-//
-//    valign = gtk_alignment_new(0,0,0,0);
-//    gtk_container_add(GTK_CONTAINER(vbox),valign);
-//    gtk_container_add(GTK_CONTAINER(window),vbox);
-//
-//    hbox = gtk_hbox_new(TRUE,30);
-//
-//
-//    //�趨OK��close�Ĵ�С������hbox��
-//    ok = gtk_button_new_with_label("OK");
-//    gtk_widget_set_size_request(ok,70,30);
-//    gtk_container_add(GTK_CONTAINER(hbox),ok);
-//    close = gtk_button_new_with_label("Close");
-//    gtk_container_add(GTK_CONTAINER(hbox),close);
-//
-//    halign = gtk_alignment_new(1,0,0,1);
-//    gtk_container_add(GTK_CONTAINER(halign),hbox);
-//
-//    gtk_box_pack_end(GTK_BOX(vbox),halign,FALSE,FALSE,10);
-//
-//    g_signal_connect(window,"destroy",G_CALLBACK(gtk_main_quit),NULL);
-//
-//    gtk_widget_show_all(window);
-//
-//    gtk_main();
-//
-//
-//}
 
 void window_Layout(GtkWindow* window){
 
@@ -460,9 +410,7 @@ void chat_View(){
     window_Layout(GTK_WINDOW(chatWindow));
 
     g_signal_connect(chatWindow,"delete_event",G_CALLBACK(delete_event),NULL);
-
     gtk_widget_show_all(chatWindow);
-    gtk_main();
 
 }
 

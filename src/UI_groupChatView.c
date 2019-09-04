@@ -295,7 +295,7 @@ void group_chat_window(int userId_N, int groupId_N)
 
     GtkTextBuffer *groupInfoBuffer = gtk_text_buffer_new(NULL);
     gtk_text_buffer_set_text(textBuffer,groupInfoTextString,-1);
-    gtk_text_view_set_buffer(GTK_TEXT_VIEW(groupInfoText),textBuffer);
+    gtk_text_view_set_buffer(GTK_TEXT_VIEW(groupInfoText),groupInfoBuffer);
 
 
     GtkWidget *downFrameRight = gtk_frame_new("Group Member :");
