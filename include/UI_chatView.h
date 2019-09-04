@@ -6,9 +6,8 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include "../include/UI_interface.h"
-#include "../include/NET_client.h"
 
-//用来在回调函数中传参的结构体
+//�����ڻص������д��εĽṹ��
 typedef struct data{
     GtkTextBuffer* src_buffer;
     GtkTextBuffer* destination_buffer;

@@ -48,7 +48,7 @@ GtkWidget *user_profile_test(profile userInfoDisplay, int type, int avaterSize){
     return hbox;
 }
 
-state regist(const char* nick_name, const char* passwd)
+state regist(const char* nick_name, const char* passwd, const char* signature, const char* avatar)
 {
     return 12345;
 }

@@ -8,12 +8,15 @@
 static GtkWidget *loginWindow;//登陆窗口
 static GtkWidget *registWindow;//注册窗口
 static GtkWidget *usernameText = NULL;//用户名
+static GtkWidget *signatureText = NULL;//用户名
 static GtkWidget *passwordText = NULL;//密码
 static GtkWidget *passwordText2 = NULL;//确认密码
 
 
 static GdkPixbuf *iconImageRes;
 static GtkWidget *avaterImage;
+static char *filename;
+static char *signature;
 static state userID;
 GtkWidget *create_image(gchar *filename,gint size){
     GtkWidget *image;
@@ -33,6 +36,7 @@ void show_error(GtkWidget *widget, gpointer window, gchar *message) {
     GtkWidget *dialog;
     GtkWidget *image = create_image("../res/icons8_error.png",36);
     GtkWidget *label = gtk_label_new(message);
+    label_font(label,message,20,DARK_PURPLE,"low",DARK_PURPLE);
     GtkWidget *content_area;
     dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_YES,NULL);
     gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
@@ -51,8 +55,9 @@ gint show_question(GtkWidget *widget, gpointer window, gchar *message) {
     GtkWidget *dialog;
     GtkWidget *image = create_image("../res/icons_question.png",36);
     GtkWidget *label = gtk_label_new(message);
+    label_font(label,message,16,DARK_PURPLE,"low",DARK_PURPLE);
     GtkWidget *content_area;
-    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"NO",GTK_RESPONSE_NO,"OK",GTK_RESPONSE_YES,NULL);
+    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"NO",GTK_RESPONSE_NO,"YES",GTK_RESPONSE_YES,NULL);
     gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
     gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -70,6 +75,7 @@ void show_info(GtkWidget *widget, gpointer window, gchar *message) {
     GtkWidget *dialog;
     GtkWidget *image = create_image("../res/icons_info.png",36);
     GtkWidget *label = gtk_label_new(message);
+    label_font(label,message,20,DARK_PURPLE,"none",DARK_PURPLE);
     GtkWidget *content_area;
     dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_NONE,NULL);
     gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
@@ -86,7 +92,6 @@ void show_info(GtkWidget *widget, gpointer window, gchar *message) {
 static void file_chooser_dialog() {
     GtkWidget *fileChooserDialog;
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
-    const char *filename;
     gint res;
     fileChooserDialog = gtk_file_chooser_dialog_new("Choose a photo",
             GTK_WINDOW(registWindow),
@@ -111,6 +116,7 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
     const gchar *password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
+    const gchar *signature = gtk_entry_get_text(GTK_ENTRY(signatureText));
     gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     switch ((int) data) {
@@ -123,6 +129,7 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                 case SUCCESS:
                     gtk_widget_destroy(loginWindow);
                     homepage_window(userID);
+
                     break;
                 case FAILURE:
                     show_error(NULL, NULL, "Your ID is not existing");
@@ -149,9 +156,9 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
 //            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
             if (result == GTK_RESPONSE_YES) {
                 //用户确定创建账户
-                if (strcmp(password, password2) == 0) {
-                    //两次输入的账号一样
-                    userID = regist(username, password);
+                if (strcmp(password, password2) == 0 && g_utf8_strlen(password,-1)!=0) {
+                    //两次输入的密码一样
+                    userID = regist(username, password,filename,signature);
                     switch (userID) {
                         case FAILURE:
                             g_print("Registered process failed：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
@@ -175,11 +182,13 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                             homepage_window(userID);
                             break;
                     }
-                } else {
+                }else if(g_utf8_strlen(password,-1)==0){
+                    show_error(NULL,NULL,"密码不能为空");
+                }else {
                     //两次输入的账号不一样
-                    show_error(NULL, NULL, "passwords conflict");
+                    show_error(NULL, NULL, "两次输入的密码不同");
                     regist_window();
-                    g_print("passwords conflict");
+                    g_print("两次输入的密码不同！");
                 }
                 g_print("confirm\n");
             } else {
@@ -236,6 +245,10 @@ void regist_window() {
     usernameBox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(infoBox), usernameBox, FALSE, FALSE, 0);
 
+    GtkWidget *signatureBox;
+    signatureBox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), signatureBox, FALSE, FALSE, 0);
+
     passwordBox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(infoBox), passwordBox, FALSE, FALSE, 0);
 
@@ -252,6 +265,15 @@ void regist_window() {
     gtk_entry_set_max_length(usernameText, 20);
     gtk_entry_set_text(GTK_ENTRY(usernameText), "poplin");
     gtk_box_pack_start(GTK_BOX(usernameBox), usernameText, FALSE, FALSE, 5);
+
+    GtkWidget *signatureLable;
+    signatureLable = gtk_label_new("用一句话介绍你吧:");
+    gtk_label_set_width_chars(signatureLable, 15);
+    gtk_box_pack_start(GTK_BOX(signatureBox), signatureLable, FALSE, FALSE, 5);
+    signatureText = gtk_entry_new();
+    gtk_entry_set_max_length(signatureText, 20);
+    gtk_entry_set_text(GTK_ENTRY(signatureText), "Hello world");
+    gtk_box_pack_start(GTK_BOX(signatureBox), signatureText, FALSE, FALSE, 5);
 
     passwordlabel = gtk_label_new("Your password:");
     gtk_label_set_width_chars(passwordlabel, 15);

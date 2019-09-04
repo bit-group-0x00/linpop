@@ -104,3 +104,11 @@ int get_ip(int socket);
 
 /* get aip by socket */
 char* get_aip(int socket);
+
+/*
+  回复操作结果
+*/
+void response_state(int client, state type);
+
+/* */
+char* get_aip_2(int ip);

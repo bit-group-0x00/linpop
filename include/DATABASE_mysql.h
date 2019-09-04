@@ -8,7 +8,7 @@
 #include <mysql/mysql.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <stdlib.h>
 #define HOST "127.0.0.1"
 #define USERNAME "linpop"
 #define PASSWORD "linpop"

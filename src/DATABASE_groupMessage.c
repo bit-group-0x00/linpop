@@ -83,7 +83,7 @@ GroupMessageList getGmMsgList(int groupId, MYSQL* connection)
     MYSQL_RES* res;
     MYSQL_ROW row;
     char strSelectSql[200];
-    sprintf(strSelectSql, "SELECT * FROM User.group_message\n"
+    sprintf(strSelectSql, "SELECT * FROM linpop.group_message\n"
                           "WHERE gmGroupId=%d;", groupId);
 
     if(mysql_real_query(connection, strSelectSql, strlen(strSelectSql)))
