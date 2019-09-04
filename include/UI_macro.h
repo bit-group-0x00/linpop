@@ -7,6 +7,8 @@
 
 #define ADD_IMAGE 0X421
 #define ADD_GROUP 0X422
+#define GROUP 0X415
+#define FRIEND 0X416
 
 #define USER_SELF 0X433
 

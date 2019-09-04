@@ -98,21 +98,17 @@ void update_message(state type, void *newIncome){
     gchar* name = "";
     if (type == SEND_MESSAGE || type == ADD_FRIEND_REQUEST){
         friend *fri = (friend *)newIncome;
-        message = fri->last_msg;
+        message = fri->last_msg->content;
         newID = fri->fri_pro.id;
         name = fri->fri_pro.nick_name;
     }
     else if ( type == SEND_MESSAGE_TO_GROUP || type == CREATE_GROUP_REQUEST){
         group *gro = (group *)newIncome;
-        message = gro->last_msg;
+        message = gro->last_msg->content;
         newID = gro->gro_pro.id;
         name = gro->gro_pro.name;
     }
-//    GtkWidget *dialog;
-//    GtkWidget *image = create_image("../res/icons_info.png",36);
-//    GtkWidget *label = gtk_label_new(message);
-    message = g_strdup_printf("你有一条来自%s的新消息：%s",name,message);
-    show_info(NULL,NULL,message);
+    show_info(NULL,NULL,g_strdup_printf("你有一条来自%s的新消息：%s",name,message));
     switch (type){
         case SEND_MESSAGE:
             if(alreadyOpenFriendList[newID-10000]==TRUE){

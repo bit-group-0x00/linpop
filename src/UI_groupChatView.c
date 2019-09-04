@@ -115,7 +115,7 @@ void send_button_callback(GtkWidget *button,gpointer buffer){
         g_print("SUCCEED\n");
     }
     else g_print("ERROR\n");
-    GtkWidget* messageBox = new_Box("../res/icon.png",1223333,"yuanyuanyuan",message,"18:20");
+    GtkWidget* messageBox = new_Box(my_info.my_pro.avatar.,my_info.my_pro.id,my_info.my_pro.nick_name,message,g_get_real_time());
     gtk_box_pack_start(GTK_BOX(Box),messageBox,FALSE,FALSE,0);
     gtk_text_buffer_delete(buffer,&start,&end);
 }
