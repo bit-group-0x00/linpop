@@ -9,7 +9,10 @@
 
 extern int alreadyOpenFriendList[10000];
 extern int alreadyOpenGroupList[10000];
+extern GtkWidget *mainListbox;
 
+void homepage_add_friend(GtkWidget *listbox);
+void homepage_add_group(GtkWidget *listbox);
 void login_window();
 /**
  * 登陆界面

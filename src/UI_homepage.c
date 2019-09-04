@@ -10,6 +10,7 @@ static GdkPixbuf *imageRes;
 
 static int friendnum = 0;
 static int groupnum = 0;
+GtkWidget *mainListbox
 
 int alreadyOpenFriendList[10000];
 int alreadyOpenGroupList[10000];
@@ -26,6 +27,7 @@ static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
         return TRUE;
     }
 }
+
 void label_font(GtkWidget *label, gchar* context, int fontSize, gchar *foreColor, gchar *underline, gchar *underlineColor){
     gtk_label_set_markup(GTK_LABEL(label), g_strdup_printf("%s%s%s%s%s%s%s%d%s%s%s","<span foreground='",foreColor,"' underline='",underline,"' underline_color='",underlineColor,"' font_desc='",fontSize,"'>",context,"</span>"));
     gtk_label_set_justify(GTK_LABEL(label),GTK_JUSTIFY_LEFT);
@@ -130,6 +132,12 @@ GtkWidget *create_groupbox(group_profile my_infoDisplay, int type, int avaterSiz
     gtk_box_pack_start(GTK_BOX(box),sep,expand,fill,0);
     return box;
 }
+void homepage_add_friend(GtkWidget *mainListbox){
+    gtk_list_box_insert(GTK_LIST_BOX(mainListbox),create_userbox(my_info.last_fri->fri_pro,FRIEND,ICON_SIZE),-1);
+}
+void homepage_add_group(GtkWidget *mainListbox){
+    gtk_list_box_insert(GTK_LIST_BOX(mainListbox),create_groupbox(my_info.last_gro->gro_pro,GROUP,ICON_SIZE),-1);
+}
 void open_chat(GtkWidget *widget,gpointer data){
     g_print("ROW_SELECTED\n");
     GtkListBoxRow *select = gtk_list_box_get_selected_row(GTK_LIST_BOX(widget));
@@ -144,7 +152,7 @@ void open_chat(GtkWidget *widget,gpointer data){
         friend_chat_window(my_info.my_pro.id,p->fri_pro.id);
     }
     else{
-        group* q = my_info.first_fri;
+        group* q = my_info.first_gro;
         for (i = 0; q != NULL && i < index; ++i) {
             q = q->next;
         }
@@ -255,23 +263,23 @@ void homepage_window(const int userID){
     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW(friendListScrolledWindow),
                                          GTK_SHADOW_ETCHED_IN);
 
-    GtkWidget *listbox = gtk_list_box_new();
-    gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),listbox);
+    mainListbox = gtk_list_box_new();
+    gtk_container_add(GTK_CONTAINER(friendListScrolledWindow),mainListbox);
 
     friend* p = my_info.first_fri;
     for (int i = 0; p != NULL; ++i,friendnum++) {
         GtkWidget *testBox = create_userbox(p->fri_pro,FRIEND,40);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
+        gtk_list_box_insert(GTK_LIST_BOX(mainListbox),testBox,i);
         p = p->next;
     }
     group* q = my_info.first_fri;
     for (int i = 0; q != NULL; ++i,groupnum++) {
         GtkWidget *testBox = create_groupbox(q->gro_pro,FRIEND,40);
-        gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
+        gtk_list_box_insert(GTK_LIST_BOX(mainListbox),testBox,i);
         q = q->next;
     }
-    g_signal_connect(G_OBJECT(listbox),"row_activated",G_CALLBACK(open_chat), userID);
-    gtk_list_box_set_activate_on_single_click(GTK_LIST_BOX(listbox), FALSE);
+    g_signal_connect(G_OBJECT(mainListbox),"row_activated",G_CALLBACK(open_chat), userID);
+    gtk_list_box_set_activate_on_single_click(GTK_LIST_BOX(mainListbox), FALSE);
 
     gtk_widget_show_all(homepageWindow);
 

@@ -32,6 +32,7 @@ void read_friend_list(){
     if (g_utf8_strlen(frindList,-1)==0){
         return;
     }
+    memberId[memnum++] = my_info.my_pro.id;
     for (int i = 1; i < g_utf8_strlen(frindList,-1); ++i) {
         if(frindList[i]==';'){
             g_print("P:%s\n",p);
@@ -79,7 +80,8 @@ static void on_confirm_button_clicked(GtkWidget *button, gpointer data) {
     gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
     g_print("CONFIRM_BUTTON_CLICKED");
-//    create_group(groupName,avaterFilename,avaterFilename,memberNum,memberId);
+    homepage_add_group(mainListbox);
+    create_group(groupName,avaterFilename,avaterFilename,memberNum,memberId);
     gtk_widget_destroy(createWindow);
 }
 
