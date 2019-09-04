@@ -1,101 +1,265 @@
 //
 // Created by Anne Wu on 2019-08-30.
 //
-#include "../include/UI_login.h"
+#include "../include/UI_interface.h"
+#include "../include/NET_client.h"
 
-static GtkWidget *login_window;//登陆窗口
-static GtkWidget *register_window;//注册窗口
-static GtkWidget *usernameText;//用户名
-static GtkWidget *passwordText;//密码
-static GtkWidget *passwordText2;//确认密码
-static GtkWidget *fileSelector = NULL;
 
-GtkWidget *create_fileSelection_window(gchar* filename){
-    GtkWidget * window;
-    GtkWidget* image;
-    g_print("Fileselector\n");
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window),filename);
-    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
-    gtk_container_set_border_width(GTK_CONTAINER(window),10);
-    image = gtk_image_new_from_file(filename);
-    gtk_container_add(GTK_CONTAINER(window),image);
-    gtk_widget_show_all(window);
-    return window;
+static GtkWidget *loginWindow;//登陆窗口
+static GtkWidget *registWindow;//注册窗口
+static GtkWidget *usernameText = NULL;//用户名
+static GtkWidget *signatureText = NULL;//用户名
+static GtkWidget *passwordText = NULL;//密码
+static GtkWidget *passwordText2 = NULL;//确认密码
+
+
+static GdkPixbuf *iconImageRes;
+static GtkWidget *avaterImage;
+static char *filename;
+static char *signature;
+static state userID;
+GtkWidget *create_image(gchar *filename,gint size){
+    GtkWidget *image;
+    GdkPixbuf *res;
+    res = gdk_pixbuf_new_from_file_at_size(filename,size,size,NULL);
+    image = gtk_image_new_from_pixbuf(res);
+    return image;
+}
+static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
+    g_print("delete event occured\n");
+    gtk_main_quit();
+    return TRUE;
 }
 
-void on_fileSelection_ok(GtkButton* button, gpointer data){
-    const char* filename;
-    GtkWidget* window;
-    filename = gtk_file_selection_get_filename(GTK_FILE_SELECTION(data));
-    window = create_fileSelection_window(filename);
-    gtk_widget_show(window);
+void show_error(GtkWidget *widget, gpointer window, gchar *message) {
+    //错误信息提示对话框
+    GtkWidget *dialog;
+    GtkWidget *image = create_image("../res/icons8_error.png",36);
+    GtkWidget *label = gtk_label_new(message);
+    label_font(label,message,20,DARK_PURPLE,"low",DARK_PURPLE);
+    GtkWidget *content_area;
+    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_YES,NULL);
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+    gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_container_add(GTK_CONTAINER(content_area),image);
+    gtk_container_add(GTK_CONTAINER(content_area),label);
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
+    gtk_widget_show_all(GTK_WIDGET(dialog));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
-void on_button_clicked (GtkWidget *button, gpointer data){
+gint show_question(GtkWidget *widget, gpointer window, gchar *message) {
+    //选择对话框，返回用户选项
+    GtkWidget *dialog;
+    GtkWidget *image = create_image("../res/icons_question.png",36);
+    GtkWidget *label = gtk_label_new(message);
+    label_font(label,message,16,DARK_PURPLE,"low",DARK_PURPLE);
+    GtkWidget *content_area;
+    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"NO",GTK_RESPONSE_NO,"YES",GTK_RESPONSE_YES,NULL);
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+    gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_container_add(GTK_CONTAINER(content_area),image);
+    gtk_container_add(GTK_CONTAINER(content_area),label);
+    gtk_widget_show_all(GTK_WIDGET(dialog));
+    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+    return result;
+}
+
+void show_info(GtkWidget *widget, gpointer window, gchar *message) {
+    //提示信息对话框
+    GtkWidget *dialog;
+    GtkWidget *image = create_image("../res/icons_info.png",36);
+    GtkWidget *label = gtk_label_new(message);
+    label_font(label,message,20,DARK_PURPLE,"none",DARK_PURPLE);
+    GtkWidget *content_area;
+    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_NONE,NULL);
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+    gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
+    gtk_container_add(GTK_CONTAINER(content_area),image);
+    gtk_container_add(GTK_CONTAINER(content_area),label);
+    gtk_widget_show_all(GTK_WIDGET(dialog));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+}
+void update_message(state type, void *newIncome){
+    //提示信息对话框
+    gchar* message = "";
+    int newID = 0;
+    gchar* name = "";
+    if (type == FRIEND){
+        friend *fri = (friend *)newIncome;
+        message = fri->last_msg;
+        newID = fri->fri_pro.id;
+        name = fri->fri_pro.nick_name;
+    }
+    else if(type == GROUP){
+        group *gro = (group *)newIncome;
+        message = gro->last_msg;
+        newID = gro->gro_pro.id;
+        name = gro->gro_pro.name;
+    }
+    GtkWidget *dialog;
+    GtkWidget *image = create_image("../res/icons_info.png",36);
+    GtkWidget *label = gtk_label_new(message);
+    message = g_strdup_printf("你有一条来自%s的新消息：%s",name,message);
+    label_font(label,message,20,DARK_PURPLE,"none",DARK_PURPLE);
+    GtkWidget *content_area;
+    dialog = gtk_dialog_new_with_buttons("Question",NULL,GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_NONE,NULL);
+    gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER);
+    gtk_window_set_keep_above(GTK_WINDOW(dialog),TRUE);
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    g_signal_connect_swapped(G_OBJECT(dialog),"delete_event",G_CALLBACK(delete_event),NULL);
+    gtk_container_add(GTK_CONTAINER(content_area),image);
+    gtk_container_add(GTK_CONTAINER(content_area),label);
+    gtk_widget_show_all(GTK_WIDGET(dialog));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    switch (type){
+        case FRIEND:
+            if(alreadyOpenFriendList[newID-10000]==TRUE){
+                friend_msg_listener(message);
+            }
+            else{
+                friend_chat_window(userID,newID);
+            }
+            break;
+        case GROUP:
+            if(alreadyOpenGroupList[newID-10000]==TRUE){
+                friend_msg_listener(message);
+            }
+            else{
+                friend_chat_window(userID,newID);
+            }
+            group_chat_window(userID,newID);
+            break;
+        default:
+            break;
+    }
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+}
+
+static void file_chooser_dialog() {
+    GtkWidget *fileChooserDialog;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint res;
+    fileChooserDialog = gtk_file_chooser_dialog_new("Choose a photo",
+            GTK_WINDOW(registWindow),
+            action,
+            "CANCEL",
+            GTK_RESPONSE_CANCEL,
+            "OPEN",
+            GTK_RESPONSE_ACCEPT,
+            NULL);
+    res = gtk_dialog_run(GTK_DIALOG(fileChooserDialog));
+    if(res == GTK_RESPONSE_ACCEPT){
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER(fileChooserDialog);
+        filename = gtk_file_chooser_get_filename(chooser);
+        iconImageRes = gdk_pixbuf_new_from_file_at_size(filename,ICON_SIZE,ICON_SIZE,NULL);
+        gtk_image_set_from_pixbuf(GTK_IMAGE(avaterImage),iconImageRes);
+    }
+    gtk_widget_destroy(fileChooserDialog);
+
+}
+
+void on_button_clicked(GtkWidget *button, gpointer data) {
     const gchar *username = gtk_entry_get_text(GTK_ENTRY(usernameText));
     const gchar *password = gtk_entry_get_text(GTK_ENTRY(passwordText));
     const gchar *password2 = gtk_entry_get_text(GTK_ENTRY(passwordText2));
+    const gchar *signature = gtk_entry_get_text(GTK_ENTRY(signatureText));
+    gchar *infoTitle = "Congratulation!\nYour userID is: ";
     gint result;
-    switch((int)data){
+    switch ((int) data) {
         case LOG_IN:
             //登陆
-            g_print("username is:%s\n",username);
-            g_print("password is:%s\n",password);
-            homepageWindow();
+//            g_print("username is:%s\n",username);
+//            g_print("password is:%s\n",password);
+            userID = strtol(username, NULL, 10);
+            switch (login(userID, password)) {
+                case SUCCESS:
+                    gtk_widget_destroy(loginWindow);
+                    homepage_window(userID);
+                    break;
+                case FAILURE:
+                    show_error(NULL, NULL, "Your ID is not existing");
+                    login_window();
+                    break;
+                case ERROR:
+                    show_error(NULL, NULL, "Bad network, please try again");
+                    login_window();
+                    break;
+            }
             break;
         case REGIST:
             //注册
-            registWindow();
+            regist_window();
             break;
         case REGIST_CANCEL:
             //取消注册
-            gtk_widget_show(login_window);
+            gtk_widget_hide(registWindow);
+            login_window();
             break;
         case REGIST_CONFIRM:
             //确认注册
-            result = show_question(NULL,NULL,"Are you sure to register?");
-            g_print("%d\n",result);
-            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
-            if(result==GTK_RESPONSE_YES){
+            result = show_question(loginWindow, NULL, "Is every information is right?");
+//            g_print("密码比对：\nUSERNAME:%s\nPASSWORD:%s\n",password2,password);
+            if (result == GTK_RESPONSE_YES) {
                 //用户确定创建账户
-                if(strcmp(password,password2)==0){
-                    //两次输入的账号一样
-                    g_print("创建成功：\nUSERNAME:%s\nPASSWORD:%s\n",username,password);
-                    show_info(NULL, NULL ,"Congratulation!");
-                }
-                else{
-                    show_error(NULL,NULL,"passwords conflict");
-                    g_print("passwords conflict");
+                if (strcmp(password, password2) == 0 && g_utf8_strlen(password,-1)!=0) {
+                    //两次输入的密码一样
+                    userID = regist(username, password,filename,signature);
+                    switch (userID) {
+                        case FAILURE:
+                            g_print("Registered process failed：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
+                            show_error(NULL, NULL, "Registered process failed");
+                            regist_window();
+                            break;
+                        case ERROR:
+                            g_print("Registered process Errored：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
+                            show_error(NULL, NULL, "Registered process Errored");
+                            regist_window();
+                            break;
+                        default:
+                            g_print("创建成功：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
+                            g_print("USERID: %d\nUSERINFO：\n%s\n", userID, infoTitle);
+                            infoTitle = g_strdup_printf("%s%d", infoTitle, userID);
+                            show_info(NULL, NULL, infoTitle);
+                            gtk_widget_destroy(registWindow);
+                            gtk_widget_destroy(loginWindow);
+                            //头像传输bug
+                            login(userID, password);
+                            homepage_window(userID);
+                            break;
+                    }
+                }else if(g_utf8_strlen(password,-1)==0){
+                    show_error(NULL,NULL,"密码不能为空");
+                }else {
+                    //两次输入的账号不一样
+                    show_error(NULL, NULL, "两次输入的密码不同");
+                    regist_window();
+                    g_print("两次输入的密码不同！");
                 }
                 g_print("confirm\n");
-            }
-            else{
+            } else {
                 g_print("cancel\n");
+                regist_window();
             }
 
             break;
         case ADD_IMAGE:
             //添加头像
-            fileSelector = gtk_file_selection_new("choose a photo");
-            g_print("Fileselector\n");
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(on_fileSelection_ok),fileSelector);
-            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->ok_button),"clicked",G_CALLBACK(gtk_widget_destroy),fileSelector);
-            g_signal_connect(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->cancel_button),"clicked",G_CALLBACK(gtk_widget_destroy),NULL);
-            g_signal_connect_swapped(G_OBJECT(GTK_FILE_SELECTION(fileSelector)->cancel_button),"clicked",G_CALLBACK(gtk_widget_destroy),fileSelector);
-            g_signal_connect(G_OBJECT(fileSelector),"destroy",G_CALLBACK(gtk_widget_destroy),NULL);
-            gtk_widget_show(fileSelector);
+            file_chooser_dialog();
             break;
     }
 }
 
-static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
-    g_print("delete event occured\n");
-    gtk_main_quit();
-    return FALSE;
-}
 
-void registWindow(){
+void regist_window() {
     GtkWidget *box;
 
     GtkWidget *optionBox;
@@ -107,97 +271,112 @@ void registWindow(){
     GtkWidget *passwordBox;
     GtkWidget *passwordBox2;
     GtkWidget *imageBox;
-    GtkWidget *usernameLable;
-    GtkWidget *passwordLable;
-    GtkWidget *passwordLable2;
+    GtkWidget *usernamelabel;
+    GtkWidget *passwordlabel;
+    GtkWidget *passwordlabel2;
     GtkWidget *sep;
     GtkWidget *addImageButton;
-    GtkWidget *image;
-    register_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_get_screen(register_window);
-    gtk_window_set_title(GTK_WINDOW(register_window),"Register for linpop");
-    gtk_window_set_position(GTK_WINDOW(register_window),GTK_WIN_POS_CENTER);
-    gtk_window_set_default_size(GTK_WINDOW(register_window),400,300);
-    gtk_container_set_border_width(GTK_CONTAINER(register_window),20);
 
+    registWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_get_screen(registWindow);
+    gtk_window_set_title(GTK_WINDOW(registWindow), "Registered for linpop");
+    gtk_window_set_position(GTK_WINDOW(registWindow), GTK_WIN_POS_CENTER);
+    gtk_window_set_default_size(GTK_WINDOW(registWindow), 400, 300);
+    gtk_container_set_border_width(GTK_CONTAINER(registWindow), 20);
+    gtk_window_set_opacity(GTK_WINDOW(registWindow),0.7);
     //Big box
-    box = gtk_vbox_new(FALSE,0);
-    gtk_container_add(GTK_CONTAINER(register_window),box);
+    box = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(registWindow), box);
 
-    image = gtk_image_new_from_file("../res/icon.png");
-    gtk_box_pack_start(GTK_BOX(box),image,FALSE,FALSE,5);
+
+    avaterImage = gtk_image_new_from_pixbuf(iconImageRes);
+    gtk_box_pack_start(GTK_BOX(box), avaterImage, FALSE, FALSE, 5);
+
     //input box
-    infoBox = gtk_vbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(box),infoBox,FALSE,FALSE,5);
+    infoBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), infoBox, FALSE, FALSE, 5);
 
-    usernameBox = gtk_hbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(infoBox),usernameBox,FALSE,FALSE,0);
+    usernameBox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), usernameBox, FALSE, FALSE, 0);
 
-    passwordBox = gtk_hbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(infoBox),passwordBox,FALSE,FALSE,0);
+    GtkWidget *signatureBox;
+    signatureBox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), signatureBox, FALSE, FALSE, 0);
 
-    passwordBox2 = gtk_hbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(infoBox),passwordBox2,FALSE,FALSE,0);
+    passwordBox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), passwordBox, FALSE, FALSE, 0);
 
-    imageBox = gtk_vbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(infoBox),imageBox,FALSE,FALSE,0);
+    passwordBox2 = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), passwordBox2, FALSE, FALSE, 0);
 
-    usernameLable = gtk_label_new("Login ID:");
-    gtk_label_set_width_chars(usernameLable,15);
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
+    imageBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), imageBox, FALSE, FALSE, 0);
+
+    usernamelabel = gtk_label_new("Your nickname:");
+    gtk_label_set_width_chars(usernamelabel, 15);
+    gtk_box_pack_start(GTK_BOX(usernameBox), usernamelabel, FALSE, FALSE, 5);
     usernameText = gtk_entry_new();
-    gtk_entry_set_max_length(usernameText,20);
-    gtk_entry_set_text(GTK_ENTRY(usernameText),"poplin");
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
+    gtk_entry_set_max_length(usernameText, 20);
+    gtk_entry_set_text(GTK_ENTRY(usernameText), "poplin");
+    gtk_box_pack_start(GTK_BOX(usernameBox), usernameText, FALSE, FALSE, 5);
 
-    passwordLable = gtk_label_new("Password:");
-    gtk_label_set_width_chars(passwordLable,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
+    GtkWidget *signatureLable;
+    signatureLable = gtk_label_new("用一句话介绍你吧:");
+    gtk_label_set_width_chars(signatureLable, 15);
+    gtk_box_pack_start(GTK_BOX(signatureBox), signatureLable, FALSE, FALSE, 5);
+    signatureText = gtk_entry_new();
+    gtk_entry_set_max_length(signatureText, 20);
+    gtk_entry_set_text(GTK_ENTRY(signatureText), "Hello world");
+    gtk_box_pack_start(GTK_BOX(signatureBox), signatureText, FALSE, FALSE, 5);
+
+    passwordlabel = gtk_label_new("Your password:");
+    gtk_label_set_width_chars(passwordlabel, 15);
+    gtk_box_pack_start(GTK_BOX(passwordBox), passwordlabel, FALSE, FALSE, 5);
+
     passwordText = gtk_entry_new();
-    gtk_entry_set_visibility(GTK_ENTRY(passwordText),FALSE);
-    gtk_entry_set_max_length(passwordText,20);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordText,FALSE,FALSE,5);
+    gtk_entry_set_visibility(GTK_ENTRY(passwordText), FALSE);
+    gtk_entry_set_max_length(passwordText, 20);
+    gtk_box_pack_start(GTK_BOX(passwordBox), passwordText, FALSE, FALSE, 5);
 
-    passwordLable2 = gtk_label_new("Confirm Password:");
-    gtk_label_set_width_chars(passwordLable2,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox2),passwordLable2,FALSE,FALSE,5);
+    passwordlabel2 = gtk_label_new("Confirm Password:");
+    gtk_label_set_width_chars(passwordlabel2, 15);
+    gtk_box_pack_start(GTK_BOX(passwordBox2), passwordlabel2, FALSE, FALSE, 5);
+
     passwordText2 = gtk_entry_new();
-    gtk_entry_set_visibility(GTK_ENTRY(passwordText2),FALSE);
-    gtk_entry_set_max_length(passwordText,20);
-    gtk_box_pack_start(GTK_BOX(passwordBox2),passwordText2,FALSE,FALSE,5);
-
+    gtk_entry_set_visibility(GTK_ENTRY(passwordText2), FALSE);
+    gtk_entry_set_max_length(passwordText2, 20);
+    gtk_box_pack_start(GTK_BOX(passwordBox2), passwordText2, FALSE, FALSE, 5);
 
 
     addImageButton = gtk_button_new_with_label("choose photo from library");
-    gtk_box_pack_start(GTK_BOX(imageBox),addImageButton,FALSE,FALSE,5);
-    g_signal_connect(G_OBJECT(addImageButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)ADD_IMAGE);
+    gtk_box_pack_start(GTK_BOX(imageBox), addImageButton, FALSE, FALSE, 5);
+    g_signal_connect(G_OBJECT(addImageButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) ADD_IMAGE);
 
-    sep = gtk_hseparator_new();
-    gtk_box_pack_start(GTK_BOX(infoBox),sep,FALSE,FALSE,5);
+    sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_box_pack_start(GTK_BOX(infoBox), sep, FALSE, FALSE, 5);
 
     //button box
-    optionBox = gtk_hbutton_box_new();
-    gtk_box_pack_start(GTK_BOX(box),optionBox,FALSE,FALSE,5);
+    optionBox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_box_pack_start(GTK_BOX(box), optionBox, FALSE, FALSE, 5);
 
     cancelButton = gtk_button_new_with_label("Cancel");
-    /*
-     * 点击按钮后REGIST窗口应当关闭，这里有bug
-     * */
-    g_signal_connect(G_OBJECT(cancelButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST_CANCEL);
-    g_signal_connect_swapped(G_OBJECT(cancelButton),"clicked",G_CALLBACK(gtk_widget_destroy),register_window);
-    gtk_container_add(GTK_CONTAINER(optionBox),cancelButton);
+
+    g_signal_connect(G_OBJECT(cancelButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) REGIST_CANCEL);
+    g_signal_connect_swapped(G_OBJECT(cancelButton), "clicked", G_CALLBACK(gtk_widget_hide), registWindow);
+    gtk_container_add(GTK_CONTAINER(optionBox), cancelButton);
 
     confirmButton = gtk_button_new_with_label("Confirm");
-    g_signal_connect(G_OBJECT(confirmButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST_CONFIRM);
-    g_signal_connect_swapped(G_OBJECT(confirmButton),"clicked",G_CALLBACK(gtk_widget_destroy),register_window);
+    g_signal_connect(G_OBJECT(confirmButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) REGIST_CONFIRM);
+//    g_signal_connect_swapped(G_OBJECT(confirmButton), "clicked", G_CALLBACK(gtk_widget_destroy), registWindow);
 
-    g_signal_connect(G_OBJECT(login_window),"delete_event",G_CALLBACK(delete_event), NULL);
+    g_signal_connect(G_OBJECT(registWindow), "delete_event", G_CALLBACK(delete_event), NULL);
 
-    gtk_container_add(GTK_CONTAINER(optionBox),confirmButton);
+    gtk_container_add(GTK_CONTAINER(optionBox), confirmButton);
 
-    gtk_widget_show_all(register_window);
+    gtk_widget_show_all(registWindow);
 }
-void loginWindow(int argc, char *argv[]){
+
+void login_window(int argc, char *argv[]) {
     GtkWidget *box;
 
     GtkWidget *optionBox;
@@ -207,74 +386,84 @@ void loginWindow(int argc, char *argv[]){
     GtkWidget *infoBox;
     GtkWidget *usernameBox;
     GtkWidget *passwordBox;
-    GtkWidget *usernameLable;
-    GtkWidget *passwordLable;
+    GtkWidget *usernamelabel;
+    GtkWidget *passwordlabel;
     GtkWidget *sep;
-    GtkWidget *image;
 
-    gtk_init(&argc,&argv);
-    login_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_widget_get_screen(login_window);
-    gtk_window_set_title(GTK_WINDOW(login_window),"login in linpop");
-    gtk_window_set_position(GTK_WINDOW(login_window),GTK_WIN_POS_CENTER);
-    gtk_window_set_default_size(GTK_WINDOW(login_window),400,300);
-    gtk_container_set_border_width(GTK_CONTAINER(login_window),20);
+    //主窗口初始化
+    gtk_init(&argc, &argv);
+    loginWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_get_screen(loginWindow);
+    gtk_window_set_title(GTK_WINDOW(loginWindow), "login in linpop");
+    gtk_window_set_position(GTK_WINDOW(loginWindow), GTK_WIN_POS_CENTER);
+    gtk_window_set_default_size(GTK_WINDOW(loginWindow), 400, 300);
+    gtk_container_set_border_width(GTK_CONTAINER(loginWindow), 20);
+    gtk_widget_set_opacity(GTK_WIDGET(loginWindow), 0.7);
 
-    //Big box
-    box = gtk_vbox_new(FALSE,0);
-    gtk_container_add(GTK_CONTAINER(login_window),box);
+    //Big box：最外层box
+    box = gtk_vbox_new(FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(loginWindow), box);
 
-    image = gtk_image_new_from_file("../res/icon.png");
-    gtk_box_pack_start(GTK_BOX(box),image,FALSE,FALSE,5);
+    //原始icon图标
+    iconImageRes = gdk_pixbuf_new_from_file_at_size("../res/icon.png", ICON_SIZE, ICON_SIZE, NULL);
+    avaterImage = gtk_image_new_from_pixbuf(iconImageRes);
+    gtk_box_pack_start(GTK_BOX(box), avaterImage, FALSE, FALSE, 5);
 
     //input box
-    infoBox = gtk_vbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(box),infoBox,FALSE,FALSE,5);
+    infoBox = gtk_vbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), infoBox, FALSE, FALSE, 5);
 
-    usernameBox = gtk_hbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(infoBox),usernameBox,FALSE,FALSE,0);
+    usernameBox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), usernameBox, FALSE, FALSE, 0);
 
-    passwordBox = gtk_hbox_new(FALSE,0);
-    gtk_box_pack_start(GTK_BOX(infoBox),passwordBox,FALSE,FALSE,0);
+    passwordBox = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(infoBox), passwordBox, FALSE, FALSE, 0);
 
-    usernameLable = gtk_label_new("Login ID:");
-    gtk_label_set_width_chars(usernameLable,15);
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameLable,FALSE,FALSE,5);
+    usernamelabel = gtk_label_new("Login ID:");
+    gtk_label_set_markup(GTK_LABEL(usernamelabel),
+                         g_strdup_printf("%s%s%s", "<span underline='none' underline_color='blue' font_desc='16'>",
+                                         "LoginID", "</span>"));
+
+    gtk_label_set_width_chars(usernamelabel, 15);
+    gtk_box_pack_start(GTK_BOX(usernameBox), usernamelabel, FALSE, FALSE, 5);
     usernameText = gtk_entry_new();
-    gtk_entry_set_max_length(usernameText,20);
-    gtk_entry_set_text(GTK_ENTRY(usernameText),"poplin");
-    gtk_box_pack_start(GTK_BOX(usernameBox),usernameText,FALSE,FALSE,5);
+    gtk_entry_set_max_length(usernameText, 20);
+    gtk_entry_set_text(GTK_ENTRY(usernameText), "12345");
+    gtk_box_pack_start(GTK_BOX(usernameBox), usernameText, FALSE, FALSE, 5);
 
-    passwordLable = gtk_label_new("Password:");
-    gtk_label_set_width_chars(passwordLable,15);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordLable,FALSE,FALSE,5);
+    passwordlabel = gtk_label_new("Password:");
+    label_font(passwordlabel, "Password", FONT_SIZE_SMALL, "black", "none", "blue");
+    gtk_label_set_width_chars(passwordlabel, 15);
+    gtk_box_pack_start(GTK_BOX(passwordBox), passwordlabel, FALSE, FALSE, 5);
+
     passwordText = gtk_entry_new();
-    gtk_entry_set_visibility(GTK_ENTRY(passwordText),FALSE);
-    gtk_entry_set_text(GTK_ENTRY(passwordText),"wqxpassword");
-    gtk_entry_set_max_length(passwordText,20);
-    gtk_box_pack_start(GTK_BOX(passwordBox),passwordText,FALSE,FALSE,5);
+    gtk_entry_set_visibility(GTK_ENTRY(passwordText), FALSE);
+    gtk_entry_set_text(GTK_ENTRY(passwordText), "wqxpassword");
+    gtk_entry_set_max_length(passwordText, 20);
+    gtk_box_pack_start(GTK_BOX(passwordBox), passwordText, FALSE, FALSE, 5);
 
     sep = gtk_hseparator_new();
-    gtk_box_pack_start(GTK_BOX(infoBox),sep,FALSE,FALSE,5);
+    gtk_box_pack_start(GTK_BOX(infoBox), sep, FALSE, FALSE, 5);
 
     //button box
     optionBox = gtk_hbutton_box_new();
-    gtk_box_pack_start(GTK_BOX(box),optionBox,FALSE,FALSE,5);
+    gtk_box_pack_start(GTK_BOX(box), optionBox, FALSE, FALSE, 5);
 
     registButton = gtk_button_new_with_label("Don't have an account?");
-    g_signal_connect(G_OBJECT(registButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)REGIST);
-    g_signal_connect_swapped(G_OBJECT(registButton),"clicked",G_CALLBACK(gtk_widget_hide),login_window);
-    gtk_container_add(GTK_CONTAINER(optionBox),registButton);
+    g_signal_connect(G_OBJECT(registButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) REGIST);
+    g_signal_connect_swapped(G_OBJECT(registButton), "clicked", G_CALLBACK(gtk_widget_hide), loginWindow);
+    gtk_container_add(GTK_CONTAINER(optionBox), registButton);
 
     logButton = gtk_button_new_with_label("Log in");
-    g_signal_connect(G_OBJECT(logButton),"clicked",G_CALLBACK(on_button_clicked),(gpointer)LOG_IN);
-    g_signal_connect_swapped(G_OBJECT(logButton),"clicked",G_CALLBACK(gtk_widget_destroy),login_window);
-    gtk_container_add(GTK_CONTAINER(optionBox),logButton);
+    g_signal_connect(G_OBJECT(logButton), "clicked", G_CALLBACK(on_button_clicked), (gpointer) LOG_IN);
+//    g_signal_connect_swapped(G_OBJECT(logButton), "clicked", G_CALLBACK(gtk_widget_destroy), loginWindow);
+    gtk_container_add(GTK_CONTAINER(optionBox), logButton);
 
-    g_signal_connect(G_OBJECT(login_window),"delete_event",G_CALLBACK(delete_event), NULL);
+    g_signal_connect(G_OBJECT(loginWindow), "delete_event", G_CALLBACK(delete_event), NULL);
 
 
-    gtk_widget_show_all(login_window);
+    gtk_widget_show_all(loginWindow);
+
     gtk_main();
 
 }
