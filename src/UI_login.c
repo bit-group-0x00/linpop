@@ -18,6 +18,9 @@ static GtkWidget *avaterImage;
 static char *filename;
 static char *signature;
 static state userID;
+
+
+
 GtkWidget *create_image(gchar *filename,gint size){
     GtkWidget *image;
     GdkPixbuf *res;

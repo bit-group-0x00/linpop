@@ -11,6 +11,9 @@ static GdkPixbuf *imageRes;
 static int friendnum = 0;
 static int groupnum = 0;
 
+int alreadyOpenFriendList[10000];
+int alreadyOpenGroupList[10000];
+
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gint state;
     g_print("delete event occured\n");
