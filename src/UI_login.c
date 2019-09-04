@@ -29,7 +29,7 @@ GtkWidget *create_image(gchar *filename,gint size){
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
     g_print("delete event occured\n");
     gtk_main_quit();
-    return TRUE;
+    return FALSE;
 }
 void show_progressbar(gchar *message) {
     //提示信息对话框
@@ -229,7 +229,7 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
                 //用户确定创建账户
                 if (strcmp(password, password2) == 0 && g_utf8_strlen(password,-1)!=0) {
                     //两次输入的密码一样
-                    userID = regist(username, password,signature,"");
+                    userID = regist(username, password,signature, "../res/icon.png");
                     switch (userID) {
                         case FAILURE:
                             g_print("Registered process failed：\nUSERNAME:%s\nPASSWORD:%s\n", username, password);
@@ -392,6 +392,7 @@ void regist_window() {
     gtk_container_add(GTK_CONTAINER(optionBox), confirmButton);
 
     gtk_widget_show_all(registWindow);
+    gtk_main();
 }
 
 void login_window(int argc, char *argv[]) {

@@ -11,7 +11,7 @@ static GtkWidget *groupMemberText = NULL;//
 
 static GdkPixbuf *iconImageRes;
 static GtkWidget *avaterImage;
-static gchar* avaterFilename;
+static gchar* avaterFilename = "";
 static int memberNum;
 static int memberId[100];
 
@@ -78,11 +78,10 @@ static void on_confirm_button_clicked(GtkWidget *button, gpointer data) {
     const gchar *groupName = gtk_entry_get_text(GTK_ENTRY(groupNameText));
     const gchar *groupInfo = gtk_entry_get_text(GTK_ENTRY(groupInfoText));
     read_friend_list();
-    gchar *infoTitle = "Congratulation!\nYour userID is: ";
-    gint result;
     g_print("CONFIRM_BUTTON_CLICKED");
     create_group(groupName,groupInfo,avaterFilename,memberNum,memberId);
     homepage_add_group(mainListbox);
+    show_info(NULL,NULL,"群组创建成功!");
     gtk_widget_destroy(createWindow);
 }
 

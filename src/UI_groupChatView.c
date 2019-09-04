@@ -169,6 +169,7 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_window_set_title(GTK_WINDOW(window),"Group Chat Room");
     gtk_widget_set_size_request(GTK_WIDGET(window),1092,744);
     g_signal_connect(GTK_WINDOW(window),"delete_event",gtk_main_quit,NULL);
+    gtk_window_set_position(GTK_WINDOW(window),GTK_WIN_POS_CENTER);
 
     //bigBox
     bigBox = gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
@@ -291,7 +292,7 @@ void group_chat_window(int userId_N, int groupId_N)
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(groupInfoText),GTK_WRAP_WORD);
     gtk_container_add(GTK_CONTAINER(upFrameRight),groupInfoText);
 //    gchar *groupInfoTextString = groupInfo->gro_pro.intro;
-    gchar *groupInfoTextString = "introduction....";
+    gchar *groupInfoTextString = groupInfo->gro_pro.intro;
 
     GtkTextBuffer *groupInfoBuffer = gtk_text_buffer_new(NULL);
     gtk_text_buffer_set_text(groupInfoBuffer,groupInfoTextString,-1);
