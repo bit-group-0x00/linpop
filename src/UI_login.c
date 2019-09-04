@@ -122,6 +122,7 @@ void on_button_clicked(GtkWidget *button, gpointer data) {
     switch ((int) data) {
         case LOG_IN:
             //登陆
+            gstrdup
 //            g_print("username is:%s\n",username);
 //            g_print("password is:%s\n",password);
             userID = strtol(username, NULL, 10);
