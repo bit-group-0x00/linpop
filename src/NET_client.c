@@ -7,7 +7,6 @@
 */
 
 #include "../include/NET_client.h"
-#include "../include/UI_interface.h"
 
 /* 全局变量my_info */
 info my_info;
@@ -18,8 +17,8 @@ char server_buff[BUFF_SIZE];
 /* 指明server_buffer里面的剩余数据量 */
 int server_buff_remain = 0;
 
-/* 
-  client side cjson handle function 
+/*
+  client side cjson handle function
   客户端的cjson处理函数，不需要被外部调用，不用在.h文件中声名。
   实现的功能是解析cjson，并且根具cjson的类型执行相应的命令。
   在调用监听端口（monitor_port）和监听socket（monitor_socket）
@@ -160,7 +159,7 @@ group* seek_gro(int id)
         if(gro->gro_pro.id == id) break;
         else gro = gro->next;
     }
-    return gro; 
+    return gro;
 }
 
 friend* seek_fri(int id)
@@ -348,21 +347,36 @@ state send_msg_to_friend(const int friend_id, const char* msg)
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
 }
 
+state send_msg_to_group(const int group_id, const char* msg)
+{
+    cJSON* cJson = cJSON_CreateObject();
+    cJSON_AddItemToObject(cJson, "type", cJSON_CreateNumber(SEND_MESSAGE_TO_GROUP));
+    cJSON_AddItemToObject(cJson, "sender", cJSON_CreateNumber(my_info.my_pro.id));
+    cJSON_AddItemToObject(cJson, "target", cJSON_CreateNumber(group_id));
+    cJSON_AddItemToObject(cJson, "content", cJSON_CreateString(msg));
+    send_cjson(server, cJson);
+    cJSON_Delete(cJson);
+    cJson = recv_cjson(server, server_buff, &server_buff_remain);
+    state s = cJSON_GetObjectItem(cJson, "type")->valueint;
+}
+
 void handle_msg_recv(int socket, cJSON* cjson)
 {
+    int target_id = cJSON_GetObjectItem(cjson, "target")->valueint;
     message* msg = parse_msg(cjson);
+    response_state(socket, SUCCESS);
     /* friend message */
-    if(msg->sender >= 9999)
+    if(target_id == my_info.my_pro.id)
     {
         friend* fri = seek_fri(msg->sender);
         append_msg_to_fri(fri, msg);
+        my_info.update_ui(SEND_MESSAGE, fri);
     } else /* group message */
     {
-        group* gro = seek_gro(msg->sender);
+        group* gro = seek_gro(target_id);
         append_msg_to_gro(gro, msg);
+        my_info.update_ui(SEND_MESSAGE_TO_GROUP, gro);
     }
-    response_state(socket, SUCCESS);
-    my_info.update_ui(SEND_MESSAGE, msg);
 }
 
 void handle_add_fri_request(int socket, cJSON* cjson)
@@ -432,6 +446,7 @@ state request_my_info(int id) {
             fri->fri_pro.online = cJSON_GetArrayItem(states, i)->valueint;
             fri->fri_pro.signature = copy(cJSON_GetArrayItem(signatures, i)->valuestring);
             fri->first_msg = fri->last_msg = NULL;
+            fri->next = fri->last = NULL;
             cJSON* request_msg_list = cJSON_CreateObject();
             cJSON_AddItemToObject(request_msg_list, "type", cJSON_CreateNumber(REQUEST_MESSAGE_LIST));
             cJSON_AddItemToObject(request_msg_list, "id", cJSON_CreateNumber(/*my_info.my_pro.*/id));
@@ -499,6 +514,7 @@ state request_my_info(int id) {
             gro->gro_pro.intro = copy(cJSON_GetArrayItem(intros, i)->valuestring);
             gro->gro_pro.icon = copy(cJSON_GetArrayItem(icons, i)->valuestring);
             gro->last_msg = gro->first_msg = NULL;
+            gro->next = gro->last = NULL;
             cJSON* request_g_msg_list = cJSON_CreateObject();
             cJSON_AddItemToObject(request_g_msg_list, "type", cJSON_CreateNumber(REQUEST_GROUP_MESSAGE_LIST));
             cJSON_AddItemToObject(request_g_msg_list, "id", cJSON_CreateNumber(id));
@@ -621,24 +637,56 @@ state logout()
     return s;
 }
 
-void update_ui(state type, void* origin)
-{
-    printf("type is %d\n", type);
-}
+//void update_ui(state type, void* origin)
+//{
+//    switch (type)
+//    {
+//        case SEND_MESSAGE:
+//        {
+//            friend* fri = (friend*)origin;
+//            printf("recieved message from friend. id: %d, nick_name: %s\n", fri->fri_pro.id, fri->fri_pro.nick_name);
+//            break;
+//        }
+//        case SEND_MESSAGE_TO_GROUP:
+//        {
+//            group *gro = (group *) origin;
+//            printf("recieved message from group. id: %d, name: %s\n", gro->gro_pro.id, gro->gro_pro.name);
+//            break;
+//        }
+//        case ADD_FRIEND_REQUEST:
+//        {
+//            friend* fri = (friend*)origin;
+//            printf("add friend request from id: %d, nick_name: %s\n", fri->fri_pro.id, fri->fri_pro.nick_name);
+//            break;
+//        }
+//        case CREATE_GROUP_REQUEST:
+//        {
+//            group* gro = (group*)origin;
+//            printf("group created. id: %d, %s\n", gro->gro_pro.id, gro->gro_pro.name);
+//            break;
+//        }
+//        default:
+//        {
+//            printf("unknown type message.\n");
+//        }
+//    }
+//}
 
 int main(int argc, char* argv[])
 {
-    my_info.update_ui = update_ui;
-    /* test regist, login and send message */
-    printf("regist result: %d\n", regist("helloworld", "123456", "my signature", "avatar"));
-    printf("login result: %d\n", login(10000, "123456"));
-    int group_members[5] = { 10000, 10001, 10002, 10003, 10004 };
-    printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
-    //printf("join group result: %d\n", join_group(75));
-    printf("add friend result: %d\n", add_friend(10001));
-    printf("send message to friend result: %d\n", send_msg_to_friend(10000, "hello my friend"));
-    printf("logout result: %d\n", logout());
-    while(1);
     login_window();
+    my_info.update_ui = update_message;
+//    my_info.update_ui = update_ui;
+//    /* test regist, login and send message */
+//    //printf("regist result: %d\n", regist("helloworld", "123456", "my signature", "avatar"));
+//    printf("login result: %d\n", login(10223, "123456"));
+//    int group_members[5] = { 10228, 10224, 10225, 10226, 10227 };
+//    //printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
+//    //printf("join group result: %d\n", join_group(75));
+//    printf("add friend result: %d\n", add_friend(10228));
+//    //printf("send message to friend result: %d\n", send_msg_to_friend(10227, "hello my friend"));
+//    printf("send message to group result: %d\n", send_msg_to_group(100, "hello my group"));
+//    printf("logout result: %d\n", logout());
+//    while(1);
     return 0;
 }

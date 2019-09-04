@@ -5,8 +5,7 @@
   Author: PengYao
   Abstract Description: server side program
 */
-#ifndef LINPOP_NET_SERVER_H
-#define LINPOP_NET_SERVER_H
+
 #include "NET_macro.h"
 #include "NET_socket.h"
 #include "UTIL_cJSON.h"
@@ -26,5 +25,3 @@ void handle_cjson(int client, cJSON* cjson);
 
 /* server entrance */
 int main(int argc, char* argv[]);
-
-#endif

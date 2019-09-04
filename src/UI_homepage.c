@@ -136,11 +136,13 @@ void open_chat(GtkWidget *widget,gpointer data){
     int index = gtk_list_box_row_get_index(select);
     int i;
     if (index<=friendnum){
-        friend* p = my_info.first_fri;
+        friend* p = my_info.first_fri, *pre = NULL;
         for (i = 0; p != NULL && i < index; ++i) {
+            pre = p;
             p = p->next;
         }
-        alreadyOpenFriendList[p->fri_pro.id-100000] = TRUE;
+        p = pre;
+        alreadyOpenFriendList[p->fri_pro.id-10000] = TRUE;
         friend_chat_window(my_info.my_pro.id,p->fri_pro.id);
     }
     else{
@@ -264,7 +266,7 @@ void homepage_window(const int userID){
         gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
         p = p->next;
     }
-    group* q = my_info.first_fri;
+    group* q = my_info.first_gro;
     for (int i = 0; q != NULL; ++i,groupnum++) {
         GtkWidget *testBox = create_groupbox(q->gro_pro,FRIEND,40);
         gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,i);
