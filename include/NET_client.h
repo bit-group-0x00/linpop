@@ -168,3 +168,5 @@ friend* seek_fri(int id);
 group* seek_gro(int id);
 
 void update_message(state type, void *newIncome);
+
+void update_group(group*group_p);

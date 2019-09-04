@@ -10,7 +10,7 @@ static GdkPixbuf *imageRes;
 
 static int friendnum = 0;
 static int groupnum = 0;
-GtkWidget *mainListbox
+GtkWidget *mainListbox;
 
 int alreadyOpenFriendList[10000];
 int alreadyOpenGroupList[10000];

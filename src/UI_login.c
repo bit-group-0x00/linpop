@@ -96,14 +96,16 @@ void update_message(state type, void *newIncome){
     gchar* message = "";
     int newID = 0;
     gchar* name = "";
+    friend *fri = (friend *)newIncome;
+    group *gro = (group *)newIncome;
     if (type == FRIEND){
-        friend *fri = (friend *)newIncome;
+
         message = fri->last_msg;
         newID = fri->fri_pro.id;
         name = fri->fri_pro.nick_name;
     }
     else if(type == GROUP){
-        group *gro = (group *)newIncome;
+
         message = gro->last_msg;
         newID = gro->gro_pro.id;
         name = gro->gro_pro.name;
@@ -133,11 +135,11 @@ void update_message(state type, void *newIncome){
             }
             break;
         case GROUP:
-            if(alreadyOpenGroupList[newID-10000]==TRUE){
-                friend_msg_listener(message);
+            if(alreadyOpenGroupList[newID]==TRUE){
+                update_group(newIncome);
             }
             else{
-                friend_chat_window(userID,newID);
+                group_chat_window(userID,newID);
             }
             group_chat_window(userID,newID);
             break;
