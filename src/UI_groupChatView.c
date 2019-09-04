@@ -115,16 +115,16 @@ void send_button_callback(GtkWidget *button,gpointer buffer){
         g_print("SUCCEED\n");
     }
     else g_print("ERROR\n");
-    GtkWidget* messageBox = new_Box(my_info.my_pro.avatar.,my_info.my_pro.id,my_info.my_pro.nick_name,message,g_get_real_time());
+    GtkWidget* messageBox = new_Box(my_info.my_pro.avatar,my_info.my_pro.id,my_info.my_pro.nick_name,message,"");
     gtk_box_pack_start(GTK_BOX(Box),messageBox,FALSE,FALSE,0);
     gtk_text_buffer_delete(buffer,&start,&end);
 }
 void update_group(group*group_p)
 {
     gchar *message = group_p->last_msg->content;
-    friend *lastMessageSender = group_p->last_msg->sender;
+    friend *lastMessageSender = seek_fri(group_p->last_msg->sender);
     gchar *messageSenderIcon = lastMessageSender->fri_pro.avatar;
-    int *messageSenderId = lastMessageSender->fri_pro.id;
+    int messageSenderId = lastMessageSender->fri_pro.id;
     gchar *messageSenderNickName = lastMessageSender->fri_pro.nick_name;
     gchar *messageSenderDate = lastMessageSender->last_msg->date;
     GtkWidget* messageBox = new_Box(messageSenderIcon,messageSenderId,messageSenderNickName,message,messageSenderDate);
