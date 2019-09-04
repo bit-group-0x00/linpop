@@ -49,9 +49,9 @@ void mallocGroupMessage(GroupMessage *groupMessage);
  * @param msg 要插入消息的指针
  * @param mysql 数据库链接句柄
  * @param connection　链接后的句柄
- * @return 成功插入返回gmId, 插入失败返回-1
+ * @return 成功插入返回time_at_now, 插入失败返回NULL
  */
-int insertGmMsg(GroupMessage *msg, MYSQL* connection);
+char* insertGmMsg(GroupMessage *msg, MYSQL* connection);
 
 /**
  * 需要获得群聊记录时调用

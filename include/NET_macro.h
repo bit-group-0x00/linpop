@@ -27,6 +27,7 @@
 #define REQUEST_GROUP_MEMBER_LIST 0x600
 #define CREATE_GROUP_REQUEST 0X700
 #define JOIN_GROUP_REQUEST 0x800
+#define SEND_MESSAGE_TO_GROUP 0X900
 
 typedef int state;
 //typedef unsigned long ip;

@@ -13,11 +13,12 @@ void freeMsgList(MessageList messageList) {
     messageList.msgs = NULL;
 }
 
-int insertMsg(Message *msg, MYSQL *connection)
+char* insertMsg(Message *msg, MYSQL *connection)
 {
+    char *time = NULL;
     if (connection == NULL) {
         perror("INSERT MESSAGE: CONNECTION NULL ERROR");
-        return -1;
+        return NULL;
     }
     char insertMessageSql[200];
     MYSQL_RES *res;
@@ -29,24 +30,27 @@ int insertMsg(Message *msg, MYSQL *connection)
     if(mysql_real_query(connection, insertMessageSql, strlen(insertMessageSql)))
     {
         perror("INSERT MESSAGE: QUERY ERROR\n");
-        return -1;
+        return NULL;
     }
     else
     {
-        if(mysql_real_query(connection, SQL_SELECT_LAST_ID, strlen(SQL_SELECT_LAST_ID)))
-        {
-            perror("QUERY LAST ID AFTER INSERT MESSAGE: QUERY ERROR\n");
-            return -1;
-        }
-        else
-        {
+        if (mysql_real_query(connection, "SELECT msgDateTime\n"
+                                         "FROM linpop.message\n"
+                                         "WHERE msgId=LAST_INSERT_ID();\n",
+                             strlen("SELECT msgDateTime\n"
+                                    "FROM linpop.message\n"
+                                    "WHERE msgId=LAST_INSERT_ID();\n"))) {
+
+            perror("QUERY LAST TIME ID AFTER INSERT MESSAGE: QUERY ERROR\n");
+            return NULL;
+        } else {
             res = mysql_store_result(connection);
-            if(res)
-            {
+            if (res) {
                 row = mysql_fetch_row(res);
-                msg->msgId = atoi(row[0]);
+                time = (char *) malloc(sizeof(char) * 40);
+                strcpy(time, row[0]);
             }
-            return msg->msgId;
+            return time;
         }
     }
 }

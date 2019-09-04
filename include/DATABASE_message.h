@@ -38,9 +38,9 @@ void freeMsgList(MessageList messageList);
  * msgFromId为发送者的ID, msgToId为接受者的ID
  * @param msg 要插入消息的指针
  * @param connection 连接数据库句柄
- * @return 成功插入返回msgId, 插入失败返回-1
+ * @return 成功插入返回now time, 插入失败返回NULL
  */
-int insertMsg(Message *msg, MYSQL *connection);
+char* insertMsg(Message *msg, MYSQL *connection);
 
 /**
  * 将消息由未读状态更新成已读状态

@@ -25,15 +25,18 @@ void freeGroupMessageList(GroupMessageList groupMessageList) {
     }
 }
 
-void mallocGroupMessage(GroupMessage *groupMessage) {
+//void mallocGroupMessage(GroupMessage *groupMessage) {
+//
+//    groupMessage = (GroupMessage *) malloc(sizeof(GroupMessage));
+//    groupMessage->gmContent = (char *) malloc(sizeof(char) * MESSAGE_MAX_LENGTH);
+//    memset(groupMessage->gmContent, 0, MESSAGE_MAX_LENGTH);
+//    groupMessage->gmDateTime = (char *) malloc(sizeof(char) * DATETIME_LENGTH);
+//    memset(groupMessage->gmDateTime, 0, DATETIME_LENGTH);
+//}
 
-    groupMessage = (GroupMessage *) malloc(sizeof(GroupMessage));
-    groupMessage->gmContent = (char *) malloc(sizeof(char) * MESSAGE_MAX_LENGTH);
-    groupMessage->gmDateTime = (char *) malloc(sizeof(char) * DATETIME_LENGTH);
-}
-
-int insertGmMsg(GroupMessage *msg, MYSQL* connection)
+char* insertGmMsg(GroupMessage *msg, MYSQL* connection)
 {
+    char* time;
     char insertMessageSql[200];
     MYSQL_RES *res;
     MYSQL_ROW row;
@@ -47,26 +50,29 @@ int insertGmMsg(GroupMessage *msg, MYSQL* connection)
     if(mysql_real_query(connection, insertMessageSql, strlen(insertMessageSql)))
     {
         perror("INSERT GROUP MESSAGE: QUERY ERROR\n");
-        return -1;
+        return NULL;
     }
     else
     {
-        if(mysql_real_query(connection, SQL_SELECT_LAST_ID, strlen(SQL_SELECT_LAST_ID)))
-        {
-            perror("SELECT LAST ID AFTER INSERT GROUP MESSAGE: QUERY ERROR\n");
-            return -1;
-        }
-        else
-        {
+        if (mysql_real_query(connection, "SELECT gmDateTime\n"
+                                         "FROM linpop.group_message\n"
+                                         "WHERE gmId=LAST_INSERT_ID();\n", strlen("SELECT gmDateTime\n"
+                                                                                  "FROM linpop.group_message\n"
+                                                                                  "WHERE gmId=LAST_INSERT_ID();\n"))) {
+
+            perror("SELECT LAST TIME ID AFTER INSERT GROUP MESSAGE: QUERY ERROR\n");
+            return NULL;
+        } else {
             res = mysql_store_result(connection);
-            if(res)
-            {
+            if (res) {
                 row = mysql_fetch_row(res);
-                msg->gmId = atoi(row[0]);
+                time = (char *) malloc(sizeof(char) * 40);
+                strcpy(time, row[0]);
+                return time;
             }
         }
     }
-    return  msg->gmId;
+    return  NULL;
 }
 
 GroupMessageList getGmMsgList(int groupId, MYSQL* connection)
@@ -104,14 +110,20 @@ GroupMessageList getGmMsgList(int groupId, MYSQL* connection)
             int index = 0;
             while(row)
             {
-                mallocGroupMessage(groupMessageList.gmMsgs + index);
-                GroupMessage *p = groupMessageList.gmMsgs + index;
+//                mallocGroupMessage(groupMessageList.gmMsgs + index);
 
-                p->gmId = atoi(row[0]);
-                p->gmGroupId = atoi(row[1]);
-                strcpy(p->gmContent, row[2]);
-                p->gmFromId = atoi(row[3]);
-                strcpy(p->gmDateTime, row[4]);
+
+                (groupMessageList.gmMsgs + index)->gmDateTime = (char *) malloc(sizeof(char) * DATETIME_LENGTH);
+                memset((groupMessageList.gmMsgs + index)->gmDateTime, 0, DATETIME_LENGTH);
+                (groupMessageList.gmMsgs + index)->gmContent = (char *) malloc(sizeof(char) * MESSAGE_MAX_LENGTH);
+                memset((groupMessageList.gmMsgs + index)->gmContent, 0, MESSAGE_MAX_LENGTH);
+
+                (groupMessageList.gmMsgs + index)->gmId = atoi(row[0]);
+                (groupMessageList.gmMsgs + index)->gmGroupId = atoi(row[1]);
+                strcpy((groupMessageList.gmMsgs + index)->gmContent, row[2]);
+                (groupMessageList.gmMsgs + index)->gmFromId = atoi(row[3]);
+                strcpy((groupMessageList.gmMsgs + index)->gmDateTime, row[4]);
+                
                 index++;
                 row = mysql_fetch_row(res);
             }

@@ -347,21 +347,36 @@ state send_msg_to_friend(const int friend_id, const char* msg)
     state s = cJSON_GetObjectItem(cjson, "type")->valueint;
 }
 
+state send_msg_to_group(const int group_id, const char* msg)
+{
+    cJSON* cJson = cJSON_CreateObject();
+    cJSON_AddItemToObject(cJson, "type", cJSON_CreateNumber(SEND_MESSAGE_TO_GROUP));
+    cJSON_AddItemToObject(cJson, "sender", cJSON_CreateNumber(my_info.my_pro.id));
+    cJSON_AddItemToObject(cJson, "target", cJSON_CreateNumber(group_id));
+    cJSON_AddItemToObject(cJson, "content", cJSON_CreateString(msg));
+    send_cjson(server, cJson);
+    cJSON_Delete(cJson);
+    cJson = recv_cjson(server, server_buff, &server_buff_remain);
+    state s = cJSON_GetObjectItem(cJson, "type")->valueint;
+}
+
 void handle_msg_recv(int socket, cJSON* cjson)
 {
+    int target_id = cJSON_GetObjectItem(cjson, "target")->valueint;
     message* msg = parse_msg(cjson);
+    response_state(socket, SUCCESS);
     /* friend message */
-    if(msg->sender >= 9999)
+    if(target_id == my_info.my_pro.id)
     {
         friend* fri = seek_fri(msg->sender);
         append_msg_to_fri(fri, msg);
+        my_info.update_ui(SEND_MESSAGE, fri);
     } else /* group message */
     {
-        group* gro = seek_gro(msg->sender);
+        group* gro = seek_gro(target_id);
         append_msg_to_gro(gro, msg);
+        my_info.update_ui(SEND_MESSAGE_TO_GROUP, gro);
     }
-    response_state(socket, SUCCESS);
-    my_info.update_ui(SEND_MESSAGE, msg);
 }
 
 void handle_add_fri_request(int socket, cJSON* cjson)
@@ -622,7 +637,36 @@ state logout()
 
 void update_ui(state type, void* origin)
 {
-    printf("type is %d\n", type);
+    switch (type)
+    {
+        case SEND_MESSAGE:
+        {
+            friend* fri = (friend*)origin;
+            printf("recieved message from friend. id: %d, nick_name: %s\n", fri->fri_pro.id, fri->fri_pro.nick_name);
+            break;
+        }
+        case SEND_MESSAGE_TO_GROUP:
+        {
+            group *gro = (group *) origin;
+            printf("recieved message from group. id: %d, name: %s\n", gro->gro_pro.id, gro->gro_pro.name);
+            break;
+        }
+        case ADD_FRIEND_REQUEST:
+        {
+            friend* fri = (friend*)origin;
+            printf("add friend request from id: %d, nick_name: %s\n", fri->fri_pro.id, fri->fri_pro.nick_name);
+            break;
+        }
+        case CREATE_GROUP_REQUEST:
+        {
+            group* gro = (group*)origin;
+            printf("group created. id: %d, %s\n", gro->gro_pro.id, gro->gro_pro.name);
+        }
+        default:
+        {
+            printf("unknown type message.\n");
+        }
+    }
 }
 
 int main(int argc, char* argv[])
@@ -635,7 +679,8 @@ int main(int argc, char* argv[])
     printf("create group result: %d\n", create_group("linpop", "linpop group", "icon_path", 5, group_members));
     //printf("join group result: %d\n", join_group(75));
     printf("add friend result: %d\n", add_friend(10001));
-    printf("send message to friend result: %d\n", send_msg_to_friend(10000, "hello my friend"));
+    //printf("send message to friend result: %d\n", send_msg_to_friend(10000, "hello my friend"));
+    printf("send message to group result: %d\n", send_msg_to_group(100, "hello my group"));
     printf("logout result: %d\n", logout());
     while(1);
     return 0;

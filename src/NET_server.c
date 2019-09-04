@@ -139,7 +139,7 @@ void handle_create_group_request(int client, cJSON* cjson)
                 send_cjson(client_2, cjson);
                 cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
                 if(cj_2 != NULL) cJSON_Delete(cj_2);
-                close(client_2);
+                //close(client_2);
             }
             freeUser(user);
         }
@@ -272,7 +272,7 @@ void handle_group_message_list_request(int client, cJSON* cjson)
 {
     int id = cJSON_GetObjectItem(cjson, "id")->valueint;
     int group_id = cJSON_GetObjectItem(cjson, "group_id")->valueint;
-    GroupMessageList group_msg_list = getGmMsgList(group_id, conn);
+    GroupMessageList group_msg_list = getGmMsgList(100 , conn);
     cJSON* group_msg_list_cjson = cJSON_CreateObject();
     cJSON_AddItemToObject(group_msg_list_cjson, "type", cJSON_CreateNumber(SUCCESS));
     cJSON_AddItemToObject(group_msg_list_cjson, "message_num", cJSON_CreateNumber(group_msg_list.gmNum));
@@ -365,7 +365,7 @@ void handle_add_friend_request(int client, cJSON* cjson)
                 send_cjson(client_2, cjson_2);
                 cJSON_Delete(cjson_2);
                 cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
-                close(client_2);
+                //close(client_2);
                 cJSON_Delete(cj_2);
             }
         }
@@ -373,8 +373,44 @@ void handle_add_friend_request(int client, cJSON* cjson)
     } else response_state(client, FAILURE);
 }
 
+void handle_msg_send_to_group(int client, cJSON* cJson)
+{
+    response_state(client, SUCCESS);
+    GroupMessage gmsg;
+    gmsg.gmFromId = cJSON_GetObjectItem(cJson, "sender")->valueint;
+    gmsg.gmGroupId = cJSON_GetObjectItem(cJson, "target")->valueint;
+    gmsg.gmContent = cJSON_GetObjectItem(cJson, "content")->valuestring;
+    insertGmMsg(&gmsg, conn);
+    GroupUserList group_members = getUserListByGroupId(gmsg.gmGroupId, conn);
+    for(int i = 0; i < group_members.userNum; ++i)
+    {
+        User* user = getUserInfoById(group_members.userIds[i], conn);
+        if(user->userStatus == 1)
+        {
+            int client_2 = conn_to(user->userIp, CLIENT_PORT);
+            cJSON* cjson_2 = cJSON_CreateObject();
+            cJSON_AddItemToObject(cjson_2, "type", cJSON_CreateNumber(SEND_MESSAGE_TO_GROUP));
+            cJSON_AddItemToObject(cjson_2, "sender", cJSON_CreateNumber(gmsg.gmFromId));
+            cJSON_AddItemToObject(cjson_2, "checked", cJSON_CreateNumber(UNCHECKED));
+            cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("2019/9/3"));
+            cJSON_AddItemToObject(cjson_2, "content", cJSON_CreateString(gmsg.gmContent));
+            cJSON_AddItemToObject(cjson_2, "target", cJSON_CreateNumber(gmsg.gmGroupId));
+            send_cjson(client_2, cjson_2);
+            cJSON_Delete(cjson_2);
+            cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
+            //close(client_2)
+            if(cj_2 != NULL)
+            {
+                cJSON_Delete(cj_2);
+            }
+        }
+        freeUser(user);
+    }
+    freeGroupUserList(group_members);
+}
 void handle_msg_send(int client, cJSON* cjson)
 {
+    response_state(client, SUCCESS);
     Message msg;
     msg.msgFromId = cJSON_GetObjectItem(cjson, "sender")->valueint;
     msg.msgToId = cJSON_GetObjectItem(cjson, "target")->valueint;
@@ -385,17 +421,17 @@ void handle_msg_send(int client, cJSON* cjson)
     if(user->userStatus == 1)
     {
         int client_2 = conn_to(user->userIp, CLIENT_PORT);
-
         cJSON* cjson_2 = cJSON_CreateObject();
         cJSON_AddItemToObject(cjson_2, "type", cJSON_CreateNumber(SEND_MESSAGE));
         cJSON_AddItemToObject(cjson_2, "sender", cJSON_CreateNumber(msg.msgFromId));
         cJSON_AddItemToObject(cjson_2, "checked", cJSON_CreateNumber(UNCHECKED));
         cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("2019/9/3"));
         cJSON_AddItemToObject(cjson_2, "content", cJSON_CreateString(msg.msgContent));
+        cJSON_AddItemToObject(cjson_2, "target", cJSON_CreateNumber(msg.msgToId));
         send_cjson(client_2, cjson_2);
         cJSON_Delete(cjson_2);
         cJSON* cj_2 = recv_cjson(client_2, NULL, NULL);
-        close(client_2);
+        //close(client_2);
         if(cj_2 != NULL)
         {
             msg.msgStatus = CHECKED;
@@ -404,7 +440,6 @@ void handle_msg_send(int client, cJSON* cjson)
     }
     insertMsg(&msg, conn);
     freeUser(user);
-    response_state(client, SUCCESS);
 }
 
 void handle_file_send(int client, cJSON* cjson)
@@ -449,6 +484,7 @@ void handle_cjson(int client, cJSON* cjson)
         case LOGIN: handle = handle_login_request; break;
         case LOGOUT: handle = handle_logout_request; break;
         case SEND_MESSAGE: handle = handle_msg_send; break;
+        case SEND_MESSAGE_TO_GROUP: handle = handle_msg_send_to_group; break;
         case SEND_FILE: handle = handle_file_send; break;
         case REQUEST_FRIEND_LIST: handle = handle_friend_list_request; break;
         case REQUEST_MESSAGE_LIST: handle = handle_msg_list_request; break;
