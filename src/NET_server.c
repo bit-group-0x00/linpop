@@ -153,13 +153,14 @@ void handle_join_group_request(int client, cJSON* cjson)
     if(insertGroupUser(group_id, id, conn) == 1)
     {
         cJSON* response_cjson = cJSON_CreateObject();
+        cJSON_AddItemToObject(response_cjson, "type", cJSON_CreateNumber(SUCCESS));
         Group* group = getGroupInfoByGroupId(group_id, conn);
-        cJSON_AddItemToObject(response_cjson, "group_id", group->groupId);
-        cJSON_AddItemToObject(response_cjson, "name", group->groupName);
-        cJSON_AddItemToObject(response_cjson, "intro", group->groupIntro);
-        cJSON_AddItemToObject(response_cjson, "icon", group->groupIcon);
+        cJSON_AddItemToObject(response_cjson, "group_id", cJSON_CreateNumber(group->groupId));
+        cJSON_AddItemToObject(response_cjson, "name", cJSON_CreateString(group->groupName));
+        cJSON_AddItemToObject(response_cjson, "intro", cJSON_CreateString(group->groupIntro));
+        cJSON_AddItemToObject(response_cjson, "icon", cJSON_CreateString(group->groupIcon));
         GroupUserList group_user_list =  getUserListByGroupId(group_id, conn);
-        cJSON_AddItemToObject(response_cjson, "member_num", group_user_list.userNum);
+        cJSON_AddItemToObject(response_cjson, "member_num", cJSON_CreateNumber(group_user_list.userNum));
         cJSON_AddItemToObject(response_cjson, "member_ids", cJSON_CreateIntArray(group_user_list.userIds, group_user_list.userNum));
 
         cJSON* nick_names = cJSON_CreateArray();
@@ -431,7 +432,7 @@ void handle_msg_send_to_group(int client, cJSON* cJson)
             cJSON_AddItemToObject(cjson_2, "type", cJSON_CreateNumber(SEND_MESSAGE_TO_GROUP));
             cJSON_AddItemToObject(cjson_2, "sender", cJSON_CreateNumber(gmsg.gmFromId));
             cJSON_AddItemToObject(cjson_2, "checked", cJSON_CreateNumber(UNCHECKED));
-            cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("2019/9/3"));
+            cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("just now"));
             cJSON_AddItemToObject(cjson_2, "content", cJSON_CreateString(gmsg.gmContent));
             cJSON_AddItemToObject(cjson_2, "target", cJSON_CreateNumber(gmsg.gmGroupId));
             send_cjson(client_2, cjson_2);
@@ -464,7 +465,7 @@ void handle_msg_send(int client, cJSON* cjson)
         cJSON_AddItemToObject(cjson_2, "type", cJSON_CreateNumber(SEND_MESSAGE));
         cJSON_AddItemToObject(cjson_2, "sender", cJSON_CreateNumber(msg.msgFromId));
         cJSON_AddItemToObject(cjson_2, "checked", cJSON_CreateNumber(UNCHECKED));
-        cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("2019/9/3"));
+        cJSON_AddItemToObject(cjson_2, "date", cJSON_CreateString("just now"));
         cJSON_AddItemToObject(cjson_2, "content", cJSON_CreateString(msg.msgContent));
         cJSON_AddItemToObject(cjson_2, "target", cJSON_CreateNumber(msg.msgToId));
         send_cjson(client_2, cjson_2);

@@ -143,28 +143,30 @@ void open_chat(GtkWidget *widget,gpointer data){
     int index = gtk_list_box_row_get_index(select);
     int i;
     if (index+1<=friendnum){
-        friend* p = my_info.first_fri, *pre = NULL;
-        for (i = 0; p != NULL && i < index; ++i) {
-            pre = p;
-            p = p->next;
+        if (friendnum == 1) {
+            alreadyOpenFriendList[my_info.first_fri->fri_pro.id-10000] = TRUE;
+            friend_chat_window(my_info.my_pro.id, my_info.first_fri->fri_pro.id);
+        } else { //friend num at least 2
+            friend *p = my_info.first_fri;
+            for (i = 0; i < index; i++) {
+                p = p->next;
+            }
+            alreadyOpenFriendList[p->fri_pro.id-10000] = TRUE;
+            friend_chat_window(my_info.my_pro.id,p->fri_pro.id);
         }
-        if (index != 0) {
-            p = pre;
-        }
-        alreadyOpenFriendList[p->fri_pro.id-10000] = TRUE;
-        friend_chat_window(my_info.my_pro.id,p->fri_pro.id);
     }
     else{
-        group* q = my_info.first_gro, *pre_2 = NULL;
-        for (i = friendnum; q != NULL && i < index; ++i) {
-            pre_2 = q;
-            q = q->next;
+        if (groupnum == 1) {
+            alreadyOpenGroupList[my_info.first_gro->gro_pro.id] = TRUE;
+            group_chat_window(my_info.my_pro.id, my_info.first_gro->gro_pro.id);
+        } else { //group at least 2
+            group *p = my_info.first_gro;
+            for (i = friendnum; i < index; i++) {
+                p = p->next;
+            }
+            alreadyOpenFriendList[p->gro_pro.id] = TRUE;
+            group_chat_window(my_info.my_pro.id, p->gro_pro.id);
         }
-        if (index != friendnum) {
-            q = pre_2;
-        }
-        alreadyOpenGroupList[q->gro_pro.id] = TRUE;
-        group_chat_window(my_info.my_pro.id,q->gro_pro.id);
     }
 }
 
