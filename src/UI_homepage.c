@@ -259,12 +259,12 @@ void homepage_window(const int userID){
         gtk_list_box_insert(GTK_LIST_BOX(listbox),testBox,-1);
         q = q->next;
     }
-    g_signal_connect(G_OBJECT(listbox),"row_activated",G_CALLBACK(open_chat), userID);
+    g_signal_connect(listbox,"row_activated",G_CALLBACK(open_chat), userID);
     gtk_list_box_set_activate_on_single_click(GTK_LIST_BOX(listbox), FALSE);
 
     gtk_widget_show_all(homepageWindow);
 
-    g_signal_connect(G_OBJECT(homepageWindow),"delete_event",G_CALLBACK(delete_event),NULL);
+    g_signal_connect(homepageWindow,"delete_event",G_CALLBACK(delete_event),NULL);
 
     gtk_main();
 

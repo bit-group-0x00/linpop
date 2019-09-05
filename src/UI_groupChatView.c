@@ -4,10 +4,10 @@
 #include "../include/UI_interface.h"
 #include "../include/NET_client.h"
 
-static int userId;
-static int groupId;
-static gchar* filename;
-static GtkWidget *Box;
+int userId;
+int groupId;
+gchar* filename;
+GtkWidget *Box;
 
 
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){

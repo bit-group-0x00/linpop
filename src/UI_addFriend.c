@@ -24,6 +24,7 @@ static void on_confirm_button_clicked(GtkWidget *button, gpointer data) {
             switch (result){
                 case FAILURE:
                     show_error(NULL,NULL,"Sorry, Error!");
+                    break;
                 case SUCCESS:
                     show_info(NULL,NULL,"Congratulation!\nsuccessful add friend");
                     homepage_add_friend(mainListbox);
@@ -34,6 +35,7 @@ static void on_confirm_button_clicked(GtkWidget *button, gpointer data) {
             switch (result){
                 case FAILURE:
                     show_error(NULL,NULL,"Sorry, Error!");
+                    break;
                 case SUCCESS:
                     show_info(NULL,NULL,"Congratulation!\nsuccessful join group");
                     homepage_add_group(mainListbox);
@@ -146,7 +148,6 @@ void join_group_window() {
     userIdText = gtk_entry_new();
     gtk_entry_set_max_length(userIdText, 20);
     gtk_box_pack_start(GTK_BOX(usernameBox), userIdText, FALSE, FALSE, 5);
-
 
     sep = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     gtk_box_pack_start(GTK_BOX(infoBox), sep, FALSE, FALSE, 5);

@@ -28,7 +28,6 @@ GtkWidget *create_image(gchar *filename,gint size){
 }
 static gint delete_event(GtkWidget *widget, GdkEvent *event, gpointer data) {
     g_print("delete event occured\n");
-    gtk_main_quit();
     return FALSE;
 }
 void show_progressbar(gchar *message) {
@@ -133,6 +132,7 @@ void update_message(state type, void *newIncome){
         case SEND_MESSAGE:
             if(alreadyOpenFriendList[newID-10000]==TRUE){
                 friend_msg_listener(message);
+                break;
             }
             else{
                 friend_chat_window(userID,newID);
@@ -141,6 +141,7 @@ void update_message(state type, void *newIncome){
         case SEND_MESSAGE_TO_GROUP:
             if(alreadyOpenGroupList[newID]==TRUE){
                 update_group((group *)newIncome);
+                break;
             }
             else{
                 group_chat_window(userID,newID);
